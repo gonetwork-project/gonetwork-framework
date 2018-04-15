@@ -9,7 +9,7 @@ var NettingChannelLibrary = artifacts.require("./NettingChannelLibrary.sol");
 var Registry = artifacts.require("./Registry.sol");
 var Utils = artifacts.require("./Utils.sol");
 
-
+var web3 = require('Web3');
 
 module.exports = function(deployer) {
 	console.log("Deploying Standard Token");
@@ -39,7 +39,26 @@ module.exports = function(deployer) {
 
                 instance.newChannel(acct2, 150, {from:acct1}).then(function (result) {
                   console.log(result);
-                  
+                  instance.getChannelWith(acct2,{from:acct1}).then(function(channelAddress){
+                    console.log(channelAddress);
+                    var ncc = NettingChannelContract.at(channelAddress);
+
+                    HumanStandardToken.deployed().then(function(hst) {
+
+                      hst.approve(ncc.address,500,{from:acct1}).then(function (next) {
+                        ncc.deposit(250,{from:acct1}).then(function (result) {
+                          console.log("DEPOSITED 250");
+                          // body...
+                        }).catch(function (err) {
+                          conole.log("COULD NOT DEPOST 250");
+                          // body...
+                        });
+                        // body...
+                      })
+                    })
+                  }).catch(function (e) {
+                    // body...
+                  })
                 }).catch(function (e) {
                   console.log("ERROR"+e.message);
                 })
