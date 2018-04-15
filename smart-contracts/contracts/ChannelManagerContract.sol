@@ -9,7 +9,7 @@ import "./ChannelManagerLibrary.sol";
 // only as a proxy/state container.
 contract ChannelManagerContract is Utils {
     string constant public contract_version = "0.2._";
-
+    uint256 constant public FEE = 5;
     using ChannelManagerLibrary for ChannelManagerLibrary.Data;
     ChannelManagerLibrary.Data data;
 
@@ -37,12 +37,17 @@ contract ChannelManagerContract is Utils {
         public
         returns (address)
     {
+        require(data.token.balanceOf(msg.sender) >= FEE);
+        bool success = data.token.transferFrom(msg.sender, this, FEE);
+        require(success == true);            
+
         address old_channel = getChannelWith(partner);
         if (old_channel != 0) {
             ChannelDeleted(msg.sender, partner);
         }
 
         address new_channel = data.newChannel(partner, settle_timeout);
+        
         ChannelNew(new_channel, msg.sender, partner, settle_timeout);
         return new_channel;
     }

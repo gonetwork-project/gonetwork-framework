@@ -36,8 +36,9 @@ module.exports = function(deployer) {
 
               ChannelManagerContract.deployed().then(function(instance) {
                
-
-                instance.newChannel(acct2, 150, {from:acct1}).then(function (result) {
+                var hst = HumanStandardToken.at(HumanStandardToken.address);
+                hst.approve(ChannelManagerContract.address,500, {from:acct1}).then(function(){
+                  instance.newChannel(acct2, 150, {from:acct1}).then(function (result) {
                   console.log(result);
                   instance.getChannelWith(acct2,{from:acct1}).then(function(channelAddress){
                     console.log(channelAddress);
@@ -62,6 +63,10 @@ module.exports = function(deployer) {
                 }).catch(function (e) {
                   console.log("ERROR"+e.message);
                 })
+                  
+                })
+
+                
                 
               });
               
