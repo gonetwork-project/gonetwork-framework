@@ -34,7 +34,7 @@ contract Registry {
     {
         address manager_address;
 
-        manager_address = new ChannelManagerContract(token_address);
+        manager_address = new ChannelManagerContract(token_address,token_address);
 
         registry[token_address] = manager_address;
         tokens.push(token_address);
