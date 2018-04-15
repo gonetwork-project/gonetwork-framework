@@ -25,7 +25,7 @@ library NettingChannelLibrary {
         // Value used to order transfers and only accept the latest on calls to
         // update, this will only be relevant after either #182 or #293 is
         // implemented.
-        uint64 nonce;
+        uint256 nonce;
 
         // A mapping to keep track of locks that have been withdrawn.
         mapping(bytes32 => bool) withdrawn_locks;
@@ -92,7 +92,7 @@ library NettingChannelLibrary {
     /// @notice Close a channel between two parties that was used bidirectionally
     function close(
         Data storage self,
-        uint64 nonce,
+        uint256 nonce,
         uint256 transferred_amount,
         bytes32 locksroot,
         bytes32 extra_hash,
@@ -135,7 +135,7 @@ library NettingChannelLibrary {
             // update the structure of the counterparty with its data provided
             // by the closing node
             Participant storage counterparty = self.participants[counterparty_index];
-            counterparty.nonce = uint64(nonce);
+            counterparty.nonce = uint256(nonce);
             counterparty.locksroot = locksroot;
             counterparty.transferred_amount = transferred_amount;
         }
@@ -188,7 +188,7 @@ library NettingChannelLibrary {
     }
 
     function recoverAddressFromSignature(
-        uint64 nonce,
+        uint256 nonce,
         uint256 transferred_amount,
         bytes32 locksroot,
         bytes32 extra_hash,

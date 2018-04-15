@@ -7,6 +7,7 @@ library ChannelManagerLibrary {
     string constant public contract_version = "0.2._";
 
     struct Data {
+        Token goToken;
         Token token;
 
         address[] all_channels;
