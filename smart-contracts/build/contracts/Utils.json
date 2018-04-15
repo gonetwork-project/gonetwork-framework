@@ -1,0 +1,631 @@
+{
+  "contractName": "Utils",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "contract_version",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "channel",
+          "type": "address"
+        }
+      ],
+      "name": "contractExists",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6060604052341561000f57600080fd5b6101a88061001e6000396000f30060606040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680637709bc7814610051578063b32c65c8146100a2575b600080fd5b341561005c57600080fd5b610088600480803573ffffffffffffffffffffffffffffffffffffffff16906020019091905050610130565b604051808215151515815260200191505060405180910390f35b34156100ad57600080fd5b6100b5610143565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100f55780820151818401526020810190506100da565b50505050905090810190601f1680156101225780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b600080823b905060008111915050919050565b6040805190810160405280600581526020017f302e322e5f000000000000000000000000000000000000000000000000000000815250815600a165627a7a723058201d70ae8854fd995c9452bdbefdbfb97093daf9fe2a5221faee927f05df5b5a480029",
+  "deployedBytecode": "0x60606040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680637709bc7814610051578063b32c65c8146100a2575b600080fd5b341561005c57600080fd5b610088600480803573ffffffffffffffffffffffffffffffffffffffff16906020019091905050610130565b604051808215151515815260200191505060405180910390f35b34156100ad57600080fd5b6100b5610143565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100f55780820151818401526020810190506100da565b50505050905090810190601f1680156101225780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b600080823b905060008111915050919050565b6040805190810160405280600581526020017f302e322e5f000000000000000000000000000000000000000000000000000000815250815600a165627a7a723058201d70ae8854fd995c9452bdbefdbfb97093daf9fe2a5221faee927f05df5b5a480029",
+  "sourceMap": "26:457:11:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "26:457:11:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;286:195;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;47:49;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;47:49:11;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;286:195;352:4;368:9;431:7;419:20;411:28;;473:1;466:4;:8;459:15;;286:195;;;;:::o;47:49::-;;;;;;;;;;;;;;;;;;;;:::o",
+  "source": "pragma solidity ^0.4.11;\n\ncontract Utils {\n    string constant public contract_version = \"0.2._\";\n    /// @notice Check if a contract exists\n    /// @param channel The address to check whether a contract is deployed or not\n    /// @return True if a contract exists, false otherwise\n    function contractExists(address channel) public constant returns (bool) {\n        uint size;\n\n        assembly {\n            size := extcodesize(channel)\n        }\n\n        return size > 0;\n    }\n}\n",
+  "sourcePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Utils.sol",
+  "ast": {
+    "absolutePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Utils.sol",
+    "exportedSymbols": {
+      "Utils": [
+        2569
+      ]
+    },
+    "id": 2570,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2549,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".11"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:11"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2569,
+        "linearizedBaseContracts": [
+          2569
+        ],
+        "name": "Utils",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 2552,
+            "name": "contract_version",
+            "nodeType": "VariableDeclaration",
+            "scope": 2569,
+            "src": "47:49:11",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string memory"
+            },
+            "typeName": {
+              "id": 2550,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "47:6:11",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string storage pointer"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "302e322e5f",
+              "id": 2551,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "89:7:11",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_15659a1deac07038fb4724a190681cb145f96bac41ebec388ffa99c543de412a",
+                "typeString": "literal_string \"0.2._\""
+              },
+              "value": "0.2._"
+            },
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 2567,
+              "nodeType": "Block",
+              "src": "358:123:11",
+              "statements": [
+                {
+                  "assignments": [],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 2560,
+                      "name": "size",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 2568,
+                      "src": "368:9:11",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 2559,
+                        "name": "uint",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "368:4:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 2561,
+                  "initialValue": null,
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "368:9:11"
+                },
+                {
+                  "externalReferences": [
+                    {
+                      "size": {
+                        "declaration": 2560,
+                        "isOffset": false,
+                        "isSlot": false,
+                        "src": "411:4:11",
+                        "valueSize": 1
+                      }
+                    },
+                    {
+                      "channel": {
+                        "declaration": 2554,
+                        "isOffset": false,
+                        "isSlot": false,
+                        "src": "431:7:11",
+                        "valueSize": 1
+                      }
+                    }
+                  ],
+                  "id": 2562,
+                  "nodeType": "InlineAssembly",
+                  "operations": "{\n    size := extcodesize(channel)\n}",
+                  "src": "388:77:11"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 2565,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "id": 2563,
+                      "name": "size",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2560,
+                      "src": "466:4:11",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": ">",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "hexValue": "30",
+                      "id": 2564,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "473:1:11",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "466:8:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 2558,
+                  "id": 2566,
+                  "nodeType": "Return",
+                  "src": "459:15:11"
+                }
+              ]
+            },
+            "documentation": "@notice Check if a contract exists\n @param channel The address to check whether a contract is deployed or not\n @return True if a contract exists, false otherwise",
+            "id": 2568,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "contractExists",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2555,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2554,
+                  "name": "channel",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2568,
+                  "src": "310:15:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2553,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "310:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "309:17:11"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 2558,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2557,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2568,
+                  "src": "352:4:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 2556,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "352:4:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "351:6:11"
+            },
+            "scope": 2569,
+            "src": "286:195:11",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 2570,
+        "src": "26:457:11"
+      }
+    ],
+    "src": "0:484:11"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Utils.sol",
+    "exportedSymbols": {
+      "Utils": [
+        2569
+      ]
+    },
+    "id": 2570,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2549,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".11"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:11"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2569,
+        "linearizedBaseContracts": [
+          2569
+        ],
+        "name": "Utils",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 2552,
+            "name": "contract_version",
+            "nodeType": "VariableDeclaration",
+            "scope": 2569,
+            "src": "47:49:11",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_memory",
+              "typeString": "string memory"
+            },
+            "typeName": {
+              "id": 2550,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "47:6:11",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string storage pointer"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "302e322e5f",
+              "id": 2551,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "89:7:11",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_15659a1deac07038fb4724a190681cb145f96bac41ebec388ffa99c543de412a",
+                "typeString": "literal_string \"0.2._\""
+              },
+              "value": "0.2._"
+            },
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 2567,
+              "nodeType": "Block",
+              "src": "358:123:11",
+              "statements": [
+                {
+                  "assignments": [],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 2560,
+                      "name": "size",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 2568,
+                      "src": "368:9:11",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 2559,
+                        "name": "uint",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "368:4:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 2561,
+                  "initialValue": null,
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "368:9:11"
+                },
+                {
+                  "externalReferences": [
+                    {
+                      "size": {
+                        "declaration": 2560,
+                        "isOffset": false,
+                        "isSlot": false,
+                        "src": "411:4:11",
+                        "valueSize": 1
+                      }
+                    },
+                    {
+                      "channel": {
+                        "declaration": 2554,
+                        "isOffset": false,
+                        "isSlot": false,
+                        "src": "431:7:11",
+                        "valueSize": 1
+                      }
+                    }
+                  ],
+                  "id": 2562,
+                  "nodeType": "InlineAssembly",
+                  "operations": "{\n    size := extcodesize(channel)\n}",
+                  "src": "388:77:11"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 2565,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "id": 2563,
+                      "name": "size",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2560,
+                      "src": "466:4:11",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": ">",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "hexValue": "30",
+                      "id": 2564,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "473:1:11",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "466:8:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 2558,
+                  "id": 2566,
+                  "nodeType": "Return",
+                  "src": "459:15:11"
+                }
+              ]
+            },
+            "documentation": "@notice Check if a contract exists\n @param channel The address to check whether a contract is deployed or not\n @return True if a contract exists, false otherwise",
+            "id": 2568,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "contractExists",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2555,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2554,
+                  "name": "channel",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2568,
+                  "src": "310:15:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2553,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "310:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "309:17:11"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 2558,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2557,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2568,
+                  "src": "352:4:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 2556,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "352:4:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "351:6:11"
+            },
+            "scope": 2569,
+            "src": "286:195:11",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 2570,
+        "src": "26:457:11"
+      }
+    ],
+    "src": "0:484:11"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.21+commit.dfe3193c.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-04-15T09:18:22.869Z"
+}

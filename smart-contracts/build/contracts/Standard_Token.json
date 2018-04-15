@@ -1,0 +1,97 @@
+{
+  "contractName": "Standard_Token",
+  "abi": [],
+  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a723058205f5356aea44170219bc6a598d9e194ef10992731106226bb57fc0dd9f2e6a4130029",
+  "deployedBytecode": "0x6060604052600080fd00a165627a7a723058205f5356aea44170219bc6a598d9e194ef10992731106226bb57fc0dd9f2e6a4130029",
+  "sourceMap": "287:82:9:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "287:82:9:-;;;;;",
+  "source": "/*\nThis has moved/changed to StandardToken.sol to conform to the Solidity naming standards.\nFor a contract that ONLY implements the standard functions, see StandardToken.sol.\nFor a contract to deploy in Mist with optional extra, see HumanStandardToken.sol.\n*/\n\npragma solidity ^0.4.11;\n\ncontract Standard_Token {\n  //this is just here to satisfy Truffle's complaining\n}\n",
+  "sourcePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Standard_Token.sol",
+  "ast": {
+    "absolutePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Standard_Token.sol",
+    "exportedSymbols": {
+      "Standard_Token": [
+        2478
+      ]
+    },
+    "id": 2479,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2477,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".11"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "261:24:9"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2478,
+        "linearizedBaseContracts": [
+          2478
+        ],
+        "name": "Standard_Token",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 2479,
+        "src": "287:82:9"
+      }
+    ],
+    "src": "261:109:9"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Standard_Token.sol",
+    "exportedSymbols": {
+      "Standard_Token": [
+        2478
+      ]
+    },
+    "id": 2479,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2477,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".11"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "261:24:9"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2478,
+        "linearizedBaseContracts": [
+          2478
+        ],
+        "name": "Standard_Token",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 2479,
+        "src": "287:82:9"
+      }
+    ],
+    "src": "261:109:9"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.21+commit.dfe3193c.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-04-14T23:16:59.988Z"
+}
