@@ -13,9 +13,9 @@ var web3 = require('Web3');
 
 module.exports = function(deployer) {
 	console.log("Deploying Standard Token");
-    var acct1 = "0xa3f014d83a74b28315409bb5fbfbb5264f9a5f4a";
-    var acct2 = "0x8de2b400973114e6346caf278e7832fb4a99c338";
-   
+    var acct1 = "0x7e24f888e631f0ff32f030a361a3bb0e0026a216";
+    var acct2 = "0xe415cae97729d38d2156b2b3d628e0f8f61f8aac";
+    var acct3 = "0xe9a476b0dfb0dfb93fc6bfed1a97b34689e4c032";
   	deployer.deploy(StandardToken).then(function(){
 
       deployer.deploy(HumanStandardToken, 100000000,"GoNetwork",1,"$GOT").then(function(){
@@ -70,6 +70,11 @@ module.exports = function(deployer) {
                 }).catch(function (e) {
                   console.log("ERROR Creating New Channel:"+e.message);
                 })//New Channel
+
+                instance.newChannel(acct3, 150, {from:acct1}).then(function (result) {
+                }).catch(function(err) {
+                  console.log("ERROR Creating New Channel with Acct3:"+ e.message);
+                })
 
                 })
 
