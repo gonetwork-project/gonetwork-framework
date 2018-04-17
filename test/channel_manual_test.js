@@ -181,6 +181,88 @@ engine2.onMessage(revealSecretTarget);
 
 secretToProof = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
  engine.onMessage(secretToProof);
+
+
+
+//SEND new lock half open
+sendQueue = [];
+
+secretHashPair = message.GenerateRandomSecretHashPair();
+
+engine2.sendMediatedTransfer(
+  util.toBuffer(acct1),
+  util.toBuffer(acct1),
+  new util.BN(3),
+  currentBlock.add(new util.BN(stateChannel.channel.REVEAL_TIMEOUT)).add(new util.BN(1)),
+  secretHashPair.secret,
+  secretHashPair.hash,
+  );
+
+
+mediatedTransfer = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
+
+
+engine.onMessage(mediatedTransfer);
+
+
+requestSecret = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length - 1]);
+engine2.onMessage(requestSecret);
+revealSecretInitiator = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
+
+engine.onMessage(revealSecretInitiator);
+
+sendQueue = [];
+
+secretHashPair = message.GenerateRandomSecretHashPair();
+
+engine2.sendMediatedTransfer(
+  util.toBuffer(acct1),
+  util.toBuffer(acct1),
+  new util.BN(2),
+  currentBlock.add(new util.BN(stateChannel.channel.REVEAL_TIMEOUT)).add(new util.BN(1)),
+  secretHashPair.secret,
+  secretHashPair.hash,
+  );
+
+
+mediatedTransfer = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
+engine.onMessage(mediatedTransfer);
+
+
+requestSecret = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length - 1]);
+engine2.onMessage(requestSecret);
+revealSecretInitiator = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
+
+engine.onMessage(revealSecretInitiator);
+
+sendQueue = [];
+
+secretHashPair = message.GenerateRandomSecretHashPair();
+
+engine2.sendMediatedTransfer(
+  util.toBuffer(acct1),
+  util.toBuffer(acct1),
+  new util.BN(2),
+  currentBlock.add(new util.BN(stateChannel.channel.REVEAL_TIMEOUT)).add(new util.BN(1)),
+  secretHashPair.secret,
+  secretHashPair.hash,
+  );
+
+
+mediatedTransfer = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
+engine.onMessage(mediatedTransfer);
+
+
+requestSecret = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length - 1]);
+engine2.onMessage(requestSecret);
+revealSecretInitiator = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQueue.length -1]);
+
+engine.onMessage(revealSecretInitiator);
+
+
+
+
+
 engine2.closeChannel(channelAddress);
 
 engine.onClosed(channelAddress,16);
