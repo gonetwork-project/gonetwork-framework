@@ -122,7 +122,7 @@ contract NettingChannelContract {
     /// @param secret The secret to unlock the locked transfer.
     function withdraw(bytes locked_encoded, bytes merkle_proof, bytes32 secret) public {
         // throws if sender is not a participant
-        data.withdraw(locked_encoded, merkle_proof, secret);
+        data.withdrawTest(locked_encoded, merkle_proof, secret);
         ChannelSecretRevealed(secret, msg.sender);
     }
 
@@ -165,7 +165,58 @@ contract NettingChannelContract {
         return data.closing_address;
     }
 
+    function participantData() view public returns(address,uint256,bytes32){
+        return data.participantData();
+    }
+    
+    function decodeLock(bytes lock)  public constant returns(uint256  ,uint256, bytes32 ){
+        require(lock.length == 96);
+        uint256 amount;
+        uint256 expiration;
+        bytes32 hashlock;
+        // Lock format:
+        // [0:32] amount
+        // [32:64] expirtation
+        // [64:96] hashlock
+
+        assembly {
+            amount := mload(add(lock, 32))
+            expiration := mload(add(lock, 64))
+            hashlock := mload(add(lock, 96))
+        }
+        return (amount,expiration,hashlock);
+    }
+
+    function computeMerkleRoot(bytes lock, bytes merkle_proof) pure public returns(bytes32){
+        require(merkle_proof.length % 32 == 0);
+
+        uint i;
+        bytes32 h;
+        bytes32 el;
+
+        h = keccak256(lock);
+        for (i = 32; i <= merkle_proof.length; i += 32) {
+            assembly {
+                el := mload(add(merkle_proof, i))
+            }
+
+            if (h < el) {
+                h = keccak256(h, el);
+            } else {
+                h = keccak256(el, h);
+            }
+        }
+
+        return h;
+    }
+
+    function computeLockHash(bytes lock) pure public  returns(bytes32){
+        return keccak256(lock);
+    }
+
     function () payable public { revert(); }
+
+
 
     // function() payable {}
 }

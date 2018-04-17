@@ -7,7 +7,12 @@ library NettingChannelLibrary {
 
     event Info(string msg);
     event InfoAddress(address addy);
-
+    event UpdatedTranser(address a, bytes32 locksRoot);
+    event DecodeLock(uint256 amount, uint256 expiration, bytes32 hashlock);
+    event HashLockSecret(bytes32 hashlock, bytes32 secret, bytes32 processsed);
+    event ExpirationBlockNumber(uint256 expiration, uint256 blockNumber);
+    event ComputeMerkleRoot(bytes locked_encoded, bytes merkle_proof, bytes32 h, bytes32 locksroot);
+    
     struct Participant
     {
         address node_address;
@@ -143,6 +148,7 @@ library NettingChannelLibrary {
             counterparty.nonce = uint256(nonce);
             counterparty.locksroot = locksroot;
             counterparty.transferred_amount = transferred_amount;
+            emit UpdatedTranser(transfer_address, locksroot);
         }
     }
 
@@ -190,6 +196,7 @@ library NettingChannelLibrary {
         self.participants[closer_index].nonce = nonce;
         self.participants[closer_index].locksroot = locksroot;
         self.participants[closer_index].transferred_amount = transferred_amount;
+        emit UpdatedTranser(transfer_address, locksroot);
     }
 
     function recoverAddressFromSignature(
@@ -235,7 +242,7 @@ library NettingChannelLibrary {
     {
         uint amount;
         uint8 index;
-        uint64 expiration;
+        uint256 expiration;
         bytes32 h;
         bytes32 hashlock;
 
@@ -278,6 +285,60 @@ library NettingChannelLibrary {
         counterparty.transferred_amount += amount;
     }
 
+     function withdrawTest(
+        Data storage self,
+        bytes locked_encoded,
+        bytes merkle_proof,
+        bytes32 secret 
+    )
+        isClosed(self)
+        public
+    {
+        uint amount;
+        uint8 index;
+        uint256 expiration;
+        bytes32 h;
+        bytes32 hashlock;
+
+        // Check if msg.sender is a participant and select the partner (for
+        // third party unlock see #541)
+        index = 1 - index_or_throw(self, msg.sender);
+        Participant storage counterparty = self.participants[index];
+
+        // An empty locksroot means there are no pending locks
+        require(counterparty.locksroot != 0);
+
+        (expiration, amount, hashlock) = decodeLock(locked_encoded);
+        emit DecodeLock(amount,expiration,hashlock);
+        // A lock can be withdrawn only once per participant
+        //require(!counterparty.withdrawn_locks[hashlock]);
+
+        counterparty.withdrawn_locks[hashlock] = true;
+
+        // The lock must not have expired, it does not matter how far in the
+        // future it would have expired
+        emit ExpirationBlockNumber(expiration,block.number);
+
+        emit HashLockSecret(hashlock,secret,keccak256(secret));
+        
+        h = computeMerkleRoot(locked_encoded, merkle_proof);
+        emit ComputeMerkleRoot(locked_encoded,merkle_proof,h,counterparty.locksroot);
+        //require(counterparty.locksroot == h);
+
+        // This implementation allows for each transfer to be set only once, so
+        // it's safe to update the transferred_amount in place.
+        //
+        // Once third parties are allowed to update the counter party transfer
+        // (#293, #182) the locksroot may change, if the locksroot change the
+        // transferred_amount must be reset and locks must be re-withdrawn, so
+        // this is also safe.
+        //
+        // This may be problematic if an update changes the transferred_amount
+        // but not the locksroot, since the locks don't need to be
+        // re-withdrawn, the difference in the transferred_amount must be
+        // accounted for.
+        counterparty.transferred_amount += amount;
+    }
     /// @notice Settles the balance between the two parties
     /// @dev Settles the balances of the two parties fo the channel
     /// @return The participants with netted balances
@@ -392,7 +453,8 @@ library NettingChannelLibrary {
 
     function decodeLock(bytes lock)
         pure
-        internal
+        //internal
+        public
         returns (uint256 expiration, uint256 amount, bytes32 hashlock)
     {
         require(lock.length == 96);
@@ -407,6 +469,7 @@ library NettingChannelLibrary {
             expiration := mload(add(lock, 64))
             hashlock := mload(add(lock, 96))
         }
+        //emit DecodeLock(amount,expiration,hashlock);
     }
 
     function signatureSplit(bytes signature)
@@ -431,9 +494,19 @@ library NettingChannelLibrary {
         require(v == 27 || v == 28);
     }
 
+    function participantData(Data storage self) view public returns(address,uint256,bytes32){
+        uint8 index = 1 - index_or_throw(self, msg.sender);
+        Participant storage counterparty = self.participants[index];
+        address a = counterparty.node_address;
+        uint256 b = counterparty.transferred_amount;
+        bytes32 c = counterparty.locksroot;
+        return (a,b,c); 
+    }
+
     function computeMerkleRoot(bytes lock, bytes merkle_proof)
         pure
-        internal
+        //internal
+        public
         returns (bytes32)
     {
         require(merkle_proof.length % 32 == 0);
@@ -457,6 +530,8 @@ library NettingChannelLibrary {
 
         return h;
     }
+
+
 
     function min(uint a, uint b) pure internal returns (uint)
     {
