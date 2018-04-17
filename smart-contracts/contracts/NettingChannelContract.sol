@@ -77,7 +77,7 @@ contract NettingChannelContract {
 
     /// @notice Close the channel. Can only be called by a participant in the channel.
     function close(
-        uint64 nonce,
+        uint256 nonce,
         uint256 transferred_amount,
         bytes32 locksroot,
         bytes32 extra_hash,
@@ -98,7 +98,7 @@ contract NettingChannelContract {
     /// @notice Dispute the state after closing, called by the counterparty (the
     ///         participant who did not close the channel).
     function updateTransfer(
-        uint64 nonce,
+        uint256 nonce,
         uint256 transferred_amount,
         bytes32 locksroot,
         bytes32 extra_hash,

@@ -5,6 +5,9 @@ import "./Token.sol";
 library NettingChannelLibrary {
     string constant public contract_version = "0.2._";
 
+    event Info(string msg);
+    event InfoAddress(address addy);
+
     struct Participant
     {
         address node_address;
@@ -128,6 +131,8 @@ library NettingChannelLibrary {
                 extra_hash,
                 signature 
             );
+            //emit Info("WE CALCULATED TRANSFER ADDRESS");
+            //emit InfoAddress(transfer_address);
 
             counterparty_index = index_or_throw(self, transfer_address);
             require(closer_index != counterparty_index);
@@ -144,7 +149,7 @@ library NettingChannelLibrary {
     /// @notice Updates counter party transfer after closing.
     function updateTransfer(
         Data storage self,
-        uint64 nonce,
+        uint256 nonce,
         uint256 transferred_amount,
         bytes32 locksroot,
         bytes32 extra_hash,
@@ -201,12 +206,12 @@ library NettingChannelLibrary {
         bytes32 signed_hash;
 
         require(signature.length == 65);
-
+        
         signed_hash = keccak256(
             nonce,
             transferred_amount,
-            locksroot,
             this,
+            locksroot,
             extra_hash
         );
 
