@@ -393,7 +393,7 @@ library NettingChannelLibrary {
     function decodeLock(bytes lock)
         pure
         internal
-        returns (uint64 expiration, uint256 amount, bytes32 hashlock)
+        returns (uint256 expiration, uint256 amount, bytes32 hashlock)
     {
         require(lock.length == 96);
 
@@ -401,6 +401,7 @@ library NettingChannelLibrary {
         // [0:32] amount
         // [32:64] expirtation
         // [64:96] hashlock
+
         assembly {
             amount := mload(add(lock, 32))
             expiration := mload(add(lock, 64))
