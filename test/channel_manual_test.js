@@ -307,8 +307,31 @@ var proof2 = blockchainQueue[2][1];
 tx = bc.updateTransfer(11,1,util.addHexPrefix(channelAddress.toString("hex")),proof2);
 console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
-tx = bc.settle(12,1,"0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
-console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
+var lockProofs = blockchainQueue[3][1];
+
+var k = 0;
+for(var i =0; i < blockchainQueue[3][1].length; i++){
+  var withdrawProof = blockchainQueue[3][1][i];
+  console.log(withdrawProof[0]);
+  
+  var lock = new stateChannel.message.Lock(withdrawProof[0])
+  console.log(lock.getMessageHash());
+
+  if(stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, lock.getMessageHash()) === true){
+    k++;  
+    console.log("PROCESSING LOCK:"+k);
+    // withdrawProof array index (Lock object, merkleProof: Bytes<32>[], Bytes<96> encodedLock)
+    bc.withdrawLock(12+k, 1, channelAddress, withdrawProof[2],withdrawProof[1],util.toBuffer(withdrawProof[0].secret));
+  }else{
+    console.log("ERROR PROCESSING LOCK:"+k);
+  }
+}
+//(nonce,gasPrice,openLock, merkleProof,secret){
+//tx = bc.withdrawLock(12,1,channelAddress, lockProofs[0][0],lockProofs[0][1]);
+
+
+// tx = bc.settle(15,1,"0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
+// console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
 
 
