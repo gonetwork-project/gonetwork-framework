@@ -133,7 +133,17 @@ class BlockchainService{
 			null,
 			[proof.nonce, proof.transferredAmount, proof.locksRoot, proof.messageHash,this.solidityPackSignature(proof.signature)]);
 	}
-	
+
+	withdrawLock(nonce,gasPrice,openLock, merkleProof,secret){
+		return this._create(NettingChannelContractAbi.updateTransfer,
+			nonce,
+			gasPrice,
+			2400000,//compiled gas limit * 20% 
+			nettingChannelAddress,
+			null,
+			[openLock.encode(), merkleProof,secret]);	
+	}
+
 	settle(nonce,gasPrice,nettingChannelAddress){
 		return this._create(NettingChannelContractAbi.settle,
 			nonce,
