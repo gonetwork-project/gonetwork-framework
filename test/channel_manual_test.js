@@ -313,15 +313,18 @@ var k = 0;
 for(var i =0; i < blockchainQueue[3][1].length; i++){
   var withdrawProof = blockchainQueue[3][1][i];
   console.log(withdrawProof[0]);
-  
-  var lock = new stateChannel.message.Lock(withdrawProof[0])
-  console.log(lock.getMessageHash());
-
-  if(stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, lock.getMessageHash()) === true){
+  var encodedOpenLock = withdrawProof[2];
+  var encodedLock = encodedOpenLock.slice(0,96);
+  var secret = encodedOpenLock.slice(96,128);
+ 
+  if(util.sha3(secret).compare(withdrawProof[0].hashLock)===0){
+    console.log("SECRET MATACHES HASHLOCK:"+k);
+  };
+  if(stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, util.sha3(encodedLock)) === true){
     k++;  
     console.log("PROCESSING LOCK:"+k);
     // withdrawProof array index (Lock object, merkleProof: Bytes<32>[], Bytes<96> encodedLock)
-    bc.withdrawLock(12+k, 1, channelAddress, withdrawProof[2],withdrawProof[1],util.toBuffer(withdrawProof[0].secret));
+    bc.withdrawLock(12+k, 1, channelAddress, encodedLock,withdrawProof[1],secret);
   }else{
     console.log("ERROR PROCESSING LOCK:"+k);
   }
