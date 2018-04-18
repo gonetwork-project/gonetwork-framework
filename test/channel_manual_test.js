@@ -69,7 +69,7 @@ function createEngine(address,privateKey,blockchainService){
 
 var blockchainQueue = [];
 var sendQueue = [];
-var currentBlock = new util.BN(0);
+var currentBlock = new util.BN(55);
 var channelAddress = util.toBuffer("0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
 var engine = createEngine(util.toBuffer(acct1),pk1);
 var engine2 = createEngine(util.toBuffer(acct4),pk4);
@@ -260,9 +260,6 @@ revealSecretInitiator = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQue
 engine.onMessage(revealSecretInitiator);
 
 
-
-
-
 engine2.closeChannel(channelAddress);
 
 engine.onClosed(channelAddress,16);
@@ -290,52 +287,55 @@ console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\
 
 var proof = blockchainQueue[0][1];
 
-console.log("MESSAGE HASH:"+proof.messageHash.toString('hex'));
+//console.log("MESSAGE HASH:"+proof.messageHash.toString('hex'));
 
 //TESTED ONLY acct4 can submit proof as its signed by acct1, tested, and self signed proofs are not accepted :)
 
 tx = bc4.close(0,1,"0x8bf6a4702d37b7055bc5495ac302fe77dae5243b",proof);
 console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
-//RUN IN TESTRPC
 
-console.log("for(var i =0; i < 150; i++){");
-console.log("web3.eth.sendTransaction({from:web3.eth.accounts[1],to:web3.eth.accounts[2],value:10})");
-console.log("}");
 
 var proof2 = blockchainQueue[2][1];
 tx = bc.updateTransfer(11,1,util.addHexPrefix(channelAddress.toString("hex")),proof2);
 console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
-var lockProofs = blockchainQueue[3][1];
 
 var k = 0;
 for(var i =0; i < blockchainQueue[3][1].length; i++){
   var withdrawProof = blockchainQueue[3][1][i];
-  console.log(withdrawProof[0]);
-  var encodedOpenLock = withdrawProof[2];
-  var encodedLock = encodedOpenLock.slice(0,96);
-  var secret = encodedOpenLock.slice(96,128);
- 
-  if(util.sha3(secret).compare(withdrawProof[0].hashLock)===0){
-    console.log("SECRET MATACHES HASHLOCK:"+k);
-  };
-  if(stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, util.sha3(encodedLock)) === true){
+  var encodedLock = withdrawProof[2].slice(0,96);
+  var secret =withdrawProof[2].slice(96,128);
+  
+  if(util.sha3(secret).compare(withdrawProof[0].hashLock)===0 && stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, util.sha3(encodedLock)) === true){
     k++;  
-    console.log("PROCESSING LOCK:"+k);
+    //console.info("lock #"+k+" processing encoded lock:" +encodedLock.toString('hex'));
     // withdrawProof array index (Lock object, merkleProof: Bytes<32>[], Bytes<96> encodedLock)
-    bc.withdrawLock(12+k, 1, channelAddress, encodedLock,withdrawProof[1],secret);
+    tx = bc.withdrawLock(11+k, 1, channelAddress, withdrawProof[2],withdrawProof[1],secret);
+    console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
+
   }else{
-    console.log("ERROR PROCESSING LOCK:"+k);
+    console.error("ERROR PROCESSING LOCK:"+k);
   }
+
+   
 }
-//(nonce,gasPrice,openLock, merkleProof,secret){
-//tx = bc.withdrawLock(12,1,channelAddress, lockProofs[0][0],lockProofs[0][1]);
+
+//RUN IN TESTRPC to move blocks ahead
+
+console.log("for(var i =0; i < 150; i++){");
+console.log("web3.eth.sendTransaction({from:web3.eth.accounts[1],to:web3.eth.accounts[2],value:10})");
+console.log("}");
+
+tx = bc.settle(15,1,"0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
+console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
+
+const NettingChannelContract = require('../smart-contracts/build/contracts/NettingChannelContract.json');
+console.info(JSON.stringify(NettingChannelContract.abi));
 
 
-// tx = bc.settle(15,1,"0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
-// console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
 
+console.info("Proof2 expected locksroot:"+proof2.locksRoot.toString('hex'))
 
 debugger;

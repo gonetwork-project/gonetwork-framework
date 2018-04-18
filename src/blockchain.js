@@ -5,6 +5,7 @@ const util = require("ethereumjs-util");
 const ChannelManagerContract = require("../smart-contracts/build/contracts/ChannelManagerContract.json");
 const NettingChannelContract = require('../smart-contracts/build/contracts/NettingChannelContract.json');
 const HumanStandardTokenContract = require("../smart-contracts/build/contracts/HumanStandardToken.json");
+const DEBUG = false;
 
 const ChannelManagerContractAbi = ChannelManagerContract.abi.reduce(function(r, i){
 	r[i.name] = i;
@@ -22,10 +23,14 @@ const HumanStandardTokenAbi = HumanStandardTokenContract.abi.reduce(function(r, 
 }, {});
 
 
-
 function decode(input,data){
 	return abi.rawDecode(input,data);
 }
+
+function decodeOpenLock(encodedOpenLock){
+	return encodedOpenLock.slice(0,96);
+}
+
 class BlockchainService{
 
 	constructor(chainID,signatureCallback){
@@ -33,8 +38,6 @@ class BlockchainService{
 		//the signature callback receives the sign function, it can handle what to do before
 		//and after
 		this.signatureCallback = signatureCallback;
-		this.gasPrice = '0x09184e72a000';
-		this.gasLimit = '0x2710';
 	}
 
 
@@ -85,8 +88,10 @@ class BlockchainService{
 		});
 		var data = util.toBuffer("0x"+methodSignature.toString('hex') + 
 			paramsEncoded.toString('hex'));
-
-		console.log("DATA:"+data.toString('hex'));
+		if(DEBUG){
+			console.info(functionRef.name + " encoded data:"+data.toString('hex'));
+		}
+		
 		var txParams = {
 		  nonce: nonce,
 		  gasPrice: gasPrice, 
@@ -108,12 +113,6 @@ class BlockchainService{
 		return tx;	
 	}
 
-
-	// uint256 nonce,
- //        uint256 transferred_amount,
- //        bytes32 locksroot,
- //        bytes32 extra_hash,
- //        bytes signature
 	close(nonce,gasPrice,nettingChannelAddress,proof){
 
 		return this._create(NettingChannelContractAbi.close,
@@ -134,14 +133,16 @@ class BlockchainService{
 			[proof.nonce, proof.transferredAmount, proof.locksRoot, proof.messageHash,this.solidityPackSignature(proof.signature)]);
 	}
 
-	withdrawLock(nonce,gasPrice,openLock, merkleProof,secret){
-		return this._create(NettingChannelContractAbi.updateTransfer,
+	withdrawLock(nonce,gasPrice,nettingChannelAddress, encodedOpenLock, merkleProof,secret){
+		var encodedLock = decodeOpenLock(encodedOpenLock);
+		var merkleProofBytes = util.toBuffer("0x"+merkleProof.reduce(function(sum,proof){ sum+=proof.toString('hex'); return sum;},""));
+		return this._create(NettingChannelContractAbi.withdraw,
 			nonce,
 			gasPrice,
 			2400000,//compiled gas limit * 20% 
 			nettingChannelAddress,
 			null,
-			[openLock.encode(), merkleProof,secret]);	
+			[encodedLock, merkleProofBytes,secret]);	
 	}
 
 	settle(nonce,gasPrice,nettingChannelAddress){
@@ -154,10 +155,6 @@ class BlockchainService{
 			[]);
 	}
 
-
-
-	
-
 	solidityPackSignature(signature){
 		var packed =  abi.solidityPack(['bytes32','bytes32','uint8'], [signature.r, signature.s, signature.v]);
 
@@ -168,11 +165,6 @@ class BlockchainService{
 		};
 		return packed;
 	}
-
-	solidityPackLocks(){
-
-	}
-
 
 	createAndSignTransaction(nonce,gasPrice,gasLimit,to,value,data){
 
@@ -197,11 +189,6 @@ class BlockchainService{
 
 		//keccak256(tx.serialize()) will get you the txHash
 		return tx;	
-	}
-
-	//stateChannel.message.Proof
-	mapProofToSolidity(proof){
-
 	}
 
 	
