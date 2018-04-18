@@ -10,6 +10,9 @@ import "./ChannelManagerLibrary.sol";
 contract ChannelManagerContract is Utils {
     string constant public contract_version = "0.2._";
     uint256 constant public FEE = 50;
+
+    address public owner;
+
     using ChannelManagerLibrary for ChannelManagerLibrary.Data;
     ChannelManagerLibrary.Data data;
 
@@ -25,9 +28,39 @@ contract ChannelManagerContract is Utils {
         address partner
     );
 
+    event FeesCollected(
+        uint256 block,
+        uint256 balance
+    );
+
+    event OwnershipTransferred(
+        address indexed previousOwner, 
+        address indexed newOwner
+    );
+    
+    //OpenZeppelin implementation 
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0));
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+
     function ChannelManagerContract(address gotoken, address token_address) public {
+        owner = msg.sender;
         data.goToken = Token(gotoken);
         data.token = Token(token_address);
+    }
+
+    function collectFees() public {
+        uint256 balance = data.goToken.balanceOf(this);
+        bool success = data.goToken.transfer(owner,balance);
+        require(success == true);
+        emit FeesCollected(block.number,balance);
     }
 
     /// @notice Create a new payment channel between two parties
