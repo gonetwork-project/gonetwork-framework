@@ -1,3 +1,9 @@
+/*
+* @Author: amitshah
+* @Date:   2018-04-17 22:26:32
+* @Last Modified by:   amitshah
+* @Last Modified time: 2018-04-18 01:12:15
+*/
 const stateChannel= require('state-channel');
 const events = require('events');
 const util = require("ethereumjs-util");
