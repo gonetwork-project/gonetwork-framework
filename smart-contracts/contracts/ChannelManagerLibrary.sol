@@ -5,7 +5,7 @@ import "./NettingChannelContract.sol";
 
 library ChannelManagerLibrary {
     string constant public contract_version = "0.2._";
-
+    
     struct Data {
         Token goToken;
         Token token;
@@ -25,6 +25,8 @@ library ChannelManagerLibrary {
         public
         returns (address)
     {
+        
+
         address[] storage caller_channels = self.nodeaddress_to_channeladdresses[msg.sender];
         address[] storage partner_channels = self.nodeaddress_to_channeladdresses[partner];
 
@@ -35,7 +37,8 @@ library ChannelManagerLibrary {
             self.token,
             msg.sender,
             partner,
-            settle_timeout
+            settle_timeout,
+            self.goToken
         );
 
         if (channel_pos != 0) {
@@ -120,4 +123,6 @@ library ChannelManagerLibrary {
             return keccak256(address_two, address_one);
         }
     }
+
+
 }

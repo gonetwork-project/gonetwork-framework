@@ -9,7 +9,7 @@ import "./ChannelManagerLibrary.sol";
 // only as a proxy/state container.
 contract ChannelManagerContract is Utils {
     string constant public contract_version = "0.2._";
-    uint256 constant public FEE = 50;
+    uint256 constant public fee = 50;
 
     address public owner;
 
@@ -71,18 +71,18 @@ contract ChannelManagerContract is Utils {
         public
         returns (address)
     {
+        //the user has to set allowance for our channel manager.  
+        //maybe we can create a delegateCall extension 
+        require(data.goToken.allowance(msg.sender,this) >= fee );
         
-        require(data.goToken.allowance(msg.sender,this) >= FEE);
-        bool success = data.goToken.transferFrom(msg.sender, this, FEE);
-        require(success == true);            
-
         address old_channel = getChannelWith(partner);
         if (old_channel != 0) {
             emit ChannelDeleted(msg.sender, partner);
         }
 
         address new_channel = data.newChannel(partner, settle_timeout);
-            
+        bool success = data.goToken.transferFrom(msg.sender, new_channel, fee );
+        require(success == true);    
         emit ChannelNew(new_channel, msg.sender, partner, settle_timeout);
         return new_channel;
         
