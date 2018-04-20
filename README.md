@@ -82,3 +82,28 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * Hat tip to anyone who's code was used
 * Inspiration
 * etc
+
+## Docs
+
+To generate the documentation it is best to start a python virtual environment.
+The following was used to generate initial docs.
+See http://docs.readthedocs.io/en/latest/getting_started.html#in-rst
+
+```
+$ pip --version
+pip 9.0.1 from /usr/local/lib/python2.7/site-packages (python 2.7)
+$ virtualenv --version
+15.1.0
+$ virtualenv .blockchain-service
+$ source ./.blockchain-service/bin/activate
+$(.blockchain-service) pip install sphinx sphinx-autobuild
+$(.blockchain-service) sphinx-quickstart
+```
+
+JSDoc (http://usejsdoc.org/) tags in the JavaScript source files are processed into reStructuredText (http://docutils.sourceforge.net/rst.html) to be included in the sphinx documentation (e.g. `make html`).  This is done using jsdoc and the template provided by the npm module jsdoc-sphinx.
+
+```
+$ jsdoc -t node_modules/jsdoc-sphinx/template -d jsdocs src/blockchain.js
+$ cd ./docs
+$ make html
+```
