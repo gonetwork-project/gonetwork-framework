@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:10
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-18 01:12:06
+* @Last Modified time: 2018-04-20 17:02:58
 */
 const EthereumTx = require("ethereumjs-tx");
 const abi = require("ethereumjs-abi");
@@ -11,7 +11,7 @@ const util = require("ethereumjs-util");
 const ChannelManagerContract = require("../smart-contracts/build/contracts/ChannelManagerContract.json");
 const NettingChannelContract = require('../smart-contracts/build/contracts/NettingChannelContract.json');
 const HumanStandardTokenContract = require("../smart-contracts/build/contracts/HumanStandardToken.json");
-const DEBUG = false;
+const DEBUG = true;
 
 const ChannelManagerContractAbi = ChannelManagerContract.abi.reduce(function(r, i){
 	r[i.name] = i;
@@ -37,14 +37,85 @@ function decodeOpenLock(encodedOpenLock){
 	return encodedOpenLock.slice(0,96);
 }
 
+/* This service generates signed raw data that can be sent to any geth gateway. */
 class BlockchainService{
 
 	constructor(chainID,signatureCallback){
 		this.chainID = chainID;
 		//the signature callback receives the sign function, it can handle what to do before
-		//and after
 		this.signatureCallback = signatureCallback;
 	}
+
+	
+	//These are the call functions
+	//we coulda abstract this more, but hey  
+	getTransactionCount(ethAddress){
+		return {"jsonrpc":"2.0","method":"eth_getTransactionCount","params":[util.addHexPrefix(ethAddress.toString('hex')),"latest"],"id":1};
+	}
+
+	getBalance(address){
+		return {"jsonrpc":"2.0","method":"eth_getBalance","params":[util.addHexPrefix(ethAddress.toString('hex')),"latest"],"id":1};
+	}
+
+	getTokenBalance(tokenAddress,ethAddress){
+		return this.ethCall([this._create(HumanStandardToken.abi.nettingContractsByAddress,
+			null,
+			null,
+			null, 
+			tokenAddress,
+			null,
+			[ethAddress],
+			true)]);
+	}
+
+
+	getAddressAndBalance(channelAddress){
+		return this.ethCall([this._create(NettingChannelContractAbi.addressAndBalance,
+			null,
+			null,
+			null,
+			channelAddress,
+			null,
+			[],
+			true)]);
+	}
+
+	getNettingContractsByAddress(channelManagerAddress,nodeAddress){
+		return this.ethCall([this._create(ChannelManagerContractAbi.nettingContractsByAddress,
+			null,
+			null,
+			null,//compiled gas limit * 20% 
+			channelManagerAddress,
+			null,
+			[nodeAddress],
+			true)]);//this is a call, we dont need a sig
+		//curl -X POST --data '{"jsonrpc":"2.0","method":"eth_call","params":[{see above}],"id":1}'
+
+	
+	}
+
+
+
+	//these are transactions i.e. require signature callback
+	transferToken(nonce,gasPrice,tokenAddress,to,amount){
+		return this._create(HumanStandardTokenAbi.transfer,
+			nonce,
+			gasPrice,
+			220000,//compiled gas limit * 20% 
+			tokenAddress,
+			null,
+			[to,amount]);
+	}
+
+	approve(nonce,gasPrice,tokenAddress,spender,amount){
+		return this._create(HumanStandardTokenAbi.approve,
+			nonce,
+			gasPrice,
+			220000,//compiled gas limit * 20% 
+			tokenAddress,
+			null,
+			[spender,amount]);
+	}	
 
 
 	newChannel(nonce,gasPrice,channelAddress,partnerAddress,timeout){
@@ -58,15 +129,7 @@ class BlockchainService{
 			[partnerAddress,timeout]);
 		}	
 
-	approve(nonce,gasPrice,tokenAddress,spender,amount){
-		return this._create(HumanStandardTokenAbi.approve,
-			nonce,
-			gasPrice,
-			220000,//compiled gas limit * 20% 
-			tokenAddress,
-			null,
-			[spender,amount]);
-	}	
+	
 	
 
 	deposit(nonce,gasPrice,nettingChannelAddress,amount){
@@ -77,46 +140,6 @@ class BlockchainService{
 			nettingChannelAddress,
 			null,
 			[amount]);
-	}
-
-	_create(functionRef,nonce,gasPrice,gasLimit,to,value,params){
-		var inputs = functionRef.inputs.map(function(i) {
-			return i.type;
-		});
-		
-		var methodSignature = abi.methodID(functionRef.name, inputs );
-		var paramsEncoded = "";
-		if(params.length > 0){
-		 	paramsEncoded= abi.rawEncode(inputs, params);
-		}
-		var inputs = functionRef.inputs.map(function(i) {
-			return i.type;
-		});
-		var data = util.toBuffer("0x"+methodSignature.toString('hex') + 
-			paramsEncoded.toString('hex'));
-		if(DEBUG){
-			console.info(functionRef.name + " encoded data:"+data.toString('hex'));
-		}
-		
-		var txParams = {
-		  nonce: nonce,
-		  gasPrice: gasPrice, 
-		  gasLimit: gasLimit,
-		 
-		  data: data,
-		  chainId: this.chainId
-		}
-		if(to){
-			txParams.to = to;
-		}
-		if(value){
-			txParams.value = value;
-		}
-		var tx = new EthereumTx(txParams)
-		this.signatureCallback(function(privateKey){
-			tx.sign(privateKey)
-		});
-		return tx;	
 	}
 
 	close(nonce,gasPrice,nettingChannelAddress,proof){
@@ -163,41 +186,86 @@ class BlockchainService{
 
 	solidityPackSignature(signature){
 		var packed =  abi.solidityPack(['bytes32','bytes32','uint8'], [signature.r, signature.s, signature.v]);
-
-		console.log("PACK SIGNATURE:"+packed.toString('hex'));
-		debugger;
+		if(DEBUG){
+			console.log("PACK SIGNATURE:"+packed.toString('hex'));
+		}
 		if(packed.length !== 65){
 			throw new Error("Incompatible Signature!");
 		};
 		return packed;
 	}
 
-	createAndSignTransaction(nonce,gasPrice,gasLimit,to,value,data){
 
-		const txParams = {
+	_create(functionRef,nonce,gasPrice,gasLimit,to,value,params,noSignature){
+		var inputs = functionRef.inputs.map(function(i) {
+			return i.type;
+		});
+		
+		var methodSignature = abi.methodID(functionRef.name, inputs );
+		var paramsEncoded = "";
+		if(params.length > 0){
+		 	paramsEncoded= abi.rawEncode(inputs, params);
+		}
+		var inputs = functionRef.inputs.map(function(i) {
+			return i.type;
+		});
+		var data = util.toBuffer("0x"+methodSignature.toString('hex') + 
+			paramsEncoded.toString('hex'));
+		if(DEBUG){
+			console.info(functionRef.name + " encoded data:"+data.toString('hex'));
+		}
+		
+		var txParams = {
 		  nonce: nonce,
 		  gasPrice: gasPrice, 
 		  gasLimit: gasLimit,
-		  to: to, 
-		  value: value, 
+		 
 		  data: data,
-		  //gas:22000000,
-		  // EIP 155 chainId - mainnet: 1, ropsten: 3
-		  chainId: 0
+		  chainId: this.chainId
 		}
-
-		console.log(util.addHexPrefix(data));
+		if(to){
+			txParams.to = to;
+		}
+		if(value){
+			txParams.value = value;
+		}
 		var tx = new EthereumTx(txParams)
-		this.signatureCallback(function(privateKey){
-			tx.sign(privateKey)
-		});
-		//tx.gas = 22000000;
-
-		//keccak256(tx.serialize()) will get you the txHash
+		
+		if(!noSignature){
+			this.signatureCallback(function(privateKey){
+				tx.sign(privateKey)
+			});
+		}
 		return tx;	
 	}
 
 	
+	//params should be an array
+	ethCall(params,blockQuantity){
+		if(!blockQuantity){
+			blockQuantity = "latest";
+		}
+		params.push(blockQuantity);
+		var result =  {
+			"jsonrpc":"2.0",
+			"method":"eth_call",
+			"params":params,
+			"id": this._getRandomInt()
+		}
+		return result;
+		
+	}
+
+	ethSendRawTransaction(tx){
+		var result = 
+			{"jsonrpc":"2.0","method":"eth_sendRawTransactions","params":[util.addHexPrefix(tx.serialize().toString('hex'))],"id":1};
+		return result;
+		
+	}
+
+	_getRandomInt() {
+  		return Math.floor(Math.random() * Math.floor(1000000000));
+	}
 }
 
 
