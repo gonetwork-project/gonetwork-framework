@@ -12,6 +12,7 @@ Children
 .. toctree::
    :maxdepth: 1
    
+   BlockchainService.BlockchainService
    
 Description
 ===========
@@ -25,11 +26,17 @@ Description
 Function: ``newChannel``
 ========================
 
+Creates a transaction to open a new channel
 
-
-.. js:function:: newChannel()
+.. js:function:: newChannel(nonce, gasPrice, channelAddress, partnerAddress, timeout)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string channelAddress: channel address
+    :param string partnerAddress: partner address
+    :param int timeout: in milliseconds
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.approve:
 
@@ -37,11 +44,17 @@ Function: ``newChannel``
 Function: ``approve``
 =====================
 
+Creates a transaction to approve a withdrawl
 
-
-.. js:function:: approve()
+.. js:function:: approve(nonce, gasPrice, tokenAddress, spender, amount)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string tokenAddress: token address
+    :param string spender: spender
+    :param Number amount: amount
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.deposit:
 
@@ -49,23 +62,16 @@ Function: ``approve``
 Function: ``deposit``
 =====================
 
+Creates a transaction to deposit into a channel
 
-
-.. js:function:: deposit()
-
-    
-    
-.. _BlockchainService._create:
-
-
-Function: ``_create``
-=====================
-
-
-
-.. js:function:: _create()
+.. js:function:: deposit(nonce, gasPrice, nettingChannelAddress, amount)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string nettingChannelAddress: netting channel address
+    :param Number amount: amount
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.close:
 
@@ -73,11 +79,16 @@ Function: ``_create``
 Function: ``close``
 ===================
 
+Creates a transaction to close a channel
 
-
-.. js:function:: close()
+.. js:function:: close(nonce, gasPrice, nettingChannelAddress, proof)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string nettingChannelAddress: netting channel address
+    :param object proof: proof
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.updateTransfer:
 
@@ -85,11 +96,16 @@ Function: ``close``
 Function: ``updateTransfer``
 ============================
 
+Creates a transaction to update transfer
 
-
-.. js:function:: updateTransfer()
+.. js:function:: updateTransfer(nonce, gasPrice, nettingChannelAddress, proof)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string nettingChannelAddress: netting channel address
+    :param object proof: proof
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.withdrawLock:
 
@@ -97,11 +113,18 @@ Function: ``updateTransfer``
 Function: ``withdrawLock``
 ==========================
 
+Creates a transaction to withdraw lock
 
-
-.. js:function:: withdrawLock()
+.. js:function:: withdrawLock(nonce, gasPrice, nettingChannelAddress, encodedOpenLock, merkleProof, secret)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string nettingChannelAddress: netting channel address
+    :param object encodedOpenLock: encoded open lock
+    :param object merkleProof: merkle proof
+    :param object secret: secret
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.settle:
 
@@ -109,11 +132,15 @@ Function: ``withdrawLock``
 Function: ``settle``
 ====================
 
+Creates a transaction to settle the channel
 
-
-.. js:function:: settle()
+.. js:function:: settle(nonce, gasPrice, nettingChannelAddress)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param string nettingChannelAddress: netting channel address
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 .. _BlockchainService.solidityPackSignature:
 
@@ -121,11 +148,13 @@ Function: ``settle``
 Function: ``solidityPackSignature``
 ===================================
 
+Packs the signature
 
-
-.. js:function:: solidityPackSignature()
+.. js:function:: solidityPackSignature(signature)
 
     
+    :param object signature: needs: signature.r, signature.s, signature.v
+    :return Buffer: - see https://github.com/ethereumjs/ethereumjs-abi/blob/master/lib/index.js
     
 .. _BlockchainService.createAndSignTransaction:
 
@@ -133,11 +162,18 @@ Function: ``solidityPackSignature``
 Function: ``createAndSignTransaction``
 ======================================
 
+Creates a signed transaction
 
-
-.. js:function:: createAndSignTransaction()
+.. js:function:: createAndSignTransaction(nonce, gasPrice, gasLimit, to, value, data)
 
     
+    :param Number nonce: called each time with a higher value
+    :param Number gasPrice: gas price
+    :param Number gasLimit: gas limit
+    :param string to: to address
+    :param Number value: value
+    :param object data: data
+    :return EthereumTx: - see https://github.com/ethereumjs/ethereumjs-tx
     
 
 .. _BlockchainService.chainID:

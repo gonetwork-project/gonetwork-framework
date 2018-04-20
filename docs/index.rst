@@ -5,20 +5,22 @@
 
 
 
-Welcome to blockchain-service's documentation!
-==============================================
+Welcome to BlockchainService documentation!
+============================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+.. include:: ../jsdocs/BlockchainService.BlockchainService.rst
+   :start-after: Description
+
 .. include:: ../jsdocs/BlockchainService.rst
    :start-after: Description
 
 
-Indices and tables
-==================
+Index and Search
+================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
