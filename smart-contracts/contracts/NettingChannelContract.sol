@@ -4,7 +4,9 @@ import "./NettingChannelLibrary.sol";
 
 contract NettingChannelContract {
     string constant public contract_version = "0.2._";
-
+    uint256 constant public refund_interval = 100;
+    uint256 constant public refund = 25;
+    uint256 constant public fee = 50;
     using NettingChannelLibrary for NettingChannelLibrary.Data;
     NettingChannelLibrary.Data public data;
 
@@ -13,6 +15,7 @@ contract NettingChannelContract {
     event TransferUpdated(address node_address);
     event ChannelSettled();
     event ChannelSecretRevealed(bytes32 secret, address receiver_address);
+    event Refund(address receiver,uint256 amount);
 
     modifier settleTimeoutValid(uint t) {
         require(t >= 6 && t <= 2700000);
@@ -23,11 +26,13 @@ contract NettingChannelContract {
         address token_address,
         address participant1,
         address participant2,
-        uint timeout
+        uint timeout,
+        address gotoken_address
     )
         public
         settleTimeoutValid(timeout)
     {
+        
         require(participant1 != participant2);
 
         data.participants[0].node_address = participant1;
@@ -38,6 +43,9 @@ contract NettingChannelContract {
         data.token = Token(token_address);
         data.settle_timeout = timeout;
         data.opened = block.number;
+
+        data.goToken = Token(gotoken_address);
+        data.channel_manager = msg.sender;
     }
 
     /// @notice Caller makes a deposit into their channel balance.
@@ -92,6 +100,17 @@ contract NettingChannelContract {
             extra_hash,
             signature
         );
+
+        if(data.closed- data.opened > refund_interval){
+            bool success = data.goToken.transfer(data.participants[0].node_address,refund);
+            require(success == true);
+            success = false;
+            success = data.goToken.transfer(data.channel_manager,fee-refund);
+            require(success == true);
+            emit Refund(data.participants[0].node_address,refund);
+        }else{
+            data.goToken.transfer(data.channel_manager,fee);
+        }
         ChannelClosed(msg.sender);
     }
 

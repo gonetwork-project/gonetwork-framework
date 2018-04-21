@@ -4,6 +4,7 @@ import "./Token.sol";
 
 library NettingChannelLibrary {
     string constant public contract_version = "0.2._";
+   
 
     event Info(string msg);
     event InfoAddress(address addy);
@@ -48,6 +49,9 @@ library NettingChannelLibrary {
         Participant[2] participants;
         mapping(address => uint8) participant_index;
         bool updated;
+
+        Token goToken;
+        address channel_manager;
     }
 
 
@@ -148,7 +152,7 @@ library NettingChannelLibrary {
             counterparty.nonce = uint256(nonce);
             counterparty.locksroot = locksroot;
             counterparty.transferred_amount = transferred_amount;
-            emit UpdatedTranser(transfer_address, locksroot);
+            emit UpdatedTranser(transfer_address, locksroot);           
         }
     }
 
@@ -393,6 +397,7 @@ library NettingChannelLibrary {
         if (closer_amount > 0) {
             require(self.token.transfer(closing_party.node_address, closer_amount));
         }
+        
 
         selfdestruct(0x00000000000000000000);
     }
