@@ -45,14 +45,14 @@
     "absolutePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Utils.sol",
     "exportedSymbols": {
       "Utils": [
-        2468
+        2667
       ]
     },
-    "id": 2469,
+    "id": 2668,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2448,
+        "id": 2647,
         "literals": [
           "solidity",
           "^",
@@ -68,19 +68,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 2468,
+        "id": 2667,
         "linearizedBaseContracts": [
-          2468
+          2667
         ],
         "name": "Utils",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": true,
-            "id": 2451,
+            "id": 2650,
             "name": "contract_version",
             "nodeType": "VariableDeclaration",
-            "scope": 2468,
+            "scope": 2667,
             "src": "47:49:6",
             "stateVariable": true,
             "storageLocation": "default",
@@ -89,7 +89,7 @@
               "typeString": "string memory"
             },
             "typeName": {
-              "id": 2449,
+              "id": 2648,
               "name": "string",
               "nodeType": "ElementaryTypeName",
               "src": "47:6:6",
@@ -101,7 +101,7 @@
             "value": {
               "argumentTypes": null,
               "hexValue": "302e322e5f",
-              "id": 2450,
+              "id": 2649,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -120,7 +120,7 @@
           },
           {
             "body": {
-              "id": 2466,
+              "id": 2665,
               "nodeType": "Block",
               "src": "358:123:6",
               "statements": [
@@ -129,10 +129,10 @@
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 2459,
+                      "id": 2658,
                       "name": "size",
                       "nodeType": "VariableDeclaration",
-                      "scope": 2467,
+                      "scope": 2666,
                       "src": "368:9:6",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -141,7 +141,7 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 2458,
+                        "id": 2657,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
                         "src": "368:4:6",
@@ -154,7 +154,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 2460,
+                  "id": 2659,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
                   "src": "368:9:6"
@@ -163,7 +163,7 @@
                   "externalReferences": [
                     {
                       "size": {
-                        "declaration": 2459,
+                        "declaration": 2658,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "411:4:6",
@@ -172,7 +172,7 @@
                     },
                     {
                       "channel": {
-                        "declaration": 2453,
+                        "declaration": 2652,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "431:7:6",
@@ -180,7 +180,7 @@
                       }
                     }
                   ],
-                  "id": 2461,
+                  "id": 2660,
                   "nodeType": "InlineAssembly",
                   "operations": "{\n    size := extcodesize(channel)\n}",
                   "src": "388:77:6"
@@ -192,18 +192,18 @@
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     },
-                    "id": 2464,
+                    "id": 2663,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
                       "argumentTypes": null,
-                      "id": 2462,
+                      "id": 2661,
                       "name": "size",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2459,
+                      "referencedDeclaration": 2658,
                       "src": "466:4:6",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -215,7 +215,7 @@
                     "rightExpression": {
                       "argumentTypes": null,
                       "hexValue": "30",
-                      "id": 2463,
+                      "id": 2662,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -236,15 +236,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 2457,
-                  "id": 2465,
+                  "functionReturnParameters": 2656,
+                  "id": 2664,
                   "nodeType": "Return",
                   "src": "459:15:6"
                 }
               ]
             },
             "documentation": "@notice Check if a contract exists\n @param channel The address to check whether a contract is deployed or not\n @return True if a contract exists, false otherwise",
-            "id": 2467,
+            "id": 2666,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -252,15 +252,15 @@
             "name": "contractExists",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2454,
+              "id": 2653,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2453,
+                  "id": 2652,
                   "name": "channel",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2467,
+                  "scope": 2666,
                   "src": "310:15:6",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -269,7 +269,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2452,
+                    "id": 2651,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "310:7:6",
@@ -286,15 +286,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2457,
+              "id": 2656,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2456,
+                  "id": 2655,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2467,
+                  "scope": 2666,
                   "src": "352:4:6",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -303,7 +303,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2455,
+                    "id": 2654,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "352:4:6",
@@ -318,14 +318,14 @@
               ],
               "src": "351:6:6"
             },
-            "scope": 2468,
+            "scope": 2667,
             "src": "286:195:6",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 2469,
+        "scope": 2668,
         "src": "26:457:6"
       }
     ],
@@ -335,14 +335,14 @@
     "absolutePath": "/Users/amitshah/Documents/nodejs/javascript/blockchain-service/smart-contracts/contracts/Utils.sol",
     "exportedSymbols": {
       "Utils": [
-        2468
+        2667
       ]
     },
-    "id": 2469,
+    "id": 2668,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2448,
+        "id": 2647,
         "literals": [
           "solidity",
           "^",
@@ -358,19 +358,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 2468,
+        "id": 2667,
         "linearizedBaseContracts": [
-          2468
+          2667
         ],
         "name": "Utils",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": true,
-            "id": 2451,
+            "id": 2650,
             "name": "contract_version",
             "nodeType": "VariableDeclaration",
-            "scope": 2468,
+            "scope": 2667,
             "src": "47:49:6",
             "stateVariable": true,
             "storageLocation": "default",
@@ -379,7 +379,7 @@
               "typeString": "string memory"
             },
             "typeName": {
-              "id": 2449,
+              "id": 2648,
               "name": "string",
               "nodeType": "ElementaryTypeName",
               "src": "47:6:6",
@@ -391,7 +391,7 @@
             "value": {
               "argumentTypes": null,
               "hexValue": "302e322e5f",
-              "id": 2450,
+              "id": 2649,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -410,7 +410,7 @@
           },
           {
             "body": {
-              "id": 2466,
+              "id": 2665,
               "nodeType": "Block",
               "src": "358:123:6",
               "statements": [
@@ -419,10 +419,10 @@
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 2459,
+                      "id": 2658,
                       "name": "size",
                       "nodeType": "VariableDeclaration",
-                      "scope": 2467,
+                      "scope": 2666,
                       "src": "368:9:6",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -431,7 +431,7 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 2458,
+                        "id": 2657,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
                         "src": "368:4:6",
@@ -444,7 +444,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 2460,
+                  "id": 2659,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
                   "src": "368:9:6"
@@ -453,7 +453,7 @@
                   "externalReferences": [
                     {
                       "size": {
-                        "declaration": 2459,
+                        "declaration": 2658,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "411:4:6",
@@ -462,7 +462,7 @@
                     },
                     {
                       "channel": {
-                        "declaration": 2453,
+                        "declaration": 2652,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "431:7:6",
@@ -470,7 +470,7 @@
                       }
                     }
                   ],
-                  "id": 2461,
+                  "id": 2660,
                   "nodeType": "InlineAssembly",
                   "operations": "{\n    size := extcodesize(channel)\n}",
                   "src": "388:77:6"
@@ -482,18 +482,18 @@
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     },
-                    "id": 2464,
+                    "id": 2663,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
                       "argumentTypes": null,
-                      "id": 2462,
+                      "id": 2661,
                       "name": "size",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2459,
+                      "referencedDeclaration": 2658,
                       "src": "466:4:6",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -505,7 +505,7 @@
                     "rightExpression": {
                       "argumentTypes": null,
                       "hexValue": "30",
-                      "id": 2463,
+                      "id": 2662,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -526,15 +526,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 2457,
-                  "id": 2465,
+                  "functionReturnParameters": 2656,
+                  "id": 2664,
                   "nodeType": "Return",
                   "src": "459:15:6"
                 }
               ]
             },
             "documentation": "@notice Check if a contract exists\n @param channel The address to check whether a contract is deployed or not\n @return True if a contract exists, false otherwise",
-            "id": 2467,
+            "id": 2666,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -542,15 +542,15 @@
             "name": "contractExists",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2454,
+              "id": 2653,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2453,
+                  "id": 2652,
                   "name": "channel",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2467,
+                  "scope": 2666,
                   "src": "310:15:6",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -559,7 +559,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2452,
+                    "id": 2651,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "310:7:6",
@@ -576,15 +576,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2457,
+              "id": 2656,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2456,
+                  "id": 2655,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2467,
+                  "scope": 2666,
                   "src": "352:4:6",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -593,7 +593,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2455,
+                    "id": 2654,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "352:4:6",
@@ -608,14 +608,14 @@
               ],
               "src": "351:6:6"
             },
-            "scope": 2468,
+            "scope": 2667,
             "src": "286:195:6",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 2469,
+        "scope": 2668,
         "src": "26:457:6"
       }
     ],
@@ -627,5 +627,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-04-18T03:30:11.848Z"
+  "updatedAt": "2018-04-20T23:08:17.096Z"
 }
