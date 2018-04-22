@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:10
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-20 17:02:58
+* @Last Modified time: 2018-04-21 19:49:14
 */
 const EthereumTx = require("ethereumjs-tx");
 const abi = require("ethereumjs-abi");
@@ -11,7 +11,7 @@ const util = require("ethereumjs-util");
 const ChannelManagerContract = require("../smart-contracts/build/contracts/ChannelManagerContract.json");
 const NettingChannelContract = require('../smart-contracts/build/contracts/NettingChannelContract.json');
 const HumanStandardTokenContract = require("../smart-contracts/build/contracts/HumanStandardToken.json");
-const DEBUG = true;
+const DEBUG = false;
 
 const ChannelManagerContractAbi = ChannelManagerContract.abi.reduce(function(r, i){
 	r[i.name] = i;
@@ -219,7 +219,6 @@ class BlockchainService{
 		  nonce: nonce,
 		  gasPrice: gasPrice, 
 		  gasLimit: gasLimit,
-		 
 		  data: data,
 		  chainId: this.chainId
 		}
