@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:32
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-21 19:48:35
+* @Last Modified time: 2018-04-22 00:41:27
 */
 const stateChannel= require('state-channel');
 const events = require('events');
@@ -27,7 +27,7 @@ var url = "http://localhost:8000";
 var urlPost = url;
 if(rostpen){
   url = "ws://127.0.0.1:8546";
-  urlPost = "http://localhost:8545";
+  urlPost = 'https://api.infura.io/v1/jsonrpc/ropsten';//"http://localhost:8545";
 }
 var pk1=util.toBuffer("0xb507928218b7b1e48f82270011149c56b6191cd1f2846e01c419f0a1a57acc42");
 var pk2 =util.toBuffer("0x4c65754b227fb8467715d2949555abf6fe8bcba11c6773433c8a7a05a2a1fc78");
@@ -153,7 +153,7 @@ function run(){
   
   
  
-  //Approve 
+  //Approve , only run once on setup
   infoMessage("Approve ChannelManager to allow it to transfer Gonetwork Token to newly created netting channels")
   var tx = bc.approve(acct1Nonce,5,goTokenAddress,channelManagerAddress, 500);
   console.log(txToCurlRq(tx.serialize()));
@@ -190,6 +190,7 @@ function run(){
     //console.log("\r\n");
 
     //so we can complete the deposit
+    //only run once on channel.  The allowance is the total amount of money you will deposit.  You can increase this in the future
     infoMessage("Approve channel an allowance to make transfers into itself when we call deposit on it")
     tx = bc.approve(acct1Nonce+2,1, testToken,channelAddress,500);
     console.log(txToCurlRq(tx.serialize()));
