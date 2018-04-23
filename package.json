@@ -4,18 +4,20 @@
   "description": "blockchain-service for react-native environments",
   "main": "src/index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
+    "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch"
   },
   "author": "Amit Shah",
   "license": "MIT",
   "devDependencies": {
-    "web3": "^1.0.0-beta.34",
     "standard": "^10.0.3",
     "state-channel": "git+ssh://github.com/AmitShah/state-channel.git",
-    "ts-loader": "^3.3.1",
+    "ts-loader": "^4.2.0",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "^2.7.2"
+    "typescript": "^2.8.3",
+    "web3": "^1.0.0-beta.34"
   },
   "dependencies": {
     "ethereumjs-abi": "^0.6.5",

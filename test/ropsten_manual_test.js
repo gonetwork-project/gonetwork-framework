@@ -7,7 +7,7 @@
 const stateChannel= require('state-channel');
 const events = require('events');
 const util = require("ethereumjs-util");
-const bcs = require('../src/blockchain.js');
+const bcs = require('../lib/blockchain.js');
 const simulator = require("./simulate_engine");
 const message = stateChannel.message;
 var DEBUG = false;

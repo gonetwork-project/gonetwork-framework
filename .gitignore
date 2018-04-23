@@ -61,3 +61,7 @@ typings/
 
 # next.js build output
 .next
+
+
+# todo: figure out way of creating build
+lib/
