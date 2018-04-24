@@ -13,6 +13,7 @@ const message = stateChannel.message;
 var DEBUG = false;
 var rostpen = false;
 
+// todo: make environment agnostic / injected from external
 process.argv.forEach(function (val, index, array) {
   if(val === "DEBUG"){
     DEBUG = true;
