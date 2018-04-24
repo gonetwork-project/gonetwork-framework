@@ -12,6 +12,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^9.6.6",
+    "node-fetch": "^2.1.2",
+    "node-persist": "^2.1.0",
     "standard": "^10.0.3",
     "state-channel": "git+ssh://github.com/AmitShah/state-channel.git",
     "ts-loader": "^4.2.0",
