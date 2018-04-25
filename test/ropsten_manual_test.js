@@ -7,12 +7,13 @@
 const stateChannel= require('state-channel');
 const events = require('events');
 const util = require("ethereumjs-util");
-const bcs = require('../src/blockchain.js');
+const bcs = require('../lib/blockchain.js');
 const simulator = require("./simulate_engine");
 const message = stateChannel.message;
 var DEBUG = false;
 var rostpen = false;
 
+// todo: make environment agnostic / injected from external
 process.argv.forEach(function (val, index, array) {
   if(val === "DEBUG"){
     DEBUG = true;

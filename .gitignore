@@ -61,3 +61,13 @@ typings/
 
 # next.js build output
 .next
+
+
+# todo: figure out way of creating build
+lib/
+
+config/demo.js
+config/spec.js
+demo/storage.dat
+demo/queue.dat
+demo/infura.dat

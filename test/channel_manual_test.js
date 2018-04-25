@@ -7,7 +7,7 @@
 const stateChannel= require('state-channel');
 const events = require('events');
 const util = require("ethereumjs-util");
-const bcs = require('../src/blockchain.js');
+const bcs = require('../lib/blockchain.js');
 const message = stateChannel.message;
 
 
@@ -344,4 +344,4 @@ console.info(JSON.stringify(NettingChannelContract.abi));
 
 console.info("Proof2 expected locksroot:"+proof2.locksRoot.toString('hex'))
 
-debugger;
+// debugger;
