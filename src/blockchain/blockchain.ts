@@ -3,9 +3,9 @@ import * as abi from 'ethereumjs-abi'
 import * as util from 'ethereumjs-util'
 
 // todo - add proper types
-import ChannelManagerContract from '../smart-contracts/build/contracts/ChannelManagerContract.json'
-import NettingChannelContract from '../smart-contracts/build/contracts/NettingChannelContract.json'
-import HumanStandardTokenContract from '../smart-contracts/build/contracts/HumanStandardToken.json'
+const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
+const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
+const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
 import * as T from '../types'
 
