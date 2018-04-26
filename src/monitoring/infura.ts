@@ -3,7 +3,7 @@ import { EthMonitoringInfo, EthAddress } from '../types'
 let i = 0
 
 const requestFactory = (network: string, token: string) =>
-  (method: 'eth_blockNumber' | 'eth_getLogs', params?: any) =>
+  (method: 'eth_blockNumber' | 'eth_getLogs' | 'eth_getTransactionReceipt', params?: any) =>
     fetch(`https://${network}.infura.io/${token}`, {
       method: 'POST',
       headers: {
@@ -32,5 +32,7 @@ export const infuraMonitoring = (network: string, token: string, request = reque
   EthMonitoringInfo => ({
     blockNumber: () => request('eth_blockNumber'),
     getLogs: (fromBlock, address, toBlock) =>
-      request('eth_getLogs', { fromBlock: '0x' + Number(3044467 - 99000).toString(16), toBlock: '0x' + Number(3044467 + 2).toString(16), address: address[0] })
+      request('eth_getLogs', { fromBlock: '0x' + Number(3044467 - 99000).toString(16), toBlock: '0x' + Number(3044467 + 2).toString(16), address: address[0] }),
+    getTransactionReceipt: (tx) =>
+      request('eth_getTransactionReceipt', tx)
   })

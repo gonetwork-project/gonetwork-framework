@@ -5,7 +5,8 @@ import { EventEmitter } from 'events'
 import * as T from '../types'
 
 const KEY_PREFIX = '___ETH_MONITORING___'
-const INTERVAL = 60 * 1000
+const LOGS_INTERVAL = 60 * 1000
+const TRANSACTION_INTERVAL = 5 * 1000
 
 export interface State {
   blockNumber: T.EthBlock
@@ -50,7 +51,7 @@ export class Monitoring implements T.EthMonitoring {
         .subscribe()
   }
 
-  _monitorChannel = () => Observable.timer(0, INTERVAL)
+  _monitorChannel = () => Observable.timer(0, LOGS_INTERVAL)
     .switchMap(() =>
       Observable.defer(() =>
         this._state
@@ -68,7 +69,15 @@ export class Monitoring implements T.EthMonitoring {
   _monitorTransactions = () =>
     this._transactions
       .mergeMap(t =>
-        Observable.of(t)
+        Observable.timer(0, TRANSACTION_INTERVAL)
+          .switchMap(() =>
+            Observable.defer(() => this._cfg.getTransactionReceipt(t))
+              .catch((err) => {
+                console.log('TRANSACTION_MONITORING_ERROR', err)
+                return Observable.empty()
+              })
+          )
+          .take(1)
       )
 
   _saveState = (s: State) =>
@@ -90,17 +99,29 @@ export class Monitoring implements T.EthMonitoring {
     })
   }
 
-  transactionReceipt = (t) => {
+  transactionReceiptWithPersistance = (tx) => {
     return this._state.then(s => {
-      if (s.transactions.find(t)) {
+      if (s.transactions.find(tx)) {
         return false
       }
-      s.transactions.push(t)
+      s.transactions.push(tx)
       return this._saveState(s)
-        .then(() => this._transactions.next(t))
+        .then(() => this._transactions.next(tx))
         .then(() => true)
     })
   }
+
+  transactionReceipt = (tx) =>
+    Observable.timer(0, TRANSACTION_INTERVAL)
+      .switchMap(() =>
+        Observable.defer(() => this._cfg.getTransactionReceipt(tx))
+          .catch((err) => {
+            console.log('TRANSACTION_MONITORING_ERROR', err)
+            return Observable.empty()
+          })
+      )
+      .take(1)
+      .toPromise()
 
   on (event: 'events', listener: (...args: any[]) => void) {
     this._em.on(event, listener)

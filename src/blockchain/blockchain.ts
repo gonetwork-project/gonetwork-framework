@@ -36,7 +36,7 @@ function decodeOpenLock (encodedOpenLock) {
 }
 
 /* This service generates signed raw data that can be sent to any geth gateway. */
-export class BlockchainService {
+export class BlockchainService implements T.BlockchainService {
 
   chainId: T.ChainId
   signatureCallback: any
@@ -248,7 +248,6 @@ export class BlockchainService {
   ethSendRawTransaction (tx) {
     let result = { 'jsonrpc': '2.0', 'method': 'eth_sendRawTransactions', 'params': [util.addHexPrefix(tx.serialize().toString('hex'))], 'id': 1 }
     return result
-
   }
 
   _getRandomInt () {

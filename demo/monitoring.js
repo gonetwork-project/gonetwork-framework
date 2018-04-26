@@ -30,5 +30,11 @@ const monitoring = new Monitoring(
     })
 )
 
-monitoring.subscribeChannel('0x4C519D78A78DBF096A2bB567DEda72Be4ea05d5d')
-  .catch(err => console.log('ERR',))
+// monitoring.subscribeChannel('0x4C519D78A78DBF096A2bB567DEda72Be4ea05d5d')
+//   .catch(err => console.log('ERR',))
+
+// monitoring.transactionReceipt('0x6b9171e0a25bd22f5bd96196c27121915326400f3746bd32c1c6fca07d609683')
+//   .then(tx => console.log('TX', tx))
+
+monitoring.transactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
+  .then(tx => console.log('TX', tx))

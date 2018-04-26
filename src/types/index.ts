@@ -90,6 +90,8 @@ export interface EthMonitoringInfo {
   getLogs: (fromBlock: EthBlock, address: EthAddress[],
     toBlock?: EthBlock | 'latest')
     => Promise<MonitoringEvent>
+  getTransactionReceipt: (tx: EthTransaction) =>
+    Promise<any>
 }
 
 export interface EthMonitoringConfig extends EthMonitoringInfo {
@@ -108,4 +110,8 @@ export interface EthMonitoring {
   off: (e: 'events', listener: (...args: any[]) => void) => void
 
   dispose: () => void
+}
+
+export interface BlockchainService {
+
 }
