@@ -6,6 +6,7 @@ export type BlockQuantity = 'latest'
 
 // todo: make it consistent either stirng or number
 export type EthAddress = (string | number | any) & { __ETH_ADDRESS__: true }
+export type EthTransaction = string & { __ETH_TRANSACTION__: true }
 export type EthBlock = string & { __ETH_BLOCK__: true }
 
 // broken means irrecoverable error
@@ -89,6 +90,8 @@ export interface EthMonitoringInfo {
   getLogs: (fromBlock: EthBlock, address: EthAddress[],
     toBlock?: EthBlock | 'latest')
     => Promise<MonitoringEvent>
+  getTransactionReceipt: (tx: EthTransaction) =>
+    Promise<any>
 }
 
 export interface EthMonitoringConfig extends EthMonitoringInfo {
@@ -100,9 +103,15 @@ export interface EthMonitoring {
   subscribeChannel: (ch: EthAddress) => Promise<Boolean>
   unsubscribeChannel: (ch: EthAddress) => Promise<Boolean>
 
+  transactionReceipt: (tx: EthTransaction) => Promise<Boolean>
+
   // restrict to only known events
   on: (e: 'events', listener: (...args: any[]) => void) => void
   off: (e: 'events', listener: (...args: any[]) => void) => void
 
   dispose: () => void
+}
+
+export interface BlockchainService {
+
 }
