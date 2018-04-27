@@ -87,6 +87,13 @@ export class BlockchainService implements T.BlockchainService {
     
   }
 
+  getContractData(nettingChannelAddress:Buffer, from:Buffer){
+    return this.fetchAndDecodeCall(NettingChannelContractAbi.data,
+        nettingChannelAddress.toString("hex"),
+        from.toString('hex'),
+        []);
+  }
+
   getTokenBalance(tokenAddress: Buffer, from: Buffer,  nodeAddress: Buffer) {
       return this.fetchAndDecodeCall(HumanStandardTokenAbi.balanceOf,
         tokenAddress.toString('hex'),
