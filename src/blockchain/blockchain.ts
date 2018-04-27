@@ -144,8 +144,6 @@ export class BlockchainService implements T.BlockchainService {
     .then(res=> {
       if(res.status !== 200) throw new Error("NEW MESSAGE");
        return res.json()
-     }).catch(function(err){
-       console.log(err.message);
      });
   }
   // these are transactions i.e. require signature callback
@@ -197,7 +195,7 @@ export class BlockchainService implements T.BlockchainService {
       2400000,// compiled gas limit * 20%
       nettingChannelAddress,
       null,
-      [proof.nonce, proof.transferredAmount, proof.locksRoot, proof.messageHash, this.solidityPackSignature(proof.signature)])
+      [proof.nonce, proof.transferredAmount, proof.locksRoot, proof.messageHash, this.solidityPackSignature(proof.signature)]);
   }
 
   updateTransfer (nonce, gasPrice, nettingChannelAddress, proof) {
@@ -207,7 +205,7 @@ export class BlockchainService implements T.BlockchainService {
       2400000,// compiled gas limit * 20%
       nettingChannelAddress,
       null,
-      [proof.nonce, proof.transferredAmount, proof.locksRoot, proof.messageHash, this.solidityPackSignature(proof.signature)])
+      [proof.nonce, proof.transferredAmount, proof.locksRoot, proof.messageHash, this.solidityPackSignature(proof.signature)]);
   }
 
   withdrawLock (nonce, gasPrice, nettingChannelAddress, encodedLock, merkleProof, secret) {
@@ -221,7 +219,7 @@ export class BlockchainService implements T.BlockchainService {
       2400000,// compiled gas limit * 20%
       nettingChannelAddress,
       null,
-      [encodedLock, merkleProofBytes, secret])
+      [encodedLock, merkleProofBytes, secret]);
   }
 
   settle (nonce, gasPrice, nettingChannelAddress) {
@@ -253,13 +251,14 @@ export class BlockchainService implements T.BlockchainService {
         
    
         let methodSignature = abi.methodID(functionRef.name, inputs);
-        let paramsEncoded = '';
+        let paramsEncoded = null;
         if (params.length > 0) {
             paramsEncoded = abi.rawEncode(inputs, params);
         }
         inputs = functionRef.inputs.map(function (i) {
             return i.type;
         });
+        console.log(paramsEncoded);
         let data = util.toBuffer('0x' + methodSignature.toString('hex') +
             paramsEncoded.toString('hex'));
         if (DEBUG) {
