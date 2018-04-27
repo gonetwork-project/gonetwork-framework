@@ -5,7 +5,7 @@ export type ChainId = string & { __CHAIN_ID__: true }
 export type BlockQuantity = 'latest'
 
 // todo: make it consistent either stirng or number
-export type EthAddress = (string | number | any) & { __ETH_ADDRESS__: true }
+export type EthAddress = (string | Buffer | any) & { __ETH_ADDRESS__: true }
 export type EthTransaction = string & { __ETH_TRANSACTION__: true }
 export type EthBlock = string & { __ETH_BLOCK__: true }
 
