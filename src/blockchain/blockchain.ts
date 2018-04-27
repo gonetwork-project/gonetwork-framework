@@ -94,6 +94,14 @@ export class BlockchainService implements T.BlockchainService {
         []);
   }
 
+  /*** retreives the channelPartnerAddress, transferredAmount, and locksRoot you submitted in the proof*/ 
+  getParticipantData(nettingChannelAddress:Buffer, from:Buffer){
+    return this.fetchAndDecodeCall(NettingChannelContractAbi.participantData,
+        nettingChannelAddress.toString("hex"),
+        from.toString('hex'),
+        []);
+  }
+
   getTokenBalance(tokenAddress: Buffer, from: Buffer,  nodeAddress: Buffer) {
       return this.fetchAndDecodeCall(HumanStandardTokenAbi.balanceOf,
         tokenAddress.toString('hex'),
