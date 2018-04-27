@@ -106,6 +106,12 @@ export class BlockchainService implements T.BlockchainService {
       from.toString("hex"),[util.addHexPrefix(nodeAddress.toString("hex"))]);
   }
 
+  getClosingAddress(nettingChannelAddress:Buffer, from:Buffer){
+     return this.fetchAndDecodeCall(NettingChannelContractAbi.closingAddress,
+      nettingChannelAddress.toString("hex"),
+      from.toString("hex"),[]);
+  }
+
   fetchAndDecodeCall(functionRef,to:string,from:string,data:any[]){
     return fetch(this.providerUrl,
       {
@@ -251,7 +257,7 @@ export class BlockchainService implements T.BlockchainService {
         
    
         let methodSignature = abi.methodID(functionRef.name, inputs);
-        let paramsEncoded = null;
+        let paramsEncoded = Buffer.alloc(0);
         if (params.length > 0) {
             paramsEncoded = abi.rawEncode(inputs, params);
         }
