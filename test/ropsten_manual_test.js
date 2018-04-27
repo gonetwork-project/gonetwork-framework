@@ -2,16 +2,18 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:32
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-22 00:41:27
+* @Last Modified time: 2018-04-27 03:36:32
 */
 const stateChannel = require('state-channel');
 const events = require('events');
 const util = require("ethereumjs-util");
 const bcs = require('../lib/blockchain/blockchain.js');
+const querystring = require("querystring");
 const simulator = require("./simulate_engine");
 const message = stateChannel.message;
 var DEBUG = false;
 var rostpen = false;
+
 
 // todo: make environment agnostic / injected from external
 process.argv.forEach(function (val, index, array) {
@@ -28,7 +30,8 @@ var url = "http://localhost:8000";
 var urlPost = url;
 if (rostpen) {
   url = "ws://127.0.0.1:8546";
-  urlPost = 'https://api.infura.io/v1/jsonrpc/ropsten';//"http://localhost:8545";
+  urlPost ="https://ropsten.infura.io/QxoWjkfgF4aVMUV4rbTG";
+  //urlPost = 'https://api.infura.io/v1/jsonrpc/ropsten';//"http://localhost:8545";
 }
 var pk1 = util.toBuffer("0xb507928218b7b1e48f82270011149c56b6191cd1f2846e01c419f0a1a57acc42");
 var pk2 = util.toBuffer("0x4c65754b227fb8467715d2949555abf6fe8bcba11c6773433c8a7a05a2a1fc78");
@@ -47,6 +50,16 @@ function infoMessage(msg) {
 function txToCurlRq(data) {
   return 'curl -H "Content-Type: application/json"  --data \'{"jsonrpc":"2.0","method":"eth_sendRawTransaction","params":["0x' + data.toString('hex') + '"],"id":1}\' ' + urlPost
 
+}
+
+function callToCurlRq2(data){
+  return 'curl -H "Content-Type: application/json"  --data \''+JSON.stringify(data)+'\' ' + urlPost
+
+}
+
+
+function callToCurlRq(data){
+  return "curl "+urlPost+"&"+querystring.stringify(data);
 }
 
 var channelManagerAddress = "0x05e1b1806579881cfd417e1716f23b1900568346";
@@ -141,28 +154,53 @@ if (rostpen) {
 function run() {
   var bc = new bcs.BlockchainService(0, function (cb) {
     cb(pk1);
-  })
+  },urlPost)
 
   var bc2 = new bcs.BlockchainService(0, function (cb) {
     cb(pk2);
-  })
+  },urlPost)
 
   var bc4 = new bcs.BlockchainService(0, function (cb) {
     cb(pk4);
-  })
+  },urlPost)
 
 
+  
+  bc.getTokenBalance(util.toBuffer(goTokenAddress),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
+
+  bc.getAddressAndBalance(util.toBuffer("0x543d603a803a37a3eb52288fc9fa9b956df1e074"),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
+  
+  bc.getNettingContractsByAddress(util.toBuffer(channelManagerAddress),util.toBuffer(acct1), util.toBuffer(acct1)).then(console.log);   
+
+  bc.getBlockNumber().then(console.log).catch(console.log);
+
+  bc.getBalance(util.toBuffer(acct1)).then(console.log);
+
+  bc.getTransactionCount(util.toBuffer(acct1)).then(console.log);
+  
+
+  // bc.transferToken(acct1Nonce, 20, testToken, acct2, 3).then(console.log);
+  // .then(function(result) {
+  //   console.log("WE MADE IT");
+    
+  // });
+  //console.log(txToCurlRq(tx.serialize()));
 
 
   //Approve , only run once on setup
-  infoMessage("Approve ChannelManager to allow it to transfer Gonetwork Token to newly created netting channels")
-  var tx = bc.approve(acct1Nonce, 5, goTokenAddress, channelManagerAddress, 500);
-  console.log(txToCurlRq(tx.serialize()));
+  
+  bc.approve(acct1Nonce, 5, goTokenAddress, channelManagerAddress, 500).then(function(result){
+    infoMessage("Approve ChannelManager to allow it to transfer Gonetwork Token to newly created netting channels")
+    console.log(result);
+  });
 
-  infoMessage("Create new channel between acct1 and acct4");
-  tx = bc.newChannel(acct1Nonce + 1, 1, channelManagerAddress, acct4, 20);
-  console.log(txToCurlRq(tx.serialize()));
+  
+  bc.newChannel(acct1Nonce + 1, 5, channelManagerAddress, acct3, 20).then(function(result){
+    infoMessage("Create new channel between acct1 and acct3");
+    console.log(result);
+  });
 
+  
   if (!channelAddress) {
     //Deterministally calculate the new channel address 
     //new contract addresses = keccack256(rlp(address,nonce));
@@ -185,39 +223,37 @@ function run() {
     var blockchainQueue = [];
     simulator.simulate(blockchainQueue, channelAddress, acct1, pk1, acct4, pk4, currentBlock);
 
+    tx = bc.approve(acct1Nonce + 2, 1, testToken, channelAddress, 500).then(function(result){
+      infoMessage("Approve channel an allowance to make transfers into itself when we call deposit on it")
+      console.log(result);  
+    });
+    
+    bc2.transferToken(acct2Nonce, 1, testToken, acct1, 1000).then(function(result){
+      infoMessage("acct2 send some testTOken to account1");
+      console.log(result);  
+    });
 
-
-    //console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
-    //console.log("\r\n");
-
-    //so we can complete the deposit
-    //only run once on channel.  The allowance is the total amount of money you will deposit.  You can increase this in the future
-    infoMessage("Approve channel an allowance to make transfers into itself when we call deposit on it")
-    tx = bc.approve(acct1Nonce + 2, 1, testToken, channelAddress, 500);
-    console.log(txToCurlRq(tx.serialize()));
-
-
-
-    //console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
-    //console.log("\r\n");
-    infoMessage("acct2 send some testTOken to account1");
-    tx = bc2.transferToken(acct2Nonce, 1, testToken, acct1, 1000);
-    console.log(txToCurlRq(tx.serialize()));
-
-    infoMessage("acct1 deposit into you state channel:" + channelAddress.toString('hex'));
-    tx = bc.deposit(acct1Nonce + 3, 20, channelAddress, 27);
-    console.log(txToCurlRq(tx.serialize()));
+    
+    bc.deposit(acct1Nonce + 3, 20, channelAddress, 27).then(function(result){
+      infoMessage("acct1 deposit into you state channel:" + channelAddress.toString('hex'));
+      console.log(result);  
+    });
+    
     var proof = blockchainQueue[0][1];
 
-    infoMessage("acct4 closes your state channel");
-    tx = bc4.close(acct4Nonce, 1, channelAddress, proof);
-    console.log(txToCurlRq(tx.serialize()));
+    bc4.close(acct4Nonce, 1, channelAddress, proof).then(function(result){
+      infoMessage("acct4 closes your state channel");
+      console.log(result);  
+    });
+    
 
-
-    infoMessage("acct1 update your balance proof");
+    
     var proof2 = blockchainQueue[2][1];
-    tx = bc.updateTransfer(acct1Nonce + 4, 1, channelAddress, proof2);
-    console.log(txToCurlRq(tx.serialize()));
+    bc.updateTransfer(acct1Nonce + 4, 1, channelAddress, proof2).then(function(result){
+      infoMessage("acct1 update your balance proof");
+      console.log(result);  
+    });
+    
 
 
 
@@ -239,10 +275,13 @@ function run() {
         k++;
         //console.info("lock #"+k+" processing encoded lock:" +encodedLock.toString('hex'));
         // withdrawProof array index (Lock object, merkleProof: Bytes<32>[], Bytes<96> encodedLock)
-        infoMessage("Withdraw lock:" + k);
-        tx = bc.withdrawLock(acct1Nonce + 4 + k, 1, channelAddress, withdrawProof[2], withdrawProof[1], secret);
-        console.log(txToCurlRq(tx.serialize()));
-
+        
+        bc.withdrawLock(acct1Nonce + 4 + k, 1, channelAddress, encodedLock, withdrawProof[1], secret)
+        .then(function(result){
+          infoMessage("Withdraw lock:" + k);
+          console.log(result);  
+        });
+        
         //console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
       } else {
@@ -252,9 +291,6 @@ function run() {
 
     }
 
-
-
-    //RUN IN TESTRPC to move blocks ahead
     if (!rostpen) {
       infoMessage("run this command on testrpc to make the blockNumber move ahead passed settle_timeout of 250");
       console.log("for(var i =0; i < 250; i++){");
@@ -262,12 +298,12 @@ function run() {
       console.log("}");
     }
 
-    // tx = bc.handleRefund(15,1,"0x05e1b1806579881cfd417e1716f23b1900568346", "0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
-    // console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
-
-    infoMessage("acct1 settles channel");
-    tx = bc.settle(acct1Nonce + 4 + k + 1, 1, channelAddress);
-    console.log(txToCurlRq(tx.serialize()));
+    
+    // bc.settle(acct1Nonce + 4 + k + 1, 1, channelAddress).then(function(result){
+    //   infoMessage("acct1 settles channel");
+    //   console.log(result);  
+    // });
+    
 
     if (DEBUG) {
       const NettingChannelContract = require('../smart-contracts/build/contracts/NettingChannelContract.json');
