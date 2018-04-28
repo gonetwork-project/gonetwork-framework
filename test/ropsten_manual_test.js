@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:32
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-27 17:37:15
+* @Last Modified time: 2018-04-28 00:29:12
 */
 const stateChannel = require('state-channel');
 const events = require('events');
@@ -174,96 +174,100 @@ function run() {
   },urlPost)
 
 
-  
+   
   // bc.getTokenBalance(util.toBuffer(goTokenAddress),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
-
-  // bc.getAddressAndBalance(util.toBuffer("0x543d603a803a37a3eb52288fc9fa9b956df1e074"),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
+  var channel = null;
+  bc.getAddressAndBalance(util.toBuffer("0x543d603a803a37a3eb52288fc9fa9b956df1e074"),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
   
-  // bc.getNettingContractsByAddress(util.toBuffer(channelManagerAddress),util.toBuffer(acct1), util.toBuffer(acct1)).then(console.log);   
-
-  // bc.getBlockNumber().then(console.log).catch(console.log);
-
-  // bc.getBalance(util.toBuffer(acct1)).then(console.log);
-
-  // bc.getTransactionCount(util.toBuffer(acct1)).then(console.log);
-  
-
-
-  // bc.transferToken(acct1Nonce, 20, testToken, acct2, 3).then(console.log);
-  // .then(function(result) {
-  //   console.log("WE MADE IT");
-    
-  // });
-  //console.log(txToCurlRq(tx.serialize()));
-
-
-
+  bc.getNettingContractsByAddress(util.toBuffer(channelManagerAddress),util.toBuffer(acct1), util.toBuffer(acct1)).then(function(result) {
+    console.log(result['address[]']);
+  }).catch(function(err){
+    console.log(err);
+  });   
 
   
-  bc.approve(acct1Nonce++, 50000000000, goTokenAddress, channelManagerAddress, 500).then(function(result){
-    infoMessage("Approve ChannelManager to allow it to transfer Gonetwork Token to newly created netting channels")
-    console.log(result);
+  
 
-     bc.newChannel(acct1Nonce++, 50000000000, channelManagerAddress, acct2, 40).then(function(result){
+  function setupNewChannelAndDeposit(){
+ 
+  
+    bc.approve(acct1Nonce++, 50000000000, goTokenAddress, channelManagerAddress, 500).then(function(result){
       console.log(result);
 
-      if (!channelAddress) {
-          //Deterministally calculate the new channel address 
-          //new contract addresses = keccack256(rlp(address,nonce));
-          channelAddress = util.addHexPrefix(
-            (util.rlphash([util.toBuffer(channelManagerAddress),
-            util.toBuffer(new util.BN(channelManagerNonce))]).slice(12, )).toString('hex')
-          );
+      bc.newChannel(acct1Nonce++, 50000000000, channelManagerAddress, acct2, 40).then(function(result){
+      console.log(result);
 
-          console.log("New channel will be generated at:" + channelAddress);
-        }
-        bc.approve(acct1Nonce++,50000000000,util.toBuffer(testToken),channelAddress,new util.BN(500)).then(function(result){
-          console.log(result);
-          setTimeout(function(){
-            bc.deposit(acct1Nonce++,50000000000,channelAddress,new util.BN(29)).then(
-            function(result){
-              console.log(result);
-              setTimeout(function(){
-                run2();
-              },15000);
-            });
+        if (!channelAddress) {
+            //Deterministally calculate the new channel address 
+            //new contract addresses = keccack256(rlp(address,nonce));
+            channelAddress = util.addHexPrefix(
+              (util.rlphash([util.toBuffer(channelManagerAddress),
+              util.toBuffer(new util.BN(channelManagerNonce))]).slice(12, )).toString('hex')
+            );
 
-          },10000);
-          
+            console.log("New channel will be generated at:" + channelAddress);
+          }
 
-        });
-     });
+          bc.approve(acct1Nonce++,50000000000,util.toBuffer(testToken),channelAddress,new util.BN(500)).then(function(result){
+            console.log(result);
+            setTimeout(function(){
+              bc.deposit(acct1Nonce++,50000000000,channelAddress,new util.BN(29)).then(
+              function(result){
+                console.log(result);
+                setTimeout(function(){
+                  runSimulatorAndCloseAndSettle();
+                },15000);
+              });
+            },10000);
+            
+
+          });
+       });
     });
     
+  }
     
+  globalBlock = new util.BN(0);
+  function monitorSettle(channelAddressBuffer,accountBuffer){
+        var blockTimer = setInterval(function(){
+                bc.getBlockNumber().then(function(block){
+                  console.log(block.toString(10));
+                    globalBlock = block;
+                });
+          },1000);         
+          return new Promise(function(resolve,reject){
+              var interval = setInterval(function(){
+                bc.getContractData(channelAddressBuffer,accountBuffer).then(function(contractData){
+                    if(globalBlock.sub(contractData.closed).gt(contractData.settle_timeout)){
+                      console.log("global block number: "+ globalBlock.toString(10) +" - " +
+                      "closed time: "+contractData.closed.toString(10) + " > timeout: " +
+                      contractData.settle_timeout.toString(10));
+                      clearTimeout(blockTimer);
+                      clearTimeout(interval);
+                      resolve(contractData);
+                    }                    
+                  });
+                
+            },2000);
+          });
         
-    
-    
-    
-
+    };
   
-   
+    // monitorSettle(util.toBuffer("0x56C920248434e780C20EB617741a45CEd0ce076A"),util.toBuffer(acct2)).then(function(contractData){
+    //   console.log("SETTLING CHANNEL");
+    //                     bc2.settle(acct2Nonce++,25000000000,util.toBuffer("0x56C920248434e780C20EB617741a45CEd0ce076A")).then(console.log).catch(console.log);
+    // });
 
-  
-  
-
-  function run2() {
+  function runSimulatorAndCloseAndSettle() {
     var blockchainQueue = [];
 
     //channelAddress = "0xf4a8f0eb2675ed1cda6d78dd4f4fffbf3ae0b9c3";
     simulator.simulate(blockchainQueue, channelAddress, acct1, pk1, acct2, pk2, new util.BN(4076192));
       
-    // bc.approve(acct1Nonce + 2, 50000000000, testToken, channelAddress, 500).then(function(result){
-    //   infoMessage("Approve channel an allowance to make transfers into itself when we call deposit on it")
-    //   console.log(result);  
-    //   bc.deposit(acct1Nonce + 3, 50000000000, channelAddress, 27).then(function(result){
-        // infoMessage("acct1 deposit into you state channel:" + channelAddress.toString('hex'));
-        //       console.log(result);
-        //          infoMessage("acct4 closes your state channel");
-          var proof = blockchainQueue[0][1];
-          console.log(proof);
+    var proof = blockchainQueue[0][1];
+    console.log(proof);
           
-          bc2.close(acct2Nonce++,50000000000,channelAddress,proof).then(function(result){
+    bc2.close(acct2Nonce++,50000000000,channelAddress,proof).then(function(result){
               console.log(result);
               var proof2 = blockchainQueue[2][1];
               console.log(proof2);
@@ -281,7 +285,6 @@ function run() {
                         var encodedLock = withdrawProof[2].slice(0,96);
                         var secret =withdrawProof[2].slice(96,128);
                         if(DEBUG){
-                          
                           console.log("\r\nENCODED LOCK:0x"+ encodedLock.toString('hex'));
                           console.log("MERKLE PROOF:"+"0x"+withdrawProof[1].reduce(function(sum,proof){ sum+=proof.toString('hex'); return sum;},""));
                           console.log("SECRET:0x"+ secret.toString("hex"));
@@ -290,127 +293,36 @@ function run() {
                         if(util.sha3(secret).compare(withdrawProof[0].hashLock)===0 && stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, util.sha3(encodedLock)) === true){
                           k++;  
                           bc.withdrawLock(acct1Nonce++, 20000000000, channelAddress, encodedLock,withdrawProof[1],secret).then(console.log);
-                         
+                          
                           //console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
                         }else{
                           throw new Error(" ERROR WITHDRAWING LOCK");
                         }
                       }
-
+                      //await mining and issue settle
+                      monitorSettle(util.toBuffer(channelAddress),util.toBuffer(acct2)).then(function(contractData){
+                        console.log(contractData);
+                        bc.getParticipantData(util.toBuffer(channelAddress),util.toBuffer(acct1)).then(function(participantData){
+                          console.log(participantData)
+                          bc.getParticipantData(util.toBuffer(channelAddress),util.toBuffer(acct2)).then(function(participantData){
+                            console.log(participantData);
+                            bc2.settle(acct2Nonce++,25000000000,util.toBuffer(channelAddress)).then(console.log).catch(console.log);
+                          })
+                        })
+    
+                      });
+                      
 
                     },15000)
                     
                   });
 
-
-
-
               },15000)
               
-
           });
-          
 
-          
-
-         
-
-
-
-          
-        // var proof = blockchainQueue[0][1];
-
-        // bc4.close(acct4Nonce, 50000000000, channelAddress, proof).then(function(result){
-        //   infoMessage("acct4 closes your state channel");
-        //   console.log(result); 
-        //    var proof2 = blockchainQueue[2][1];
-        //     bc.updateTransfer(acct1Nonce + 4, 50000000000, channelAddress, proof2).then(function(result){
-        //       infoMessage("acct1 update your balance proof");
-        //       console.log(result); 
-
-
-
-
-        //         infoMessage("Acct1 expected locksroots encompassing 3 openLocks:" + proof2.locksRoot.toString('hex'))
-
-        //         var k = 0;
-        //         for (var i = 0; i < blockchainQueue[3][1].length; i++) {
-        //           var withdrawProof = blockchainQueue[3][1][i];
-        //           var encodedLock = withdrawProof[2].slice(0, 96);
-        //           var secret = withdrawProof[2].slice(96, 128);
-        //           if (DEBUG) {
-
-        //             console.log("\r\nENCODED LOCK:0x" + encodedLock.toString('hex'));
-        //             console.log("MERKLE PROOF:" + "0x" + withdrawProof[1].reduce(function (sum, proof) { sum += proof.toString('hex'); return sum; }, ""));
-        //             console.log("SECRET:0x" + secret.toString("hex"));
-        //             console.log("LOCKSROOT:" + proof2.locksRoot.toString('hex') + "\r\n");
-        //           }
-        //           if (util.sha3(secret).compare(withdrawProof[0].hashLock) === 0 && stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, util.sha3(encodedLock)) === true) {
-        //             k++;
-        //             //console.info("lock #"+k+" processing encoded lock:" +encodedLock.toString('hex'));
-        //             // withdrawProof array index (Lock object, merkleProof: Bytes<32>[], Bytes<96> encodedLock)
-                    
-        //             bc.withdrawLock(acct1Nonce + 4 + k, 40000000000, channelAddress, encodedLock, withdrawProof[1], secret)
-        //             .then(function(result){
-        //               infoMessage("Withdraw lock:" + k);
-        //               console.log(result);  
-        //             });
-                    
-        //             //console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
-
-        //           } else {
-        //             throw new Error(k);
-        //           }
-
-
-        //         }
-
-        //         if (!rostpen) {
-        //           infoMessage("run this command on testrpc to make the blockNumber move ahead passed settle_timeout of 250");
-        //           console.log("for(var i =0; i < 250; i++){");
-        //           console.log("web3.eth.sendTransaction({from:web3.eth.accounts[1],to:web3.eth.accounts[2],value:10})");
-        //           console.log("}");
-        //         }
-
-                
-        //         // bc.settle(acct1Nonce + 4 + k + 1, 1, channelAddress).then(function(result){
-        //         //   infoMessage("acct1 settles channel");
-        //         //   console.log(result);  
-        //         // });
-                
-
-        //         if (DEBUG) {
-        //           const NettingChannelContract = require('../smart-contracts/build/contracts/NettingChannelContract.json');
-        //           console.info(JSON.stringify(NettingChannelContract.abi));
-
-        //           const ChannelManagerContract = require('../smart-contracts/build/contracts/ChannelManagerContract.json');
-        //           console.info(JSON.stringify(ChannelManagerContract.abi));
-
-        //         } 
-        //     }); 
-    //     // });  
-    //   });//deposit
-    
-    // });
-    
-    // bc2.transferToken(acct2Nonce, 5000, testToken, acct1, 1000).then(function(result){
-    //   infoMessage("acct2 send some testTOken to account1");
-    //   console.log(result);  
-    // });
-
-    
-   
-    
-
-    
-   
-    
-
-
-
-
-    return;
   }
+  setupNewChannelAndDeposit();
 }//end function run
-debugger;
+
