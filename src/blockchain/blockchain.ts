@@ -51,20 +51,20 @@ export class BlockchainService implements T.BlockchainService {
   }
 
   getBlockNumber(){
-    return this.fetchSimple('eth_blockNumber', [ 'latest']);        
+    return this.fetchSimple('eth_blockNumber', [], x=>{ return new util.BN(x)});        
   }
 
   // These are the call functions
   // we coulda abstract this more, but hey
   getTransactionCount (a: Buffer) {
-    return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(a.toString('hex')), 'latest']);
+    return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(a.toString('hex')), 'latest'],x=>{ return new util.BN(x)});
   }
 
   getBalance (a: Buffer) {
-    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(a.toString('hex')), 'latest']);
+    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(a.toString('hex')), 'latest'],x=>{ return new util.BN(x)});
   }
 
-  fetchSimple(method:string, params:string[]){
+  fetchSimple(method:string, params:string[],decode){
     var randomInt = this._getRandomInt();
     return fetch(this.providerUrl,
       {
@@ -82,7 +82,7 @@ export class BlockchainService implements T.BlockchainService {
       })
     .then(res=> {
       if(res.status !== 200) throw new Error();
-       return res.json()
+       return res.json().then(r=>decode? decode(r.result): r.result);
      });
     
   }
@@ -127,6 +127,9 @@ export class BlockchainService implements T.BlockchainService {
       from.toString("hex"),[]);
   }
 
+  /***
+  * 
+  */
   fetchAndDecodeCall(functionRef,to:string,from:string,data:any[]){
     return fetch(this.providerUrl,
       {
