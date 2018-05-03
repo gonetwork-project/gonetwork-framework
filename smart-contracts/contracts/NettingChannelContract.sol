@@ -206,7 +206,7 @@ contract NettingChannelContract {
         return (amount,expiration,hashlock);
     }
 
-    function computeMerkleRoot(bytes lock, bytes merkle_proof) pure public returns(bytes32){
+    function computeMerkleRootTest(bytes lock, bytes merkle_proof) pure public returns(bytes32){
         require(merkle_proof.length % 32 == 0);
 
         uint i;
@@ -229,7 +229,7 @@ contract NettingChannelContract {
         return h;
     }
 
-    function computeLockHash(bytes lock) pure public  returns(bytes32){
+    function computeLockHashTest(bytes lock) pure public  returns(bytes32){
         return keccak256(lock);
     }
 

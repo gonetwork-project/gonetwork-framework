@@ -14,32 +14,60 @@ var web3 = require('Web3');
 //testrpc -g 20  --unlock 0 --unlock 1 --unlock 2 --unlock 3 --account="0xb507928218b7b1e48f82270011149c56b6191cd1f2846e01c419f0a1a57acc42,10000000000000000000000000" --account="0x4c65754b227fb8467715d2949555abf6fe8bcba11c6773433c8a7a05a2a1fc78,10000000000000000000000000" --account="0xa8344e81509696058a3c14e520693f94ce9c99c26f03310b2308a4c59b35bb3d,10000000000000000000000000" --account="0x157258c195ede5fad2f054b45936dae4f3e1b1f0a18e0edc17786d441a207224,10000000000000000000000000"
 
 
-module.exports = function(deployer) {
+module.exports = function(deployer,network) {
 	console.log("Deploying Standard Token");
-    var acct1 = "0xf0c3043550e5259dc1c838d0ea600364d999ea15";
-    var acct2 = "0xb0ae572146ab8b5990e069bff487ac25635dabe8";
-    var acct3 = "0xff8a018d100ace078d214f02be8df9c6944e7a2b";
-    var acct4 = "0xf77e9ef93380c70c938ca2e859baa88be650d87d";
+
    
+
+
+  if(network =="mainnet"){
+
+    var acct0 = "0x8ef9cef820acce1ca220eca25b830dd14bb205dc";
+    
 
   deployer.then(async () => {
     await deployer.deploy(StandardToken)
     await deployer.link(StandardToken, HumanStandardToken);
-    await deployer.deploy(HumanStandardToken, 100000000,"GoNetwork",1,"$GOT");
-    var gotToken= await HumanStandardToken.deployed();
-    console.log("GOT ADDRESS:"+gotToken.address.toString('hex'));
-
-    var testToken = await HumanStandardToken.new(50000,"TEST_TOKEN",1, "$NO", {from:acct2});
-    console.log("TEST ERC20:" + testToken.address.toString('hex') );
-    //await testToken.transfer(acct1, 25000,{from:acct2});
-
+    await deployer.deploy(HumanStandardToken, 100000000,"TestToken",1,"$GTK");
+    var testToken= await HumanStandardToken.deployed();
+    console.log("Test Token ADDRESS:"+testToken.address.toString('hex'));   
     await  deployer.link(HumanStandardToken, NettingChannelLibrary);
     await deployer.deploy(NettingChannelLibrary);
     await deployer.link(NettingChannelLibrary,NettingChannelContract);
     await deployer.link(NettingChannelLibrary, ChannelManagerLibrary);   
     await deployer.deploy(ChannelManagerLibrary);
     await deployer.link(ChannelManagerLibrary, ChannelManagerContract);
-    await deployer.deploy(ChannelManagerContract, gotToken.address, testToken.address);
+    await deployer.deploy(ChannelManagerContract, "0x423b5F62b328D0D6D44870F4Eee316befA0b2dF5", testToken.address);
+  });
+    
+  }else{
+      console.log("DEPLOYING ON NETWORK:"+network);
+     var acct1 = "0xf0c3043550e5259dc1c838d0ea600364d999ea15";
+      var acct2 = "0xb0ae572146ab8b5990e069bff487ac25635dabe8";
+      var acct3 = "0xff8a018d100ace078d214f02be8df9c6944e7a2b";
+      var acct4 = "0xf77e9ef93380c70c938ca2e859baa88be650d87d";
+     
+
+    deployer.then(async () => {
+      await deployer.deploy(StandardToken)
+      await deployer.link(StandardToken, HumanStandardToken);
+      await deployer.deploy(HumanStandardToken, 100000000,"GoNetwork",1,"$GOT");
+      var gotToken= await HumanStandardToken.deployed();
+      console.log("GOT ADDRESS:"+gotToken.address.toString('hex'));
+
+      var testToken = await HumanStandardToken.new(50000,"TEST_TOKEN",1, "$NO", {from:acct1});
+      console.log("TEST ERC20:" + testToken.address.toString('hex') );
+      //await testToken.transfer(acct1, 25000,{from:acct2});
+
+      await  deployer.link(HumanStandardToken, NettingChannelLibrary);
+      await deployer.deploy(NettingChannelLibrary);
+      await deployer.link(NettingChannelLibrary,NettingChannelContract);
+      await deployer.link(NettingChannelLibrary, ChannelManagerLibrary);   
+      await deployer.deploy(ChannelManagerLibrary);
+      await deployer.link(ChannelManagerLibrary, ChannelManagerContract);
+      await deployer.deploy(ChannelManagerContract, gotToken.address, testToken.address);
+    });
+  }
     
     
 
@@ -134,7 +162,6 @@ module.exports = function(deployer) {
       
     
 
-   });
 
   	
   	
