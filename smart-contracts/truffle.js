@@ -13,6 +13,14 @@ module.exports = {
       host: "localhost",
       port: 8545,
       network_id: "3",
-      gas:3500000
-    }}
+      gas:3500000,
+      gasPrice:10000000000
+    },
+  mainnet: {
+      host: "localhost",
+      port: 8545,
+      network_id: "1",
+      gas:3500000,
+      gasPrice:10000000000
+  }}
 };
