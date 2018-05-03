@@ -2,12 +2,12 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:32
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-18 01:12:15
+* @Last Modified time: 2018-05-01 15:30:37
 */
 const stateChannel = require('state-channel');
 const events = require('events');
 const util = require("ethereumjs-util");
-const bcs = require('../lib/blockchain.js');
+const bcs = require('../lib/blockchain/blockchain.js');
 const message = stateChannel.message;
 
 
@@ -64,6 +64,65 @@ class TestEventBus extends events.EventEmitter {
 
 
 }
+class MockBlockchain{
+  constructor(blockchainQueue){
+    this.blockchainQueue = blockchainQueue;
+    this.cmdQueue =[];
+  }
+
+  handle(msg){
+    this.blockchainQueue.push(msg);
+  }
+
+  closeChannel(channelAddress,proof){
+    this.cmdQueue.push("closeChannel");
+    var self = this;
+    var args = arguments;
+    return new Promise(function(resolve,reject) {
+          self.blockchainQueue.push(args);          
+    });
+  }
+
+  updateTransfer(channelAddress, proof, success,error){
+    this.cmdQueue.push("updateTransfer");
+     var self = this;
+    var args = arguments;
+    return new Promise(function(resolve,reject){
+      self.blockchainQueue.push(args);
+      resolve(args);
+
+    });
+  }
+
+ 
+  withdrawLock(channelAddress, encodedLock, merkleProof,secret){
+    this.cmdQueue.push("withdrawPeerOpenLocks");
+    var self = this;
+    var args = arguments;
+    return new Promise(function(resolve,reject){
+      self.blockchainQueue.push(args);
+      resolve(1000);
+    });
+  }
+
+  newChannel(peerAddress,settleTimeout){
+    return new Promise(function(resolve,reject){
+          this.cmdQueue.push("newChannel");
+        //this.cmdQueue.push([peerAddress,settleTimeout]);
+        resolve(channelAddress);
+    })
+  }
+
+  settle(channelAddress){
+    this.cmdQueue.push("settle");
+    var self = this;
+    var args = arguments;
+    return new Promise(function (resolve,reject) {
+      resolve(args);
+    });
+  }
+
+}
 
 function createEngine(address, privateKey, blockchainService) {
   var e = new stateChannel.Engine(address, function (msg) {
@@ -74,11 +133,12 @@ function createEngine(address, privateKey, blockchainService) {
 }
 
 var blockchainQueue = [];
+var mockBC = new MockBlockchain(blockchainQueue);
 var sendQueue = [];
 var currentBlock = new util.BN(55);
 var channelAddress = util.toBuffer("0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
-var engine = createEngine(util.toBuffer(acct1), pk1);
-var engine2 = createEngine(util.toBuffer(acct4), pk4);
+var engine = createEngine(util.toBuffer(acct1), pk1,mockBC);
+var engine2 = createEngine(util.toBuffer(acct4), pk4,mockBC);
 //SETUP AND DEPOSIT FOR ENGINES
 engine.send = function (msg) {
   sendQueue.push(message.SERIALIZE(msg));
@@ -88,30 +148,21 @@ engine2.send = function (msg) {
   sendQueue.push(message.SERIALIZE(msg));
 }
 
-engine.blockchain = function (msg) {
 
-  blockchainQueue.push(msg);
-}
-engine2.blockchain = function (msg) {
-  blockchainQueue.push(msg);
-}
 
-engine.onNewChannel(channelAddress,
-  util.toBuffer(acct1),
-  new util.BN(0),
-  util.toBuffer(acct4),
-  new util.BN(0));
-engine2.onNewChannel(channelAddress,
-  util.toBuffer(acct1),
-  new util.BN(0),
-  util.toBuffer(acct4),
-  new util.BN(0))
+  engine.onChannelNew(util.toBuffer(channelAddress),
+    util.toBuffer(acct1),
+    util.toBuffer(acct4),
+    new util.BN(40));
+  engine2.onChannelNew(util.toBuffer(channelAddress),
+    util.toBuffer(acct1),
+    util.toBuffer(acct4),
+    new util.BN(40))
 
 
 
-engine.onDeposited(channelAddress, util.toBuffer(acct1), new util.BN(27));
-engine2.onDeposited(channelAddress, util.toBuffer(acct1), new util.BN(27));
-
+  engine.onChannelNewBalance(util.toBuffer(channelAddress), util.toBuffer(acct1), new util.BN(27));
+  engine2.onChannelNewBalance(util.toBuffer(channelAddress), util.toBuffer(acct1), new util.BN(27));
 //END SETUP
 
 
@@ -266,11 +317,24 @@ revealSecretInitiator = message.DESERIALIZE_AND_DECODE_MESSAGE(sendQueue[sendQue
 engine.onMessage(revealSecretInitiator);
 
 
-engine2.closeChannel(channelAddress);
+engine2.closeChannel(util.toBuffer(channelAddress));
 
-engine.onClosed(channelAddress, 16);
+engine.onChannelClose(util.toBuffer(channelAddress), util.toBuffer(acct4));
+engine2.onChannelClose(util.toBuffer(channelAddress), util.toBuffer(acct4));
 
-//MANUAL TEST BEGINS
+engine.onTransferUpdated(util.toBuffer(channelAddress),util.toBuffer(acct1));
+
+//blockchainQueue = [];
+engine.withdrawPeerOpenLocks(util.toBuffer(channelAddress)).then(function(){
+  createWeb3Requests();
+
+});
+
+function createWeb3Requests(){
+
+
+
+
 
 var bc = new bcs.BlockchainService(0, function (cb) {
   cb(pk1);
@@ -280,8 +344,10 @@ var bc4 = new bcs.BlockchainService(0, function (cb) {
   cb(pk4);
 })
 
-var tx = bc.newChannel(8, 1, "0x05e1b1806579881cfd417e1716f23b1900568346", acct4, 150);
-console.log("web3.eth.sendRawTransaction(\"0x" + tx.serialize().toString('hex') + "\",function(err,txHash){ console.log(err);})");
+var tx = bc.newChannel(8, 1, "0x05e1b1806579881cfd417e1716f23b1900568346", acct4, 150).then(console.log);
+//console.log(tx);
+
+//console.log("web3.eth.sendRawTransaction(\"0x" + tx.serialize().toString('hex') + "\",function(err,txHash){ console.log(err);})");
 
 tx = bc.approve(9, 1, "0x9c1af2395beb97375eaee816e355863ec925bc2e", "0x8bf6a4702d37b7055bc5495ac302fe77dae5243b", 500);
 console.log("web3.eth.sendRawTransaction(\"0x" + tx.serialize().toString('hex') + "\",function(err,txHash){ console.log(err);})");
@@ -343,5 +409,6 @@ console.info(JSON.stringify(NettingChannelContract.abi));
 
 
 console.info("Proof2 expected locksroot:" + proof2.locksRoot.toString('hex'))
+}
 
 // debugger;

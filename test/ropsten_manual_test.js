@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-04-17 22:26:32
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-28 00:29:12
+* @Last Modified time: 2018-05-01 16:29:39
 */
 const stateChannel = require('state-channel');
 const events = require('events');
@@ -27,6 +27,7 @@ process.argv.forEach(function (val, index, array) {
 });
 
 var url = "http://localhost:8000";
+var urlPost ="http://127.0.0.1:8545";
 var urlPost = url;
 if (rostpen) {
   url = "ws://127.0.0.1:8546";
@@ -177,7 +178,7 @@ function run() {
    
   // bc.getTokenBalance(util.toBuffer(goTokenAddress),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
   var channel = null;
-  bc.getAddressAndBalance(util.toBuffer("0x543d603a803a37a3eb52288fc9fa9b956df1e074"),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
+  bc.getAddressAndBalance(util.toBuffer(channelAddress),util.toBuffer(acct1),util.toBuffer(acct1)).then(console.log);
   
   bc.getNettingContractsByAddress(util.toBuffer(channelManagerAddress),util.toBuffer(acct1), util.toBuffer(acct1)).then(function(result) {
     console.log(result['address[]']);
@@ -263,13 +264,13 @@ function run() {
 
     //channelAddress = "0xf4a8f0eb2675ed1cda6d78dd4f4fffbf3ae0b9c3";
     simulator.simulate(blockchainQueue, channelAddress, acct1, pk1, acct2, pk2, new util.BN(4076192));
-      
+    
     var proof = blockchainQueue[0][1];
     console.log(proof);
           
     bc2.close(acct2Nonce++,50000000000,channelAddress,proof).then(function(result){
               console.log(result);
-              var proof2 = blockchainQueue[2][1];
+              var proof2 = blockchainQueue[1][1];
               console.log(proof2);
 
               setTimeout(function(){
@@ -280,19 +281,20 @@ function run() {
                     setTimeout(function(){
 
                       var k = 0;
-                      for(var i =0; i < blockchainQueue[3][1].length; i++){
-                        var withdrawProof = blockchainQueue[3][1][i];
-                        var encodedLock = withdrawProof[2].slice(0,96);
-                        var secret =withdrawProof[2].slice(96,128);
+                      for(var i =2; i < blockchainQueue.length; i++){
+                        var withdrawProof = blockchainQueue[i];
+                        var encodedLock = withdrawProof[1];
+                        var secret =withdrawProof[3];
+                        var merkleProof = withdrawProof[2];
                         if(DEBUG){
                           console.log("\r\nENCODED LOCK:0x"+ encodedLock.toString('hex'));
                           console.log("MERKLE PROOF:"+"0x"+withdrawProof[1].reduce(function(sum,proof){ sum+=proof.toString('hex'); return sum;},""));
                           console.log("SECRET:0x"+ secret.toString("hex"));
                           console.log("LOCKSROOT:"+proof2.locksRoot.toString('hex') + "\r\n");
                         }
-                        if(util.sha3(secret).compare(withdrawProof[0].hashLock)===0 && stateChannel.merkletree.checkMerkleProof(withdrawProof[1], proof2.locksRoot, util.sha3(encodedLock)) === true){
+                        if(stateChannel.merkletree.checkMerkleProof(merkleProof, proof2.locksRoot, util.sha3(encodedLock)) === true){
                           k++;  
-                          bc.withdrawLock(acct1Nonce++, 20000000000, channelAddress, encodedLock,withdrawProof[1],secret).then(console.log);
+                          bc.withdrawLock(acct1Nonce++, 20000000000, channelAddress, encodedLock,merkleProof,secret).then(console.log);
                           
                           //console.log("web3.eth.sendRawTransaction(\"0x"+tx.serialize().toString('hex')+"\",function(err,txHash){ console.log(err);})");
 
@@ -324,5 +326,13 @@ function run() {
 
   }
   setupNewChannelAndDeposit();
+  // var  q = [];
+  // simulator.simulate(q, util.toBuffer("0x3d5cd93a20cea6da5ab23afb16bb43e80652dc0b"), acct1, pk1, acct2, pk2, new util.BN(4076192));
+  // // console.log(q.length);
+  // console.log(q[0][1]);
+  // console.log(q[1][1]);
+  // console.log(util.sha3(q[2][3]).toString("hex"));
+  // console.log(q[2][1].toString("hex"));
+  // console.log(q[4][3].toString("hex"));
 }//end function run
 

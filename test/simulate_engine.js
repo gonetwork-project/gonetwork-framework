@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-04-20 16:13:14
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-04-20 16:55:45
+* @Last Modified time: 2018-05-01 15:55:44
 */
 
 const stateChannel = require('state-channel');
@@ -62,13 +62,74 @@ function createEngine(address, privateKey, blockchainService) {
   return e;
 }
 
+class MockBlockchain{
+  constructor(blockchainQueue){
+    this.blockchainQueue = blockchainQueue;
+    this.cmdQueue =[];
+  }
+
+  handle(msg){
+    this.blockchainQueue.push(msg);
+  }
+
+  closeChannel(channelAddress,proof){
+    this.cmdQueue.push("closeChannel");
+    var self = this;
+    var args = arguments;
+    return new Promise(function(resolve,reject) {
+          self.blockchainQueue.push(args);          
+    });
+  }
+
+  updateTransfer(channelAddress, proof, success,error){
+    this.cmdQueue.push("updateTransfer");
+     var self = this;
+    var args = arguments;
+    return new Promise(function(resolve,reject){
+      self.blockchainQueue.push(args);
+      resolve(args);
+
+    });
+  }
+
+ 
+  withdrawLock(channelAddress, encodedLock, merkleProof,secret){
+
+    this.cmdQueue.push("withdrawPeerOpenLocks");
+    var self = this;
+    var args = arguments;
+    return new Promise(function(resolve,reject){
+      self.blockchainQueue.push(args);
+      resolve(1000);
+    });
+  }
+
+  newChannel(peerAddress,settleTimeout){
+    return new Promise(function(resolve,reject){
+          this.cmdQueue.push("newChannel");
+        //this.cmdQueue.push([peerAddress,settleTimeout]);
+        resolve(channelAddress);
+    })
+  }
+
+  settle(channelAddress){
+    this.cmdQueue.push("settle");
+    var self = this;
+    var args = arguments;
+    return new Promise(function (resolve,reject) {
+      resolve(args);
+    });
+  }
+
+}
+
 function simulate(blockchainQueue, channelAddressHexString, acct1, pk1, acct4, pk4, currentBlock) {
   var backup = console.log;
   console.log = function () {
 
   }
 
-
+  var mockBC = new MockBlockchain(blockchainQueue);
   //var blockchainQueue = [];
   var sendQueue = [];
 
@@ -76,8 +137,9 @@ function simulate(blockchainQueue, channelAddressHexString, acct1, pk1, acct4, p
 
   var channelAddress = util.toBuffer(channelAddressHexString);
   //var channelAddress = util.toBuffer("0x8bf6a4702d37b7055bc5495ac302fe77dae5243b");
-  var engine = createEngine(util.toBuffer(acct1), pk1);
-  var engine2 = createEngine(util.toBuffer(acct4), pk4);
+  var engine = createEngine(util.toBuffer(acct1), pk1,mockBC);
+  var engine2 = createEngine(util.toBuffer(acct4), pk4,mockBC);
+
   //SETUP AND DEPOSIT FOR ENGINES
   engine.send = function (msg) {
     sendQueue.push(message.SERIALIZE(msg));
@@ -87,29 +149,19 @@ function simulate(blockchainQueue, channelAddressHexString, acct1, pk1, acct4, p
     sendQueue.push(message.SERIALIZE(msg));
   }
 
-  engine.blockchain = function (msg) {
-
-    blockchainQueue.push(msg);
-  }
-  engine2.blockchain = function (msg) {
-    blockchainQueue.push(msg);
-  }
-
-  engine.onNewChannel(channelAddress,
+  engine.onChannelNew(channelAddress,
     util.toBuffer(acct1),
-    new util.BN(0),
     util.toBuffer(acct4),
-    new util.BN(0));
-  engine2.onNewChannel(channelAddress,
+    new util.BN(40));
+  engine2.onChannelNew(channelAddress,
     util.toBuffer(acct1),
-    new util.BN(0),
     util.toBuffer(acct4),
-    new util.BN(0))
+    new util.BN(40))
 
 
 
-  engine.onDeposited(channelAddress, util.toBuffer(acct1), new util.BN(27));
-  engine2.onDeposited(channelAddress, util.toBuffer(acct1), new util.BN(27));
+  engine.onChannelNewBalance(channelAddress, util.toBuffer(acct1), new util.BN(27));
+  engine2.onChannelNewBalance(channelAddress, util.toBuffer(acct1), new util.BN(27));
 
   //END SETUP
 
@@ -267,7 +319,14 @@ function simulate(blockchainQueue, channelAddressHexString, acct1, pk1, acct4, p
 
   engine2.closeChannel(channelAddress);
 
-  engine.onClosed(channelAddress, 16);
+  engine.onChannelClose(channelAddress,  util.toBuffer(acct4));
+  engine2.onChannelClose(channelAddress,  util.toBuffer(acct4));
+
+  engine.onTransferUpdated(channelAddress, util.toBuffer(acct1));
+
+  engine.withdrawPeerOpenLocks(channelAddress);
+
+
 
   console.log = backup;
 }
