@@ -10,14 +10,13 @@ import * as abi from 'ethereumjs-abi'
 import * as util from 'ethereumjs-util'
 import fetch from 'node-fetch'
 
-// todo - add proper types
+//TODO: extend this to add proper event Type support
 const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
 const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
 const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
 import * as T from '../types'
 
-// todo - inject it somehow or remove
 const DEBUG = false
 
 const ChannelManagerContractAbi = ChannelManagerContract.abi.reduce(function (r, i) {
@@ -37,12 +36,21 @@ const HumanStandardTokenAbi = HumanStandardTokenContract.abi.reduce(function (r,
 
 
 
-/*** Class that provides a lightweight minimalist means to interact with the blockchain using promises */
+/*** Class that provides a lightweight minimalist approach means to interact with the blockchain using promises over the contract ABI's 
+*/
 export class BlockchainService implements T.BlockchainService {
 
   chainId: T.ChainId
   signatureCallback: any
 
+  /** Initialize the blockchain service
+  * @param {BN} chainID - the chainID you will operate with.  This is important for signature
+  * @param {function} signatureCallback - a callback function that is excuted prior to signing a message.
+  * The callback receives the transaction signing function so by running it your callback your effectively sign
+  * the transactions and by discarding it you prevent signing. e.g. You have a confirm modal, user says no, throw new Error() instead of running supplied function 
+  * @param {string} providerUrl - the url endpoint of the geth rpc methods.  Atm, only url encoded authorization schemes are supported 
+  * e.g. infura api endpoint. Check the test/ folder for examples of how its set
+  */
   constructor (chainID, signatureCallback,providerUrl) {
     this.chainId = chainID
     this.providerUrl = providerUrl;
@@ -50,20 +58,32 @@ export class BlockchainService implements T.BlockchainService {
     this.signatureCallback = signatureCallback
   }
 
+  /** Get current mined block number from your geth provider */
   getBlockNumber(){
     return this.fetchSimple('eth_blockNumber', [], x=>{ return new util.BN(x)});        
   }
 
-  // These are the call functions
-  // we coulda abstract this more, but hey
-  getTransactionCount (a: Buffer) {
-    return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(a.toString('hex')), 'latest'],x=>{ return new util.BN(x)});
+  /**These are the call functions*/
+
+  /** Get the nonce for an address 
+  * @param {Buffer} address - the eth address to get the nonce value for.  This can be a contract address as well
+  */
+  getTransactionCount (address: Buffer) {
+    return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(address.toString('hex')), 'latest'],x=>{ return new util.BN(x)});
   }
 
-  getBalance (a: Buffer) {
-    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(a.toString('hex')), 'latest'],x=>{ return new util.BN(x)});
+  /** Get the nonce for an address 
+  * @param {Buffer} address - the eth address to get the ETH Balance value for.  This can be a contract address as well
+  */
+  getBalance (address: Buffer) {
+    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(address.toString('hex')), 'latest'],x=>{ return new util.BN(x)});
   }
 
+   /** fetch with a post request one of the "primitive" geth commands i.e. eth_blockNumber, eth_getTransactionCount,eth_getBalance, etc  
+  * @param {string} method - the eth_* rpc method name.  Refer to https://github.com/ethereum/wiki/wiki/JSON-RPC
+  * @param {string[]} params - the string encoded or BN parameters to be passed to the method (all bytes and addresses must be converted to 0x leading strings)
+  * @param {function} decode - an optional decode function that is run on the result data 
+  */
   fetchSimple(method:string, params:string[],decode){
     var randomInt = this._getRandomInt();
     return fetch(this.providerUrl,
