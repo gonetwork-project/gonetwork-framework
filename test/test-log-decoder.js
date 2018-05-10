@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-05-09 12:54:34
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-05-09 23:53:13
+* @Last Modified time: 2018-05-10 00:32:38
 */
 const tape = require('tape');
 const blockchain = require('../lib/blockchain/blockchain');
@@ -10,7 +10,7 @@ const logDecoder = require('../lib/blockchain/log-decoder');
 const util = require('ethereumjs-util');
 const fs = require('fs');
 
-let ld = new logDecoder.LogDecoder([logDecoder.]);
+let ld = new logDecoder.LogDecoder();
 
 console.log(ld);
 
@@ -42,10 +42,17 @@ function fnFormatter(name){
 	var cmLogs = JSON.parse(fs.readFileSync(fnFormatter("channel-manager")));
 	var hsLogs = JSON.parse(fs.readFileSync(fnFormatter("human-standard")));
 
-	var events = hsLogs.map(l=>{
-		console.log(l);
+	hsLogs.map(l=>{
 		console.log(ld.decode(l));
 	});
+
+	ncLogs.map(l=>{
+		console.log(ld.decode(l));		
+	});
+
+	cmLogs.map(l=>{
+		console.log(ld.decode(l));
+	})
 
 })()
 
