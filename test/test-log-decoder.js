@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-05-09 12:54:34
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-05-10 00:32:38
+* @Last Modified time: 2018-05-10 00:39:16
 */
 const tape = require('tape');
 const blockchain = require('../lib/blockchain/blockchain');
@@ -17,7 +17,7 @@ console.log(ld);
 
  var bc = new blockchain.BlockchainService(3, function (cb) {
     return;
-  },'https://ropsten.infura.io/QxoWjkfgF4aVMUV4rbTG');
+  },'https://ropsten.infura.io');
 
 let address=util.toBuffer("0x8ed2dfe5Ae460657CF8086975B81fCcA87add0f1");
 
