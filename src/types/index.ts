@@ -115,3 +115,7 @@ export interface EthMonitoring {
 export interface BlockchainService {
 
 }
+
+export interface LogDecoder {
+
+}

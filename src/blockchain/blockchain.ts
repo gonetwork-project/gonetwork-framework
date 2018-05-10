@@ -10,6 +10,8 @@ import * as abi from 'ethereumjs-abi'
 import * as util from 'ethereumjs-util'
 import fetch from 'node-fetch'
 
+/* tslint:disable*/
+
 //TODO: extend this to add proper event Type support
 const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
 const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
@@ -34,10 +36,7 @@ const HumanStandardTokenAbi = HumanStandardTokenContract.abi.reduce(function (r,
   return r
 }, {})
 
-
-
-/*** Class that provides a lightweight minimalist approach means to interact with the blockchain using promises over the contract ABI's 
-*/
+/*** Class that provides a lightweight minimalist approach means to interact with the blockchain using promises over the contract ABI's*/
 export class BlockchainService implements T.BlockchainService {
 
   chainId: T.ChainId
@@ -83,9 +82,28 @@ export class BlockchainService implements T.BlockchainService {
   * @param {string} method - the eth_* rpc method name.  Refer to https://github.com/ethereum/wiki/wiki/JSON-RPC
   * @param {string[]} params - the string encoded or BN parameters to be passed to the method (all bytes and addresses must be converted to 0x leading strings)
   * @param {function} decode - an optional decode function that is run on the result data 
+  * @returns {string[]} - hex string array
+  */
+  getLogs(address:Buffer,fromBlock:BN,toBlock:BN,topicsArray:string[]){
+    return this.fetchSimple('eth_getLogs', 
+      [{"fromBlock":util.addHexPrefix(fromBlock.toString(16)),
+      "toBlock":util.addHexPrefix(toBlock.toString(16)), 
+      "address": util.addHexPrefix(address.toString('hex')),
+      "topics": topicsArray
+    }]
+    , x=>{
+      return x.sort((a,b)=>{ 
+       return a.blockNumber - b.blockNumber || a.logIndex - b.logIndex; });
+    })
+  }
+
+   /** fetch with a post request one of the "primitive" geth commands i.e. eth_blockNumber, eth_getTransactionCount,eth_getBalance, etc  
+  * @param {string} method - the eth_* rpc method name.  Refer to https://github.com/ethereum/wiki/wiki/JSON-RPC
+  * @param {string[]} params - the string encoded or BN parameters to be passed to the method (all bytes and addresses must be converted to 0x leading strings)
+  * @param {function} decode - an optional decode function that is run on the result data 
   */
   fetchSimple(method:string, params:string[],decode){
-    var randomInt = this._getRandomInt();
+    let randomInt = this._getRandomInt();
     return fetch(this.providerUrl,
       {
         "method": 'POST',
@@ -147,9 +165,6 @@ export class BlockchainService implements T.BlockchainService {
       from.toString("hex"),[]);
   }
 
-  /***
-  * 
-  */
   fetchAndDecodeCall(functionRef,to:string,from:string,data:any[]){
     return fetch(this.providerUrl,
       {
@@ -311,7 +326,7 @@ export class BlockchainService implements T.BlockchainService {
         let txCall = {
             from:from,
             to:to,
-            data: util.addHexPrefix(data.toString("hex"))
+            data: util.addHexPrefix(data.toString('hex'))
         };
         return txCall;
     }
@@ -324,7 +339,7 @@ export class BlockchainService implements T.BlockchainService {
      
      return  abi.rawDecode(outputs,util.toBuffer(encodedData)).reduce(function(s,v,i){
 
-              var key =  functionRef.outputs[i].name == '' ? functionRef.outputs[i].type:functionRef.outputs[i].name ;
+              let key =  functionRef.outputs[i].name == '' ? functionRef.outputs[i].type:functionRef.outputs[i].name ;
               s[key]=v;
             
             return s;
@@ -365,8 +380,6 @@ export class BlockchainService implements T.BlockchainService {
       txParams.value = value
     }
     let tx = new EthereumTx(txParams)
-
-   
       this.signatureCallback(function (privateKey) {
         tx.sign(privateKey)
       })
