@@ -16,6 +16,7 @@
     "node-persist": "^2.1.0",
     "standard": "^10.0.3",
     "state-channel": "git+https://github.com/gonetwork-admin/state-channel.git#blockchain-refactor",
+    "tape": "^4.9.0",
     "ts-loader": "^4.2.0",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",

@@ -1,6 +1,8 @@
 
 import { EventEmitter } from 'events'
 
+export * from './blockchain-events'
+
 export type ChainId = string & { __CHAIN_ID__: true }
 export type BlockQuantity = 'latest'
 
@@ -8,6 +10,7 @@ export type BlockQuantity = 'latest'
 export type EthAddress = (string | Buffer | any) & { __ETH_ADDRESS__: true }
 export type EthTransaction = string & { __ETH_TRANSACTION__: true }
 export type EthBlock = string & { __ETH_BLOCK__: true }
+export type BN = any & { __BIG_NUMBER__: true }
 
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state
