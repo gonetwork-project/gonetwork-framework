@@ -3,7 +3,7 @@ import * as T from '../types'
 const abi = require('ethereumjs-abi')
 const util = require('ethereumjs-util')
 
-export default class GenericLogDecoder implements T.LogDecoder {
+export default class GenericLogDecoder {
   private eventMap: any
 
   constructor (contracts: any[]) {

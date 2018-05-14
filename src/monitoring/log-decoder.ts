@@ -9,7 +9,7 @@ const HumanStandardTokenContract = require('../../smart-contracts/build/contract
 const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelContract, HumanStandardTokenContract])
 
 export type Decode<E> = (log: any) => E
-const decode = (log: any) => decoder.decode(log)
+export const decode = (log: any) => decoder.decode(log)
 
 export const decodeChannelManager: Decode<T.ManagerEvent> = decode
 export const decodeNettingChannel: Decode<T.NettingEvent> = decode

@@ -12,7 +12,9 @@ const persistentPath = __dirname + '/temp/infura.dat'
 // todo: make config configurable
 let cfg = require('./config/ropsten.monitoring')
 
-fs.rmdirSync(persistentPath)
+try {
+  fs.rmdirSync(persistentPath)
+} catch (err) { }
 
 persist.initSync({
   dir: __dirname + '/temp/infura.dat'
