@@ -1,6 +1,7 @@
 
 import { EventEmitter } from 'events'
 
+import { BlockchainEventType } from './blockchain-events'
 export * from './blockchain-events'
 
 export type ChainId = string & { __CHAIN_ID__: true }
@@ -98,7 +99,8 @@ export interface EthMonitoringInfo {
 }
 
 export interface EthMonitoringConfig extends EthMonitoringInfo {
-  registry: EthAddress
+  channelManagerAddress: EthAddress
+  tokenAddresses: EthAddress[]
   storage: Storage
 }
 export interface EthMonitoring {
@@ -108,9 +110,9 @@ export interface EthMonitoring {
 
   transactionReceipt: (tx: EthTransaction) => Promise<Boolean>
 
-  // restrict to only known events
-  on: (e: 'events', listener: (...args: any[]) => void) => void
-  off: (e: 'events', listener: (...args: any[]) => void) => void
+  // split per Event type and enforce callback types
+  on: (e: BlockchainEventType, listener: (...args: any[]) => void) => void
+  off: (e: BlockchainEventType, listener: (...args: any[]) => void) => void
 
   dispose: () => void
 }

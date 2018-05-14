@@ -23,9 +23,9 @@ export class Monitoring implements T.EthMonitoring {
 
   constructor (cfg: T.EthMonitoringConfig) {
     this._cfg = cfg
-    this._state = cfg.storage.getItem(KEY_PREFIX + cfg.registry)
+    this._state = cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress)
       .then(s => s ? JSON.parse(s) : {
-        address: [cfg.registry]
+        address: [cfg.channelManagerAddress]
       })
       .then((s: State) => {
         console.log('STATE', s)
@@ -51,38 +51,6 @@ export class Monitoring implements T.EthMonitoring {
         .subscribe()
   }
 
-  _monitorChannel = () => Observable.timer(0, LOGS_INTERVAL)
-    .switchMap(() =>
-      Observable.defer(() =>
-        this._state
-          .then(s => {
-            // console.log('M-STATE', s)
-            return this._cfg.getLogs(s.blockNumber, s.address)
-          })
-      )
-        .do((x) => console.log('MONITORING', x))
-        .retryWhen(errs => errs
-          .do(e => console.warn('ERR', e))
-          .delay(1000))
-    )
-
-  _monitorTransactions = () =>
-    this._transactions
-      .mergeMap(t =>
-        Observable.timer(0, TRANSACTION_INTERVAL)
-          .switchMap(() =>
-            Observable.defer(() => this._cfg.getTransactionReceipt(t))
-              .catch((err) => {
-                console.log('TRANSACTION_MONITORING_ERROR', err)
-                return Observable.empty()
-              })
-          )
-          .take(1)
-      )
-
-  _saveState = (s: State) =>
-    this._cfg.storage.setItem(KEY_PREFIX + this._cfg.registry, JSON.stringify(s))
-
   subscribeChannel = (a) =>
     this._state.then(s => {
       console.log('SUB', a, s)
@@ -92,7 +60,7 @@ export class Monitoring implements T.EthMonitoring {
     })
 
   unsubscribeChannel = (a) => {
-    if (a === this._cfg.registry) return Promise.resolve(false)
+    if (a === this._cfg.channelManagerAddress) return Promise.resolve(false)
     return this._state.then(s => {
       s.address = s.address.filter(_a => a !== _a)
       return this._saveState(s)
@@ -123,14 +91,45 @@ export class Monitoring implements T.EthMonitoring {
       .take(1)
       .toPromise()
 
-  on (event: 'events', listener: (...args: any[]) => void) {
+  on (event: T.BlockchainEventType, listener: (...args: any[]) => void) {
     this._em.on(event, listener)
   }
 
-  off (event: 'events', listener: (...args: any[]) => void) {
+  off (event: T.BlockchainEventType, listener: (...args: any[]) => void) {
     this._em.removeListener(event, listener)
   }
 
   dispose = () => this._sub && this._sub.unsubscribe()
 
+  private _monitorChannel = () => Observable.timer(0, LOGS_INTERVAL)
+    .switchMap(() =>
+      Observable.defer(() =>
+        this._state
+          .then(s => {
+            // console.log('M-STATE', s)
+            return this._cfg.getLogs(s.blockNumber, s.address)
+          })
+      )
+        .do((x) => console.log('MONITORING', x))
+        .retryWhen(errs => errs
+          .do(e => console.warn('ERR', e))
+          .delay(1000))
+    )
+
+  private _monitorTransactions = () =>
+    this._transactions
+      .mergeMap(t =>
+        Observable.timer(0, TRANSACTION_INTERVAL)
+          .switchMap(() =>
+            Observable.defer(() => this._cfg.getTransactionReceipt(t))
+              .catch((err) => {
+                console.log('TRANSACTION_MONITORING_ERROR', err)
+                return Observable.empty()
+              })
+          )
+          .take(1)
+      )
+
+  private _saveState = (s: State) =>
+    this._cfg.storage.setItem(KEY_PREFIX + this._cfg.channelManagerAddress, JSON.stringify(s))
 }

@@ -6,7 +6,7 @@
 */
 const tape = require('tape');
 const blockchain = require('../lib/blockchain/blockchain');
-const logDecoder = require('../lib/blockchain/log-decoder');
+const logDecoder = require('../lib/monitoring/log-decoder');
 const util = require('ethereumjs-util');
 const fs = require('fs');
 
