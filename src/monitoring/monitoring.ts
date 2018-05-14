@@ -27,6 +27,8 @@ export class Monitoring implements T.EthMonitoring {
   private _transactions: Subject<T.EthTransaction> = new Subject()
   private _blockNumberSub: BehaviorSubject<number | undefined>
     = new BehaviorSubject<number | undefined>(undefined)
+  private _forceMonitoring = new Subject<boolean>()
+  private _toSubscribe: T.EthAddress[] = []
 
   constructor (cfg: T.EthMonitoringConfig) {
     this._cfg = cfg
@@ -47,18 +49,18 @@ export class Monitoring implements T.EthMonitoring {
         .subscribe()
   }
 
-  subscribeChannel = (a) =>
+  subscribeAddress = (a) =>
     this._state.then(s => {
-      console.log('SUB', a, s)
-      if (s.addresses.find(_a => _a === a)) return Promise.resolve(false)
-      s.addresses.push([a, undefined])
+      if (s.addresses.find(_a => _a[0] === a)) return Promise.resolve(false)
+      s.addresses.push([a, -1])
+      this._forceMonitoring.next(true)
       return this._saveState(s)
     })
 
-  unsubscribeChannel = (a) => {
+  unsubscribeAddress = (a) => {
     if (a === this._cfg.channelManagerAddress) return Promise.resolve(false)
     return this._state.then(s => {
-      s.addresses = s.addresses.filter(_a => a !== _a[0])
+      s.addresses = s.addresses.filter(_a => _a[0] === a)
       return this._saveState(s)
     })
   }
@@ -106,25 +108,31 @@ export class Monitoring implements T.EthMonitoring {
           .retryWhen(errs => errs.delay(1000))
       )
       .map(x => parseInt(x, 16))
-      .do(x => console.log('CURRENT_BLOCK', x))
+      // .do(x => console.log('CURRENT_BLOCK', x))
       .do(x => x !== this._blockNumber() && this._blockNumberSub.next(x))
 
   private _monitorAddresses = () =>
-    this._blockNumberSub
-      .do(x => console.log('BN-SUBJECT', x))
+    Observable.combineLatest(
+      this._blockNumberSub,
+      this._forceMonitoring.merge(Observable.of(true)),
+      n => n
+    )
+      // .do(x => console.log('BN-SUBJECT', x))
       .filter(x => x !== undefined)
+      .do(bn => console.log('MONITORING -- BLOCK: ', bn))
       .exhaustMap((blockNumber: T.EthBlockNumber) =>
         Observable.defer(() => this._state)
           .mergeMap((s: State) =>
             Observable.from(s.addresses)
               .groupBy(a => a[1])
+              // .do(xs => console.log('BY-LAST-BLOCK', xs.key))
               .mergeMap(xs => xs
                 .map(x => x[0])
                 .reduce((acc, x) => acc.concat([x]), [])
                 .mergeMap(gs =>
                   Observable.defer(() => {
                     if (xs.key < blockNumber) {
-                      console.log(xs.key, blockNumber, gs)
+                      // console.log(xs.key, blockNumber, gs)
                       return this._cfg.getLogs(xs.key + 1, blockNumber, gs)
                     } else {
                       return Observable.of([] as T.BlockchainEvent[])
@@ -133,14 +141,20 @@ export class Monitoring implements T.EthMonitoring {
                     .map(logs => logs.map(decode))
                     .reduce((acc, logs) => ({
                       logs: acc.logs.concat(logs),
-                      addresses: acc.addresses.concat(gs.map(g => ([g, blockNumber])))
+                      addresses: acc.addresses.concat(gs)
                     }), { logs: [] as any, addresses: [] as MonitorAddress[] })
                 ))
-              .do(x => console.log('NEW_EVENTS_COUNT', x.logs.length))
+              .do(x => x.logs.length && console.log('BLOCK:', blockNumber, ' -- NEW_EVENTS_COUNT:', x.logs.length, ' ADDRESSES COUNT: ', s.addresses.length))
+              // .do(x => console.log('NEW_EVENTS', x.logs))
               .do(({ logs }) => logs.forEach(l => this._em.emit(l._type, l)))
               .mergeMap(({ addresses }) => {
-                s.addresses = addresses
-                return this._saveState(Object.assign({}, s, { addresses }))
+                addresses.forEach(add => {
+                  const a = s.addresses.find(_a => _a[0] === add)
+                  if (a) {
+                    a[1] = blockNumber
+                  }
+                })
+                return this._saveState(s)
               })
           )
           .retryWhen(errs => errs

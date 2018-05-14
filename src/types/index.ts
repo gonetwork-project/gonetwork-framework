@@ -103,8 +103,8 @@ export interface EthMonitoringConfig extends EthMonitoringInfo {
 }
 export interface EthMonitoring {
 
-  subscribeChannel: (ch: EthAddress) => Promise<Boolean>
-  unsubscribeChannel: (ch: EthAddress) => Promise<Boolean>
+  subscribeAddress: (ch: EthAddress) => Promise<Boolean>
+  unsubscribeAddress: (ch: EthAddress) => Promise<Boolean>
 
   transactionReceipt: (tx: EthTransaction) => Promise<Boolean>
 
