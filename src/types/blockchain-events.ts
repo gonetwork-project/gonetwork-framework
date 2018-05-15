@@ -1,7 +1,12 @@
 import { BN } from './index'
 
-export type BlockchainEvent = NettingEvent | ManagerEvent | TokenEvent
-export type BlockchainEventType = NettingEventType | ManagerEventType | TokenEventType
+export type BlockchainEvent = NewBlock | NettingEvent | ManagerEvent | TokenEvent
+export type BlockchainEventType = NewBlockType | NettingEventType | ManagerEventType | TokenEventType
+
+export type NewBlockType = 'NewBlock'
+export interface NewBlock {
+  _type: NewBlockType
+}
 
 // NETTING CHANNEL
 export type NettingEvent = ChannelNewBalance | Refund | ChannelClosed |

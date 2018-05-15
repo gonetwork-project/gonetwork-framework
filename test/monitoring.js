@@ -37,7 +37,7 @@ console.log('CONFIG', cfg)
 
 const monitoring = new Monitoring(
   Object.assign(
-    infuraMonitoring(cfg.NETWORK, cfg.TOKEN),
+    infuraMonitoring(cfg.NETWORK), // seems token not needed
     {
       channelManagerAddress: cfg.CHANNEL_MANAGER_ADDRESS,
       tokenAddresses: cfg.TOKEN_ADDRESSES,
