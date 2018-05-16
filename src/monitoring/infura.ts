@@ -23,16 +23,18 @@ const requestFactory = (network: string, token: string) =>
       .then(r => r.status === 200 ?
         r.json()
           .then(r => {
-            console.log('RESPONSE', r, params)
+         //   console.log('RESPONSE', r, params)
             return r.result
           })
         : r.text())
 
+const toHex = (n: number) => `0x${Number(n).toString(16)}`
+
 export const infuraMonitoring = (network: string, token: string, request = requestFactory(network, token)):
   EthMonitoringInfo => ({
     blockNumber: () => request('eth_blockNumber'),
-    getLogs: (fromBlock, address, toBlock) =>
-      request('eth_getLogs', { fromBlock: '0x' + Number(3044467 - 99000).toString(16), toBlock: '0x' + Number(3044467 + 2).toString(16), address: address[0] }),
+    getLogs: (fromBlock, toBlock, address) =>
+      request('eth_getLogs', { fromBlock: toHex(fromBlock), toBlock: toHex(toBlock), address: address[0] }),
     getTransactionReceipt: (tx) =>
       request('eth_getTransactionReceipt', tx)
   })

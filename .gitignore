@@ -67,7 +67,9 @@ typings/
 lib/
 
 config/demo.js
-config/spec.js
+
 demo/storage.dat
 demo/queue.dat
 demo/infura.dat
+
+test/temp

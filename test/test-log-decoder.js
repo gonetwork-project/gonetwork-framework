@@ -6,53 +6,47 @@
 */
 const tape = require('tape');
 const blockchain = require('../lib/blockchain/blockchain');
-const logDecoder = require('../lib/blockchain/log-decoder');
+const logDecoder = require('../lib/monitoring/log-decoder');
 const util = require('ethereumjs-util');
 const fs = require('fs');
 
-let ld = new logDecoder.LogDecoder();
+var bc = new blockchain.BlockchainService(3, function (cb) {
+	return;
+}, 'https://ropsten.infura.io');
 
-console.log(ld);
+let address = util.toBuffer("0x8ed2dfe5Ae460657CF8086975B81fCcA87add0f1");
 
-
- var bc = new blockchain.BlockchainService(3, function (cb) {
-    return;
-  },'https://ropsten.infura.io');
-
-let address=util.toBuffer("0x8ed2dfe5Ae460657CF8086975B81fCcA87add0f1");
-
-async function  getTestLogs (address,filename){
+async function getTestLogs(address, filename) {
 	if (!fs.existsSync(filename)) {
-   		var logs = await bc.getLogs(address,new util.BN(0),new util.BN(3201827,10),[]);
+		var logs = await bc.getLogs(address, new util.BN(0), new util.BN(3201827, 10), []);
 		fs.writeFileSync(filename, JSON.stringify(logs));
 	}
 }
 
-function fnFormatter(name){
-	return './test/data/'+name+'-logs.json';
+function fnFormatter(name) {
+	return './test/data/' + name + '-logs.json';
 }
 
-(async()=>{
-	await getTestLogs("0x8ed2dfe5Ae460657CF8086975B81fCcA87add0f1",fnFormatter("netting-channel"));
-	await getTestLogs("0xde8a6a2445c793db9af9ab6e6eaacf880859df01",fnFormatter("channel-manager"));
-	await getTestLogs("0xa28a7a43bc389064ab5d16c0338968482b4e02bd",fnFormatter("human-standard"));
-	
-	
-	var ncLogs = JSON.parse(fs.readFileSync(fnFormatter("netting-channel")));
-	var cmLogs = JSON.parse(fs.readFileSync(fnFormatter("channel-manager")));
-	var hsLogs = JSON.parse(fs.readFileSync(fnFormatter("human-standard")));
+const keysByType = ls =>
+	ls.reduce((acc, l) => {
+		acc[l._type] = l
+		return acc
+	}, {});
 
-	hsLogs.map(l=>{
-		console.log(ld.decode(l));
-	});
+(async () => {
+	await getTestLogs("0x8ed2dfe5Ae460657CF8086975B81fCcA87add0f1", fnFormatter("netting-channel"));
+	await getTestLogs("0xde8a6a2445c793db9af9ab6e6eaacf880859df01", fnFormatter("channel-manager"));
+	await getTestLogs("0xa28a7a43bc389064ab5d16c0338968482b4e02bd", fnFormatter("human-standard"));
 
-	ncLogs.map(l=>{
-		console.log(ld.decode(l));		
-	});
-
-	cmLogs.map(l=>{
-		console.log(ld.decode(l));
+	[
+		[logDecoder.decodeNettingChannel, "netting-channel"],
+		[logDecoder.decodeChannelManager, "channel-manager"],
+		[logDecoder.decodeToken, "human-standard"]
+	].forEach(([decode, name]) => {
+		const r = JSON.parse(fs.readFileSync(fnFormatter(name)))
+			.map(decode)
+		console.log(`\n ${name} -- total: ${r.length}`)
+		// console.log(r[0], r[1], r[9])
+		console.log(keysByType(r))
 	})
-
 })()
-

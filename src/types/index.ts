@@ -1,13 +1,17 @@
 
 import { EventEmitter } from 'events'
 
+import { BlockchainEventType, BlockchainEvent } from './blockchain-events'
+export * from './blockchain-events'
+
 export type ChainId = string & { __CHAIN_ID__: true }
 export type BlockQuantity = 'latest'
 
-// todo: make it consistent either stirng or number
+// todo: make it consistent either string or number
 export type EthAddress = (string | Buffer | any) & { __ETH_ADDRESS__: true }
 export type EthTransaction = string & { __ETH_TRANSACTION__: true }
-export type EthBlock = string & { __ETH_BLOCK__: true }
+export type EthBlockNumber = BN & { __ETH_BLOCK_NUMBER__: true }
+export type BN = any & { __BIG_NUMBER__: true }
 
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state
@@ -82,40 +86,35 @@ export interface SendQueue {
   send: (i: SendQueueItem) => Promise<Boolean>
 }
 
-export interface MonitoringEvent {
-  // ???
-}
 export interface EthMonitoringInfo {
-  blockNumber: () => Promise<EthBlock>
-  getLogs: (fromBlock: EthBlock, address: EthAddress[],
-    toBlock?: EthBlock | 'latest')
-    => Promise<MonitoringEvent>
+  blockNumber: () => Promise<EthBlockNumber>
+  getLogs: (fromBlock: EthBlockNumber,
+    toBlock: EthBlockNumber,
+    address: EthAddress[])
+    => Promise<BlockchainEvent[]>
   getTransactionReceipt: (tx: EthTransaction) =>
     Promise<any>
 }
 
 export interface EthMonitoringConfig extends EthMonitoringInfo {
-  registry: EthAddress
+  channelManagerAddress: EthAddress
+  tokenAddresses: EthAddress[]
   storage: Storage
 }
 export interface EthMonitoring {
 
-  subscribeChannel: (ch: EthAddress) => Promise<Boolean>
-  unsubscribeChannel: (ch: EthAddress) => Promise<Boolean>
+  subscribeAddress: (ch: EthAddress) => Promise<Boolean>
+  unsubscribeAddress: (ch: EthAddress) => Promise<Boolean>
 
   transactionReceipt: (tx: EthTransaction) => Promise<Boolean>
 
-  // restrict to only known events
-  on: (e: 'events', listener: (...args: any[]) => void) => void
-  off: (e: 'events', listener: (...args: any[]) => void) => void
+  // split per Event type and enforce callback types
+  on: (e: BlockchainEventType, listener: (...args: any[]) => void) => void
+  off: (e: BlockchainEventType, listener: (...args: any[]) => void) => void
 
   dispose: () => void
 }
 
 export interface BlockchainService {
-
-}
-
-export interface LogDecoder {
 
 }
