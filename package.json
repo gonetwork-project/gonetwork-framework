@@ -2,11 +2,12 @@
   "name": "blockchain-service",
   "version": "0.1.0",
   "description": "blockchain-service for react-native environments",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "test",
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
-    "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch"
+    "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
+    "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc"
   },
   "author": "Amit Shah",
   "license": "MIT",
@@ -15,7 +16,7 @@
     "node-fetch": "^2.1.2",
     "node-persist": "^2.1.0",
     "standard": "^10.0.3",
-    "state-channel": "git+https://github.com/gonetwork-admin/state-channel.git#blockchain-refactor",
+    "state-channel": "https://github.com/gonetwork-admin/gonetwork-state-channel",
     "tape": "^4.9.0",
     "ts-loader": "^4.2.0",
     "tslint": "^5.9.1",
