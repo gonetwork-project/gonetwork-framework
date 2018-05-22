@@ -64,7 +64,7 @@ typings/
 
 
 # todo: figure out way of creating build
-lib/
+# lib/
 
 config/demo.js
 
