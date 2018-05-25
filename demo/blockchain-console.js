@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-05-21 22:01:45
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-05-25 00:29:38
+* @Last Modified time: 2018-05-25 00:50:12
 */
 
 
@@ -86,8 +86,12 @@ app.use(async function (req, res, next) {
   req._bc = {};
   req._bc.nonce = await bcs.getTransactionCount(wallet.getAddress());
   req._bc.balance = await bcs.getBalance(wallet.getAddress());
-  req._bc.gotBalance = (await bcs.getTokenBalance(util.toBuffer("0x5396078f1e759d74504fa6761488d5b308a47dab"),wallet.getAddress(), wallet.getAddress())).balance;
-  req._bc.notBalance = (await bcs.getTokenBalance(util.toBuffer("0xf290b84fd582d6c0cf5a343b1ef41dad7bc4b01b"),wallet.getAddress(), wallet.getAddress())).balance;
+  if(got){
+	  req._bc.gotBalance = (await bcs.getTokenBalance(util.toBuffer(got.address),wallet.getAddress(), wallet.getAddress())).balance;
+  }if(not){
+  	req._bc.notBalance = (await bcs.getTokenBalance(util.toBuffer(not.address),wallet.getAddress(), wallet.getAddress())).balance;
+  	
+  }
   next()
 })
 
@@ -116,6 +120,18 @@ app.get('/initialize', async (req, res) => {
 	res.send({"$GOT":got.address, "$NOT":not.address, "ChannelManagerContract":channelManager.address});
 });
 
+app.get('/state', async (req,res)=>{
+	got = await builtContracts["HumanStandardToken"].at(req.query.got);
+	not = await builtContracts["HumanStandardToken"].at(req.query.not);
+	channelManager = await builtContracts["ChannelManagerContract"].at(req.query.channelManager);
+	res.send({
+		"got": got? got.address: null,
+		"not": not ? not.address: null,
+		"channelManager": channelManager ? channelManager.address: null
+	})
+
+});
+
 app.get("/approve",async(req,res)=>{
 	req.setTimeout(0);
 	const token = req.query.token;
@@ -130,7 +146,6 @@ app.get("/approve",async(req,res)=>{
 
 app.get("/createChannel",async(req,res)=>{
 	req.setTimeout(0);
-	const partner = util.toBuffer(util.addHexPrefix(req.query.partner));
 	const timeout = new util.BN(parseInt(req.query.timeout));
 	const nonce = new util.BN(req.query.nonce);
 	console.log(partner,timeout,nonce);
@@ -138,8 +153,8 @@ app.get("/createChannel",async(req,res)=>{
 	var result = await bcs.newChannel(
 		nonce, 
 		 new util.BN(10000000000), 
-		 "0xba98a778030df9ba1103f673a28eba180b87c181", 
-		 "0x"+partner.toString("hex"), 
+		 channelManager.address, 
+		 util.addHexPrefix(req.query.partner), 
 		 timeout) 
 	 res.send(result);
 });
@@ -148,8 +163,7 @@ app.get("/deposit",async(req,res)=>{
 	req.setTimeout(0);
 	var channel = util.toBuffer(util.addHexPrefix(req.query.channel));
 	const amount = new util.BN(parseInt(req.query.amount));
-	var result = await bcs.approve(new util.BN(req.query.nonce), new util.BN(1000000000), 
-		"0xf290b84fd582d6c0cf5a343b1ef41dad7bc4b01b", 
+	var result = await bcs.deposit(new util.BN(req.query.nonce), new util.BN(1000000000), 
 		channel, 
 		amount);
 	res.send(result);
