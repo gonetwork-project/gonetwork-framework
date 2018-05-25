@@ -2,7 +2,7 @@
 * @Author: amitshah
 * @Date:   2018-05-21 22:01:45
 * @Last Modified by:   amitshah
-* @Last Modified time: 2018-05-24 22:45:10
+* @Last Modified time: 2018-05-25 00:29:38
 */
 
 
@@ -30,6 +30,8 @@ var k = args.indexOf("--generate");
 if(k>=0){
     wallet = require("ethereumjs-wallet").generate();
   	fs.writeFileSync("v3_wallet.json", JSON.stringify(wallet.toV3("",[true])));
+  	console.log("Check v3_wallet.json for you public address and get a test ether in ropsten network: http://faucet.ropsten.be:3001/")
+  	process.exit(1);
 }else{
 	try{
 	  var data = JSON.parse(fs.readFileSync("v3_wallet.json"));
@@ -47,7 +49,6 @@ var provider = new WalletProvider(wallet, "https://ropsten.infura.io/");
 const BUILD_DIR = "../smart-contracts/build/contracts/";
 const builtContracts = fs.readdirSync(BUILD_DIR).reduce((result,build)=>{
 	var json = JSON.parse(fs.readFileSync(BUILD_DIR + build ));
-	console.log(json);
 	var ct= Contract(json);
 	ct.setProvider(provider);
 
