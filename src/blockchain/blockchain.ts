@@ -71,14 +71,16 @@ export class BlockchainService implements T.BlockchainService {
   * @param {Buffer} address - the eth address to get the nonce value for.  This can be a contract address as well
   */
   getTransactionCount (address: Buffer) {
-    return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { return new util.BN(x) });
+    return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { 
+
+      return new util.BN(util.toBuffer(x)) });
   }
 
   /** Get the nonce for an address 
   * @param {Buffer} address - the eth address to get the ETH Balance value for.  This can be a contract address as well
   */
   getBalance (address: Buffer) {
-    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { return new util.BN(x) });
+    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { return new util.BN(util.toBuffer(x)) });
   }
 
   /** fetch with a post request one of the "primitive" geth commands i.e. eth_blockNumber, eth_getTransactionCount,eth_getBalance, etc  
