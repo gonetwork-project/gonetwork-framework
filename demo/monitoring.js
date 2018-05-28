@@ -1,5 +1,4 @@
-const Rx = require('rxjs')
-const readline = require('readline')
+const path = require('path')
 const persist = require('node-persist')
 
 global.fetch = require('node-fetch')
@@ -9,7 +8,7 @@ const Monitoring = require('../lib/index').Monitoring
 const infuraMonitoring = require('../lib/index').infuraMonitoring
 
 persist.initSync({
-  dir: __dirname + '/infura.dat/'
+  dir: path.join(__dirname, '/infura.dat/')
 })
 const monitoring = new Monitoring(
   Object.assign(

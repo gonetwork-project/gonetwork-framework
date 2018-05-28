@@ -1,3 +1,4 @@
+const path = require('path')
 const Rx = require('rxjs')
 const readline = require('readline')
 const persist = require('node-persist')
@@ -16,7 +17,7 @@ if (!address) {
 const msgWaitingForAck = []
 
 persist.initSync({
-  dir: __dirname + '/storage.dat/' + address
+  dir: path.join(__dirname, '/storage.dat/', address)
 })
 const comm = new Communication({
   mqttUrl: cfg.MQTT_URL,
@@ -38,7 +39,7 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
   terminal: false
-});
+})
 
 const status = Rx.Observable
   .fromEvent(comm, 'status-changed')
@@ -91,4 +92,3 @@ status
     ))
   .do(() => rl.prompt('> '))
   .subscribe()
-
