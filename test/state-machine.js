@@ -44,10 +44,22 @@ function assertState (assert, state, expectedState) {
   assert.equal(state.__machina__['mediated-transfer'].state, expectedState)
 }
 
+let pkAddr = [{
+  pk: util.toBuffer('0xa63c8dec79b2c168b8b76f131df6b14a5e0a1ab0310e0ba652f39bca158884ba'),
+  address: util.toBuffer('0x6877cf5f9af67d622d6c665ea473e0b1a14f99d0')
+},
+{
+  pk: util.toBuffer('0x6f1cc905d0a87054c15f183eae89ccc8dc3a79702fdbb47ae337583d22df1a51'),
+  address: util.toBuffer('0x43068d574694419cb76360de33fbd177ecd9d3c6')
+},
+{
+  pk: util.toBuffer('0x8dffbd99f8a386c18922a014b5356344a4ac1dbcfe32ee285c3b23239caad10d'),
+  address: util.toBuffer('0xe2b7c4c2e89438c2889dcf4f5ea935044b2ba2b0')
+}]
+
 let initiatorEvents
 let targetEvents
 let serialEvents
-let pkAddr
 let secret = 'SECRET'
 let currentBlock = new util.BN(1231231)
 let initiator = pkAddr[0]
