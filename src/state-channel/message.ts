@@ -1,4 +1,4 @@
-const util = require('ethereumjs-util')
+import * as util from 'ethereumjs-util'
 const sjcl = require('sjcl')
 const abi = require('ethereumjs-abi')
 
@@ -11,15 +11,16 @@ const abi = require('ethereumjs-abi')
  * @memberof message
  */
 const EMPTY_32BYTE_BUFFER = Buffer.alloc(32)
+
 /**
-* @const {Buffer} EMPTY_20BYTE_BUFFER
-* @memberof message
-*/
+ * @const {Buffer} EMPTY_20BYTE_BUFFER
+ * @memberof message
+ */
 const EMPTY_20BYTE_BUFFER = Buffer.alloc(20)
 
 /** @class A hashable interface class
-* @memberof message
-*/
+ * @memberof message
+ */
 class Hashable {
   /** getMessageHash - must implement */
   getMessageHash () {
@@ -28,10 +29,10 @@ class Hashable {
 }
 
 /** Convert a base 16 int to a BN
-* @param {int} value - convert base 16 value to bn
-* @returns {BN}
-* @memberof message
-*/
+ * @param {int} value - convert base 16 value to bn
+ * @returns {BN}
+ * @memberof message
+ */
 function TO_BN (value) {
   if (util.BN.isBN(value)) {
     return value
@@ -41,11 +42,11 @@ function TO_BN (value) {
 }
 
 /** A reviver function to be sent to JSON.parse to handle buffer serialization and deserialization
-* @param {} k
-* @param {} v
-* @returns {} - deserialized value
-* @memberof message
-*/
+ * @param {} k
+ * @param {} v
+ * @returns {} - deserialized value
+ * @memberof message
+ */
 function JSON_REVIVER_FUNC (k, v) {
   if (
     v !== null &&
@@ -60,30 +61,30 @@ function JSON_REVIVER_FUNC (k, v) {
 }
 
 /** Serialize message object
-* @param {SignedMessage} msg - message.SignedMessage base class type
-* @returns {string} - serialized value
-* @memberof message
-*/
+ * @param {SignedMessage} msg - message.SignedMessage base class type
+ * @returns {string} - serialized value
+ * @memberof message
+ */
 function SERIALIZE (msg) {
   return JSON.stringify(msg)
 }
 
 /** Deserialize message object
-* @param {string} data - serialized value
-* @return{SignedMessage} - message type
-* @memberof message
-*/
+ * @param {string} data - serialized value
+ * @return{SignedMessage} - message type
+ * @memberof message
+ */
 function DESERIALIZE (data) {
   return JSON.parse(data, JSON_REVIVER_FUNC)
 }
 
 /** Deserialize a received message and create the appropriate object type based on classType property
-* @param {string} data - serialized value
-* @returns {SignedMessage} - message type
-* @memberof message
-*/
+ * @param {string} data - serialized value
+ * @returns {SignedMessage} - message type
+ * @memberof message
+ */
 function DESERIALIZE_AND_DECODE_MESSAGE (data) {
-  var jsonObj = DESERIALIZE(data)
+  const jsonObj = DESERIALIZE(data)
   if (jsonObj.hasOwnProperty('classType')) {
     switch (jsonObj.classType) {
       case 'SignedMessage':
@@ -126,76 +127,85 @@ function DESERIALIZE_AND_DECODE_MESSAGE (data) {
  */
 
 /** @class Signed message base class that generates a keccak256 hash and signs using ECDSA
-* @property {string} classType - base class type used for reflection
-* @property {Signature} signature - the signature for this message
-* @memberof message
-*/
+ * @property {string} classType - base class type used for reflection
+ * @property {Signature} signature - the signature for this message
+ * @memberof message
+ */
 class SignedMessage {
+  classType: string
+  signature: any
   /** @constructor
-  * @param {object} options
-  * @param {Signature} [options.signature] - sets the signature of the message, useful during deserilaization of SignedMessage
-  */
+   * @param {object} options
+   * @param {Signature} [options.signature] - sets the signature of the message, useful during deserilaization of SignedMessage
+   */
   constructor (options) {
     this.classType = this.constructor.name
     this.signature = options.signature || null
   }
   /** getHash - child classes must override implementation
-  */
+   */
   getHash () {
     throw Error('unimplemented getHash()')
   }
 
   /** sign - signs the message with the private key and sets the signature property
-  * @param {Buffer} privateKey
-  */
+   * @param {Buffer} privateKey
+   */
   sign (privateKey) {
     // Geth and thus web3 prepends the string \x19Ethereum Signed Message:\n<length of message>
     // to all data before signing it (https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign).
     // If you want to verify such a signature from Solidity from web3/geth, you'll have to prepend
     // the same string in solidity before doing the ecrecovery.
-    var buffer = this.getHash()
-    console.log('SIGNING buffer:' + buffer.toString('hex'))
+    const buffer = this.getHash()
+    // console.log('SIGNING buffer:' + buffer.toString('hex'))
     this.signature = util.ecsign(buffer, privateKey)
   }
 
   /** _recoverAddress - recovers the ethereum address form the signature and message hash
-  * @returns {Buffer} - 20 byte Buffer representing the ethereum address
-  */
+   * @returns {Buffer} - 20 byte Buffer representing the ethereum address
+   */
   _recoverAddress () {
-    var buffer = this.getHash()
-    var pk = util.ecrecover(buffer, this.signature.v, util.toBuffer(this.signature.r), util.toBuffer(this.signature.s))
-    var address = util.pubToAddress(pk)
+    const buffer = this.getHash()
+    const pk = util.ecrecover(buffer, this.signature.v, util.toBuffer(this.signature.r), util.toBuffer(this.signature.s))
+    const address = util.pubToAddress(pk)
     return address
   }
 
   /** @property {Buffer} from - the calculate from based on the message hash and signature
-  * @throws "no signature to recover address from"
- */
+   * @throws "no signature to recover address from"
+   */
   get from () {
     if (!this.signature) {
+      // FIXME - getter should not throw
       throw new Error('no signature to recover address from')
     }
     return this._recoverAddress()
   }
   /** isSigned
    * @returns {bool}
-  */
+   */
   isSigned () {
     return !(this.signature === null)
   }
 }
 
 /** @class Encapsulates a snapshot instance of a message and represents a proof that can be submitted to the blockchain during settlement
-* @extends SignedMessage
-* @property {BN} nonce
-* @property {BN} transferredAmount
-* @property {Buffer} locksRoot
-* @property {Buffer} channelAddress
-* @property {Buffer} messageHash
-* @property {Signature} signature
-* @memberof message
-*/
+ * @extends SignedMessage
+ * @property {BN} nonce
+ * @property {BN} transferredAmount
+ * @property {Buffer} locksRoot
+ * @property {Buffer} channelAddress
+ * @property {Buffer} messageHash
+ * @property {Signature} signature
+ * @memberof message
+ */
 class Proof extends SignedMessage {
+  nonce: any
+  transferredAmount: any
+  locksRoot: any
+  channelAddress: any
+  messageHash: any
+
   constructor (options) {
     super(options)
     this.nonce = TO_BN(options.nonce) || new util.BN(0)
@@ -207,28 +217,37 @@ class Proof extends SignedMessage {
   }
 
   getHash () {
-    var solidityHash = abi.soliditySHA3(
+    const solidityHash = abi.soliditySHA3(
       ['uint256', 'uint256', 'address', 'bytes32', 'bytes32'],
-      [this.nonce,
+      [
+        this.nonce,
         this.transferredAmount,
         this.channelAddress,
         this.locksRoot,
-        this.messageHash])
+        this.messageHash
+      ]
+    )
     return solidityHash
   }
 }
 
 /** @class
-* @extends SignedMessage
-* @property {BN} nonce
-* @property {BN} transferredAmount
-* @property {Buffer} locksRoot
-* @property {Buffer} channelAddress
-* @property {Buffer} messageHash
-* @property {Signature} signature
-* @memberof message
-*/
+ * @extends SignedMessage
+ * @property {BN} nonce
+ * @property {BN} transferredAmount
+ * @property {Buffer} locksRoot
+ * @property {Buffer} channelAddress
+ * @property {Buffer} messageHash
+ * @property {Signature} signature
+ * @memberof message
+ */
 class ProofMessage extends SignedMessage {
+  nonce: any
+  transferredAmount: any
+  locksRoot: any
+  channelAddress: any
+  messageHash: any
+
   constructor (options) {
     super(options)
 
@@ -241,13 +260,15 @@ class ProofMessage extends SignedMessage {
   }
 
   getHash () {
-    var solidityHash = abi.soliditySHA3(
+    const solidityHash = abi.soliditySHA3(
       ['uint256', 'uint256', 'address', 'bytes32', 'bytes32'],
-      [this.nonce,
+      [
+        this.nonce,
         this.transferredAmount,
         this.channelAddress,
         this.locksRoot,
-        this.getMessageHash()])
+        this.getMessageHash()
+      ])
     return solidityHash
   }
 
@@ -268,21 +289,25 @@ class ProofMessage extends SignedMessage {
 }
 
 /** @class A hashed lock that prevents transfers from being completed until secret is provided
-* @extends Hashable
-* @property {BN} amount - the amount of money that will be transferred if the secret is revealed
-* @property {BN} expiration - the absolute blockNumber where this lock is no longer valid and cannot be redeemed
-* @property {Buffer} hashLock - the keccak256 32 byte hash of the secret
-* @memberof message
-*/
+ * @extends Hashable
+ * @property {BN} amount - the amount of money that will be transferred if the secret is revealed
+ * @property {BN} expiration - the absolute blockNumber where this lock is no longer valid and cannot be redeemed
+ * @property {Buffer} hashLock - the keccak256 32 byte hash of the secret
+ * @memberof message
+ */
 class Lock extends Hashable {
+  amount: any
+  expiration: any
+  hashLock: any
+
   /** @constructor
-  * @param {object} options
-  * @param {(int|BN)} options.amount=0
-  * @param {(int|BN)} options.expiration=0
-  * @param {Buffer} options.hashLock=EMPTY_32BYTE_BUFFER
-  */
+   * @param {object} options
+   * @param {(int|BN)} options.amount=0
+   * @param {(int|BN)} options.expiration=0
+   * @param {Buffer} options.hashLock=EMPTY_32BYTE_BUFFER
+   */
   constructor (options) {
-    super(options)
+    super()
 
     this.amount = TO_BN(options.amount) || new util.BN(0)
     this.expiration = TO_BN(options.expiration) || new util.BN(0)
@@ -290,46 +315,51 @@ class Lock extends Hashable {
   }
 
   getMessageHash () {
-    var hash = abi.soliditySHA3(['uint256', 'uint256', 'bytes32'], [
+    const hash = abi.soliditySHA3(['uint256', 'uint256', 'bytes32'], [
       this.amount, this.expiration, this.hashLock])
     return hash
   }
+
   /** encode - solidity pack the properties into a serilazed lock object that can be unpacked or hashed by EVM
-  * @returns {Buffer} - 96 Byte Buffer encoding amount,expiration,hashLock
-  */
+   * @returns {Buffer} - 96 Byte Buffer encoding amount,expiration,hashLock
+   */
   encode () {
-    var value = abi.solidityPack(['uint256', 'uint256', 'bytes32'], [
+    const value = abi.solidityPack(['uint256', 'uint256', 'bytes32'], [
       this.amount, this.expiration, this.hashLock])
     return value
   }
 }
 
 /** @class A hashed lock that prevents transfers from being completed until secret is provided
-* @extends Lock
-* @property {Buffer} secret - the 32 byte secret
-* @memberof message
-*/
+ * @extends Lock
+ * @property {Buffer} secret - the 32 byte secret
+ * @memberof message
+ */
 class OpenLock extends Lock {
-  constructor (lock, secret) {
+  secret: any
+  constructor (lock, secret?) {
     super(lock)
     this.secret = secret
   }
 
   encode () {
-    var value = abi.solidityPack(['uint256', 'uint256', 'bytes32', 'bytes32'], [
+    let value = abi.solidityPack(['uint256', 'uint256', 'bytes32', 'bytes32'], [
       this.amount, this.expiration, this.hashLock, this.secret])
     return value
   }
 }
 
 /** @class A direct transfer that can be sent to an engine instance to immediately complete a transfer of funds.
-* Once a direct transfer is sent, the actor sending the message can consider the funds transferred (Given a reliable transport)
-* @extends ProofMessage
-* @property {BN} msgID - incrementing msgID for transport management
-* @property {Buffer} to - Ethereum Address of intended recipient
-* @memberof message
-*/
+ * Once a direct transfer is sent, the actor sending the message can consider the funds transferred (Given a reliable transport)
+ * @extends ProofMessage
+ * @property {BN} msgID - incrementing msgID for transport management
+ * @property {Buffer} to - Ethereum Address of intended recipient
+ * @memberof message
+ */
 class DirectTransfer extends ProofMessage {
+  msgID: any
+  to: any
+
   constructor (options) {
     super(options)
 
@@ -338,25 +368,29 @@ class DirectTransfer extends ProofMessage {
   }
 
   getMessageHash () {
-    var solidityHash = abi.soliditySHA3(
+    const solidityHash = abi.soliditySHA3(
       ['uint256', 'uint256', 'uint256', 'address', 'bytes32', 'address'],
-      [this.msgID,
+      [
+        this.msgID,
         this.nonce,
         this.transferredAmount,
         this.channelAddress,
         this.locksRoot,
-        this.to])
+        this.to
+      ])
     return solidityHash
   }
 }
 
 /** @class A locked transfer that can be sent to an engine instance to begin lock process transfer.
-* Locked transfers complete asynchronously, as such, there maybe many in-flight and outstanding lock messages.
-* @extends DirectTransfer
-* @property {Lock} lock
-* @memberof message
-*/
+ * Locked transfers complete asynchronously, as such, there maybe many in-flight and outstanding lock messages.
+ * @extends DirectTransfer
+ * @property {Lock} lock
+ * @memberof message
+ */
 class LockedTransfer extends DirectTransfer {
+  lock: any
+
   constructor (options) {
     super(options)
     if (!options.lock) {
@@ -369,26 +403,32 @@ class LockedTransfer extends DirectTransfer {
   }
 
   getMessageHash () {
-    var solidityHash = abi.soliditySHA3(
+    let solidityHash = abi.soliditySHA3(
       ['uint256', 'uint256', 'uint256', 'address', 'bytes32', 'address', 'bytes32'],
-      [this.msgID,
+      [
+        this.msgID,
         this.nonce,
         this.transferredAmount,
         this.channelAddress,
         this.locksRoot,
         this.to,
-        this.lock.getMessageHash()])
+        this.lock.getMessageHash()
+      ]
+    )
     return solidityHash
   }
 }
 
 /** @class similar to a locked transfer however, this message has a target and to field.
-* This message type is the foundation for mediated transfers.
-* @extends LockedTransfer
-* @property {Buffer} target - Ethereum address of mediating target
-* @memberof message
-*/
+ * This message type is the foundation for mediated transfers.
+ * @extends LockedTransfer
+ * @property {Buffer} target - Ethereum address of mediating target
+ * @memberof message
+ */
 class MediatedTransfer extends LockedTransfer {
+  initiator: any
+  target: any
+
   constructor (options) {
     super(options)
     this.target = options.target || EMPTY_20BYTE_BUFFER // EthAddress
@@ -396,9 +436,10 @@ class MediatedTransfer extends LockedTransfer {
   }
 
   getMessageHash () {
-    var solidityHash = abi.soliditySHA3(
+    let solidityHash = abi.soliditySHA3(
       ['uint256', 'uint256', 'uint256', 'address', 'bytes32', 'address', 'address', 'address', 'bytes32'],
-      [this.msgID,
+      [
+        this.msgID,
         this.nonce,
         this.transferredAmount,
         this.channelAddress,
@@ -406,20 +447,27 @@ class MediatedTransfer extends LockedTransfer {
         this.to,
         this.target,
         this.initiator,
-        this.lock.getMessageHash()])
+        this.lock.getMessageHash()
+      ]
+    )
     return solidityHash
   }
 }
 
 /** @class used during the lifecyle of unlocking a locked message
-* @extends SignedMessage
-* @property {BN} msgID
-* @property {Buffer} to - Ethereum Address
-* @property {Buffer} hashLock - the hash to which you are requesting the secret
-* @property {BN} amount - the amount the secret unlocks
-* @memberof message
-*/
+ * @property {BN} msgID
+ * @property {Buffer} to - Ethereum Address
+ * @property {Buffer} hashLock - the hash to which you are requesting the secret
+ * @property {BN} amount - the amount the secret unlocks
+ * @memberof message
+ * @extends SignedMessage
+ */
 class RequestSecret extends SignedMessage {
+  msgID: any
+  to: any
+  hashLock: any
+  amount: any
+
   constructor (options) {
     super(options)
     this.msgID = TO_BN(options.msgID) || new util.BN(0)
@@ -438,12 +486,15 @@ class RequestSecret extends SignedMessage {
 }
 
 /** @class RevealSecret - in response to a RequestSecret
-* @extends SignedMessage
-* @property {Buffer} to - Ethereum Address
-* @property {Buffer} secret - the hash secret
-* @memberof message
-*/
+ * @extends SignedMessage
+ * @property {Buffer} to - Ethereum Address
+ * @property {Buffer} secret - the hash secret
+ * @memberof message
+ */
 class RevealSecret extends SignedMessage {
+  secret: any
+  to: any
+
   constructor (options) {
     super(options)
     this.secret = options.secret || EMPTY_32BYTE_BUFFER
@@ -451,10 +502,9 @@ class RevealSecret extends SignedMessage {
   }
 
   getHash () {
-    var solidityHash = abi.soliditySHA3(
+    let solidityHash = abi.soliditySHA3(
       ['bytes32', 'address'],
-      [this.secret,
-        this.to])
+      [this.secret, this.to])
     return solidityHash
   }
 
@@ -464,16 +514,20 @@ class RevealSecret extends SignedMessage {
 }
 
 /** @class Once a secret is known, if we want to keep the payment channel alive longer
-* convert any openLocks into transferredAmounts. This message facilitates that and allows state channels to
-* have indefinite lifetime.  Without this message type, channels would require on-chain withdrawal at the min(openLock.expiration) time.
-* This message effectively sets proof.transferredAmount += lock.amount and removes the lock from the merkle tree so it cannot be double spent
-* @extends ProofMessage
-* @property {BN} msgID
-* @property {Buffer} to - Ethereum Address
-* @property {Buffer} secret - the lock secret whos amount will be added to the transferredAmount of this messages proof
-* @memberof message
-*/
+ * convert any openLocks into transferredAmounts. This message facilitates that and allows state channels to
+ * have indefinite lifetime.  Without this message type, channels would require on-chain withdrawal at the min(openLock.expiration) time.
+ * This message effectively sets proof.transferredAmount += lock.amount and removes the lock from the merkle tree so it cannot be double spent
+ * @extends ProofMessage
+ * @property {BN} msgID
+ * @property {Buffer} to - Ethereum Address
+ * @property {Buffer} secret - the lock secret whos amount will be added to the transferredAmount of this messages proof
+ * @memberof message
+ */
 class SecretToProof extends ProofMessage {
+  msgID: any
+  to: any
+  secret: any
+
   constructor (options) {
     super(options)
     this.msgID = TO_BN(options.msgID) || new util.BN(0)
@@ -482,15 +536,18 @@ class SecretToProof extends ProofMessage {
   }
 
   getMessageHash () {
-    var solidityHash = abi.soliditySHA3(
+    let solidityHash = abi.soliditySHA3(
       ['uint256', 'uint256', 'uint256', 'address', 'bytes32', 'address', 'bytes32'],
-      [this.msgID,
+      [
+        this.msgID,
         this.nonce,
         this.transferredAmount,
         this.channelAddress,
         this.locksRoot, // locksRoot - sha3(secret)
         this.to,
-        this.secret])
+        this.secret
+      ]
+    )
     return solidityHash
   }
 
@@ -500,12 +557,16 @@ class SecretToProof extends ProofMessage {
 }
 
 /** @class An Ack message that identifies a particular msgID has been delivered.
-* @property {BN} msgID
-* @property {Buffer} to - Ethereum Address
-* @property {Buffer} messageHash - the messageHash of the acked message
-* @memberof message
-*/
+ * @property {BN} msgID
+ * @property {Buffer} to - Ethereum Address
+ * @property {Buffer} messageHash - the messageHash of the acked message
+ * @memberof message
+ */
 class Ack {
+  to: any
+  messageHash: any
+  msgID: any
+
   constructor (options) {
     this.to = options.to || EMPTY_20BYTE_BUFFER
     this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER
@@ -514,9 +575,9 @@ class Ack {
 }
 
 /** Entropy collector for SJCL when generating random secrets.  Currently, this is broken on mobile platforms and seeding should be done manually.
-* Refer to: https://github.com/bitwiseshiftleft/sjcl/wiki/Symmetric-Crypto#seeding-the-generator
-* @memberof message
-*/
+ * Refer to: https://github.com/bitwiseshiftleft/sjcl/wiki/Symmetric-Crypto#seeding-the-generator
+ * @memberof message
+ */
 function StartEntropyCollector () {
   sjcl.random.startCollectors()
 }
@@ -529,13 +590,13 @@ function StartEntropyCollector () {
  */
 
 /** Generate random secret and corresponding keccak256 hash
-@returns {SecretHashPair}
-* @memberof message
-*/
+ * @returns {SecretHashPair}
+ * @memberof message
+ */
 function GenerateRandomSecretHashPair () {
-  var randomBuffer = sjcl.random.randomWords(256 / (4 * 8))
-  var secret = util.addHexPrefix(sjcl.codec.hex.fromBits(randomBuffer))
-  var hash = util.sha3(secret)
+  let randomBuffer = sjcl.random.randomWords(256 / (4 * 8))
+  let secret = util.addHexPrefix(sjcl.codec.hex.fromBits(randomBuffer))
+  let hash = util.sha3(secret)
   return { 'secret': secret, 'hash': hash }
 }
 

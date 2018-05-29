@@ -1,5 +1,6 @@
+import * as util from 'ethereumjs-util'
+
 const merkletree = require('./merkletree')
-const util = require('ethereumjs-util')
 const message = require('./message')
 
 /** @class channel state endpoint; each Channel is composed of two channel state represent both actors
