@@ -51,7 +51,7 @@ MerkleTree.prototype.getRoot = function () {
 MerkleTree.prototype.generateHashTree = function () {
   var level = this.levels[0]
   do {
-        // 212afc935a5685e12f22195713fac5ba98989c7dda8b0764f5e8256fc1544a075b9972cfef311465c48e55f03a979b661529a5671b939fdd85e842af34650d90
+    // 212afc935a5685e12f22195713fac5ba98989c7dda8b0764f5e8256fc1544a075b9972cfef311465c48e55f03a979b661529a5671b939fdd85e842af34650d90
     level = this.sumLevel(level)
     this.levels.push(level)
   } while (level.length > 1)
@@ -59,17 +59,17 @@ MerkleTree.prototype.generateHashTree = function () {
 
 /** Internal sumLevell */
 MerkleTree.prototype.sumLevel = function (elements) {
-    // move to front of array
+  // move to front of array
   var result = []
 
   // var zeroBuffer = util.toBuffer(0)
   var k = 0
-//    we cant really balance the tree, that maybe crazy at larger transaction counts
-//      akin to perhaps preallocating a binary tree
-//    if([temp count] % 2 != 0){
-//        keccack_256(hash, 32, zero, 32);
-//        [temp addObject:[NSValue valueWithPointer:hash]];
-//    }
+  //    we cant really balance the tree, that maybe crazy at larger transaction counts
+  //      akin to perhaps preallocating a binary tree
+  //    if([temp count] % 2 != 0){
+  //        keccack_256(hash, 32, zero, 32);
+  //        [temp addObject:[NSValue valueWithPointer:hash]];
+  //    }
 
   while (k < elements.length) {
     var a = elements[k++]
@@ -77,17 +77,17 @@ MerkleTree.prototype.sumLevel = function (elements) {
     var hash = null
     var buffer = null
     if (k < elements.length) {
-            // concat buffers
+      // concat buffers
       buffer = concatBuffer(a, elements[k++], this.ordered)
-           // we re-use and blowup the hash value stored
+      // we re-use and blowup the hash value stored
       hash = util.sha3(buffer)
       result.push(hash)
     } else {
-            // send up the hash as is on the tree
+      // send up the hash as is on the tree
       result.push(elements[k - 1])
     }
   }
-    // move enumerator back to the end
+  // move enumerator back to the end
   return result
 }
 
@@ -119,7 +119,7 @@ MerkleTree.prototype.generateProof = function (hashedElement) {
   if (!(hashedElement.length === 32 && util.Buffer.isBuffer(hashedElement))) {
     throw new Error('a proof can only be generated for a hashed element, please try hashing your element before sending')
   }
-    // Get the index of the element first
+  // Get the index of the element first
   for (let i = 0; i < this.levels[0].length; i++) {
     const v = this.levels[0][i]
 
@@ -129,7 +129,7 @@ MerkleTree.prototype.generateProof = function (hashedElement) {
     k++
   }
 
-    // now go through the layers to make the proof
+  // now go through the layers to make the proof
   for (let i = 0; i < this.levels.length; i++) {
     var level = this.levels[i]
     const v = this._getProofPair(k, level)
@@ -215,8 +215,10 @@ function checkMerkleProofOrdered (proof, root, element, index) {
     // we don't assume that the tree is padded to a power of 2
     // if the index is odd then the proof will start with a hash at a higher
     // layer, so we have to adjust the index to be the index at that layer
-    while (remaining && index % 2 === 1 && index > Math.pow(2, remaining)) { // fixme: remaining is not modified, but probably should
-      index = Math.round(index / 2)
+    if (remaining) {
+      while (index % 2 === 1 && index > Math.pow(2, remaining)) {
+        index = Math.round(index / 2)
+      }
     }
 
     if (index % 2 === 0) {

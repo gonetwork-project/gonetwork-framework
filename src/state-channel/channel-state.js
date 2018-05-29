@@ -207,15 +207,16 @@ class ChannelState {
     * can remain open unless the lock is converted to a transfer via message.SecretToProof message sent from counterparty.
     */
   get minOpenLockExpiration () {
-    return reduce( // fixme: reduce & map not defined
-      map(Object.values(this.openLocks), function (lock) {
-        return lock.expiration
-      }), function (expiration, lock) {
-      if (lock.expiration.lt(expiration)) {
-        return lock.expiration
-      }
-      return expiration
-    }, new util.BN(0))
+    throw new Error('NOT_IMPLEMENTED')
+    // return reduce( // reduce & map not defined
+    //   map(Object.values(this.openLocks), function (lock) {
+    //     return lock.expiration
+    //   }), function (expiration, lock) {
+    //   if (lock.expiration.lt(expiration)) {
+    //     return lock.expiration
+    //   }
+    //   return expiration
+    // }, new util.BN(0))
   }
 
     /** determine the amount of funds that are locked. The safeblock parameter is required if you want to prevent

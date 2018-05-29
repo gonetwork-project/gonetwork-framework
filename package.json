@@ -6,7 +6,7 @@
   "scripts": {
     "test": "test",
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
-    "lint-js": "node node_modules/standard/bin/cmd src/state-channel/**/*.js test/**/*.js demo/**/*.js",
+    "lint-js": "node node_modules/standard/bin/cmd 'src/state-channel/**/*.js' 'test/**/*.js' 'demo/**/*.js'",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
     "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc"
   },

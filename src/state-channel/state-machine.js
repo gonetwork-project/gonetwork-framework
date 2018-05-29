@@ -197,7 +197,7 @@ module.exports = {
 // class MediatedTransferState extends message.MediatedTransfer {
 //   constructor (options) {
 //     super(options)
-//     this.secret = undefined // fixme
+//     this.secret = undefined
 //     this.hash = undefined
 //   }
 

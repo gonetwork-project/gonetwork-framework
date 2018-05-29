@@ -1,46 +1,44 @@
-const util = require("ethereumjs-util");
-var mt= require("../src/state-channel/merkletree");
-var elements = [];
-for(var i=0; i < 10; i++){
-  elements.push(util.sha3("elem"+i));
+const util = require('ethereumjs-util')
+var mt = require('../src/state-channel/merkletree')
+
+var elements = []
+for (var i = 0; i < 10; i++) {
+  elements.push(util.sha3('elem' + i))
 }
-var merkletree = new mt.MerkleTree(elements);
+var merkletree = new mt.MerkleTree(elements)
 
-merkletree.generateHashTree();
+merkletree.generateHashTree()
 
-mt.printTree(merkletree);
+mt.printTree(merkletree)
 
-var proof = merkletree.generateProof(elements[9]);
-console.log("=============== MERKLE PROOF GENERATED =================");
-for(var i =0; i < proof.length; i++){
-  var p = proof[i];
+var proof = merkletree.generateProof(elements[9])
+console.log('=============== MERKLE PROOF GENERATED =================')
+for (let i = 0; i < proof.length; i++) {
+  var p = proof[i]
   console.log(util.addHexPrefix(p.toString('hex')))
 }
 
-var verified= mt.checkMerkleProof(proof,merkletree.getRoot(),elements[9], 5+1 );
+var verified = mt.checkMerkleProof(proof, merkletree.getRoot(), elements[9], 5 + 1)
 
-proof = merkletree.generateProof(merkletree.levels[0][9]);
-verified = mt.checkMerkleProof(proof,merkletree.getRoot(),merkletree.levels[0][9], 9+1);
-if(!verified) throw new Error();
+proof = merkletree.generateProof(merkletree.levels[0][9])
+verified = mt.checkMerkleProof(proof, merkletree.getRoot(), merkletree.levels[0][9], 9 + 1)
+if (!verified) throw new Error()
 
+merkletree = new mt.MerkleTree(elements, true)
 
-merkletree = new mt.MerkleTree(elements,true);
+merkletree.generateHashTree()
+mt.printTree(merkletree)
 
-merkletree.generateHashTree();
-mt.printTree(merkletree);
-
-var proof = merkletree.generateProof(elements[9]);
-console.log("=============== MERKLE PROOF GENERATED =================");
-for(var i =0; i < proof.length; i++){
-  var p = proof[i];
+proof = merkletree.generateProof(elements[9])
+console.log('=============== MERKLE PROOF GENERATED =================')
+for (let i = 0; i < proof.length; i++) {
+  p = proof[i]
   console.log(util.addHexPrefix(p.toString('hex')))
 }
-var verified= mt.checkMerkleProof(proof,merkletree.getRoot(),elements[9], 9+1 );
-if(!verified) throw new Error();
+verified = mt.checkMerkleProof(proof, merkletree.getRoot(), elements[9], 9 + 1)
+if (!verified) throw new Error()
 
-
-
-//=========================== GLOBAL Proof Functions ==========================//
+// =========================== GLOBAL Proof Functions ==========================//
 
 // pragma solidity ^0.4.19;
 
@@ -103,7 +101,7 @@ if(!verified) throw new Error();
 //     return h == root;
 //   }
 // }
-//Expected Results for Ordered
+// Expected Results for Ordered
 // [ <Buffer 21 2a fc 93 5a 56 85 e1 2f 22 19 57 13 fa c5 ba 98 98 9c 7d da 8b 07 64 f5 e8 25 6f c1 54 4a 07>,
 //   <Buffer 5b 99 72 cf ef 31 14 65 c4 8e 55 f0 3a 97 9b 66 15 29 a5 67 1b 93 9f dd 85 e8 42 af 34 65 0d 90>,
 //   <Buffer ab 23 f4 79 c7 36 58 4d f5 14 56 eb 30 14 12 6c 3b b0 6d db a7 60 9c f0 a6 13 4c 67 ab 33 8b 38>,
@@ -119,7 +117,7 @@ if(!verified) throw new Error();
 // [ <Buffer 68 7d d1 61 dd b1 2b 55 25 64 6b 2d 25 4c b5 d8 ce bc d4 6f 2e 66 43 71 98 a6 82 5d e1 99 6d 79>,
 //   <Buffer 80 23 01 ae af 34 6e 8e ce 74 49 e2 4b 1b d5 0f 1d 28 2b 1e da e2 4e 86 84 4e 2a d9 a8 b4 11 0d> ]
 
-//Expected result for UnOrdered
+// Expected result for UnOrdered
 // [ <Buffer 21 2a fc 93 5a 56 85 e1 2f 22 19 57 13 fa c5 ba 98 98 9c 7d da 8b 07 64 f5 e8 25 6f c1 54 4a 07>,
 //   <Buffer 5b 99 72 cf ef 31 14 65 c4 8e 55 f0 3a 97 9b 66 15 29 a5 67 1b 93 9f dd 85 e8 42 af 34 65 0d 90>,
 //   <Buffer ab 23 f4 79 c7 36 58 4d f5 14 56 eb 30 14 12 6c 3b b0 6d db a7 60 9c f0 a6 13 4c 67 ab 33 8b 38>,
