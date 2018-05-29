@@ -72,4 +72,4 @@ demo/storage.dat
 demo/queue.dat
 demo/infura.dat
 
-test/temp
+test-manual/temp

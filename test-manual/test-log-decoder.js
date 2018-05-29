@@ -17,7 +17,7 @@ async function getTestLogs (address, filename) {
 }
 
 function fnFormatter (name) {
-  return './test/data/' + name + '-logs.json'
+  return `${__dirname}/data/${name}-logs.json`
 }
 
 const keysByType = ls =>

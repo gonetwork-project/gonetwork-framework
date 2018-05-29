@@ -1,7 +1,8 @@
-const stateChannel = require('state-channel')
 const util = require('ethereumjs-util')
+
+const stateChannel = require('../src/state-channel')
 const bcs = require('../lib/blockchain/blockchain.js')
-const simulator = require('./simulate_engine')
+const simulator = require('./simulate-engine')
 
 var DEBUG = false
 var rostpen = false
