@@ -1,6 +1,6 @@
 {
   "name": "go-network-framework",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "blockchain-service & state-channel engine for react-native environments",
   "main": "lib/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
     "lint-js": "node node_modules/standard/bin/cmd 'src/state-channel/**/*.js' 'test/**/*.js' 'demo/**/*.js'",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
-    "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc"
+    "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration"
   },
   "author": "Amit Shah",
   "license": "MIT",
@@ -39,5 +39,6 @@
     "rlp": "^2.0.0",
     "rxjs": "^5.5.8",
     "sjcl": "^1.0.7"
-  }
+  },
+  "typings": "./lib/index.d.ts"
 }

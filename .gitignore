@@ -59,17 +59,13 @@ typings/
 # dotenv environment variables file
 .env
 
-# next.js build output
-.next
-
-
-# todo: figure out way of creating build
-# lib/
+lib/
 
 config/demo.js
 
 demo/storage.dat
 demo/queue.dat
 demo/infura.dat
+demo/v3_wallet.json
 
 test-manual/temp
