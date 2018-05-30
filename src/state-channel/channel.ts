@@ -1,30 +1,31 @@
 /** @namespace channel */
 
 const util = require('ethereumjs-util')
-const message = require('./message')
+
+import * as message from './message'
 
 // Transfers apply state mutations to the channel object.  Once a transfer is verified
 // we apply it to the Channel
 /** @memberof channel */
-const CHANNEL_STATE_IS_OPENING = 'opening'
+export const CHANNEL_STATE_IS_OPENING = 'opening'
 /** @memberof channel */
-const CHANNEL_STATE_IS_CLOSING = 'closing'
+export const CHANNEL_STATE_IS_CLOSING = 'closing'
 /** @memberof channel */
-const CHANNEL_STATE_IS_SETTLING = 'settling'
+export const CHANNEL_STATE_IS_SETTLING = 'settling'
 /** @memberof channel */
-const CHANNEL_STATE_CLOSED = 'closed'
+export const CHANNEL_STATE_CLOSED = 'closed'
 /** @memberof channel */
-const CHANNEL_STATE_OPEN = 'opened'
+export const CHANNEL_STATE_OPEN = 'opened'
 /** @memberof channel */
-const CHANNEL_STATE_SETTLED = 'settled'
+export const CHANNEL_STATE_SETTLED = 'settled'
 
 /** @memberof channel */
-const SETTLE_TIMEOUT = new util.BN(100)
+export const SETTLE_TIMEOUT = new util.BN(100)
 // the minimum amount of time we need from the expiration of a lock to safely unlock
 // this property should be negotiable by the users based on their level of conservantiveness
 // in addition to expection of settled locks
 /** @memberof channel */
-const REVEAL_TIMEOUT = new util.BN(15)
+export const REVEAL_TIMEOUT = new util.BN(15)
 
 /** @class Channel represents the states between two participants.  State synchronization occurs against channel endpoints.
  * Channels rely on monotonically increasing simplex channels to track net value transfer flux. Rather then leveraging Poon-Dryja style
@@ -51,7 +52,7 @@ const REVEAL_TIMEOUT = new util.BN(15)
  * @property {BN} updatedProofBlock=null - the block you sent your proof message to the on-chain netting channel, null if your partner never send you value transfers
  * @property {Object.<string,int>} withdrawnLocks - the state of the on-chain withdraw proof
  */
-class Channel {
+export class Channel {
   peerState: any
   myState: any
   channelAddress: any
@@ -569,7 +570,7 @@ class Channel {
  * @property {message.OpenLock} openLock
  * @property {Buffer[]} merkleProof
  */
-class OpenLockProof {
+export class OpenLockProof {
   openLock: any
   merkleProof: any
 
@@ -582,17 +583,4 @@ class OpenLockProof {
     // we dont want the secret appended to this encoding
     return this.openLock.encode().slice(0, 96)
   }
-}
-
-module.exports = {
-  Channel,
-  SETTLE_TIMEOUT,
-  REVEAL_TIMEOUT,
-  CHANNEL_STATE_IS_CLOSING,
-  CHANNEL_STATE_IS_SETTLING,
-  CHANNEL_STATE_IS_OPENING,
-  CHANNEL_STATE_OPEN,
-  CHANNEL_STATE_CLOSED,
-  CHANNEL_STATE_SETTLED,
-  OpenLockProof
 }

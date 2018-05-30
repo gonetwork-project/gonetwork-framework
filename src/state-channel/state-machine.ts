@@ -1,12 +1,12 @@
 import * as util from 'ethereumjs-util'
 const machina = require('machina')
 
-const channel = require('./channel')
+import * as channel from './channel'
 
 /** @namespace stateMachine */
 
 /** @class encapsulate state machine transitions */
-class MessageState {
+export class MessageState {
   state: any
   stateMachine: any
   constructor (state, stateMachine) {
@@ -25,7 +25,7 @@ class MessageState {
  * @returns {machina.BehavioralFsm}
  * @see Engine.handleEvent
  */
-const InitiatorFactory = function () {
+export const InitiatorFactory = function () {
   return new machina.BehavioralFsm({
     initialize: function () {
       // a shared event emitter between all the state machines
@@ -99,7 +99,7 @@ const InitiatorFactory = function () {
  * @returns {machina.BehavioralFsm}
  * @see Engine.handleEvent
  */
-const TargetFactory = function () {
+export const TargetFactory = function () {
   return new machina.BehavioralFsm({
 
     initialize: function () {
@@ -185,10 +185,6 @@ const TargetFactory = function () {
     }
 
   })
-}
-
-module.exports = {
-  MessageState, InitiatorFactory, TargetFactory
 }
 
 /** @class Internal encapsulate mediated transfer state */

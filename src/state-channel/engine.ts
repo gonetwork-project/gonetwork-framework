@@ -1,10 +1,11 @@
 import * as util from 'ethereumjs-util'
-const events = require('events')
 
-const messageLib = require('./message')
-const channelLib = require('./channel')
-const channelStateLib = require('./channel-state')
-const stateMachineLib = require('./state-machine')
+import * as messageLib from './message'
+import * as channelLib from './channel'
+import * as channelStateLib from './channel-state'
+import * as stateMachineLib from './state-machine'
+
+const events = require('events')
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -23,7 +24,7 @@ const stateMachineLib = require('./state-machine')
  * @property {function} signatureService
  * @property {object} blockchain
  */
-class Engine extends events.EventEmitter {
+export class Engine extends events.EventEmitter {
   /**
    * @constructror.
    * @param {Buffer} address - your ethereum address; ETH Address is merely the last 20 bytes of the keccak256 hash of the public key given the public private key pair.
@@ -93,7 +94,8 @@ class Engine extends events.EventEmitter {
       throw new Error('Invalid Message: uknown message received')
     }
 
-    return new messageLib.Ack({ msgID: message.msgID, messageHash: message.getHash(), to: message.from })
+    // FIXME - msgID seems to be not always there
+    return new messageLib.Ack({ msgID: (message as any).msgID, messageHash: message.getHash(), to: message.from })
   }
 
   onRequestSecret (requestSecret) {
@@ -286,9 +288,11 @@ class Engine extends events.EventEmitter {
   handleEvent (event, state) {
     try {
       if (event.startsWith('GOT.')) {
+        let channel
+        console.log(event)
         switch (event) {
           case 'GOT.sendMediatedTransfer':
-            let channel = this.channelByPeer[state.to.toString('hex')]
+            channel = this.channelByPeer[state.to.toString('hex')]
             if (!channel.isOpen()) {
               throw new Error('Channel is not open')
             }
@@ -763,8 +767,4 @@ class Engine extends events.EventEmitter {
   onRefund (channelAddress, receiverAddress, amount) {
     return true
   }
-}
-
-module.exports = {
-  Engine
 }

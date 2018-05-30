@@ -1,6 +1,6 @@
 const util = require('ethereumjs-util')
 
-const stateChannel = require('../../src/state-channel/index.js')
+const stateChannel = require('../../lib/state-channel/index.js')
 
 const message = stateChannel.message
 const channel = stateChannel.channel

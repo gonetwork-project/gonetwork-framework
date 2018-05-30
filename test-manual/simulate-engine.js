@@ -1,5 +1,5 @@
 const util = require('ethereumjs-util')
-const stateChannel = require('../src/state-channel')
+const stateChannel = require('../lib/state-channel')
 const message = stateChannel.message
 
 function createEngine (address, privateKey, blockchainService) {

@@ -10,13 +10,13 @@ const abi = require('ethereumjs-abi')
  * @const {Buffer} EMPTY_32BYTE_BUFFER
  * @memberof message
  */
-const EMPTY_32BYTE_BUFFER = Buffer.alloc(32)
+export const EMPTY_32BYTE_BUFFER = Buffer.alloc(32)
 
 /**
  * @const {Buffer} EMPTY_20BYTE_BUFFER
  * @memberof message
  */
-const EMPTY_20BYTE_BUFFER = Buffer.alloc(20)
+export const EMPTY_20BYTE_BUFFER = Buffer.alloc(20)
 
 /** @class A hashable interface class
  * @memberof message
@@ -33,7 +33,7 @@ class Hashable {
  * @returns {BN}
  * @memberof message
  */
-function TO_BN (value) {
+export function TO_BN (value) {
   if (util.BN.isBN(value)) {
     return value
   } else {
@@ -47,7 +47,7 @@ function TO_BN (value) {
  * @returns {} - deserialized value
  * @memberof message
  */
-function JSON_REVIVER_FUNC (k, v) {
+export function JSON_REVIVER_FUNC (k, v) {
   if (
     v !== null &&
     typeof v === 'object' &&
@@ -65,7 +65,7 @@ function JSON_REVIVER_FUNC (k, v) {
  * @returns {string} - serialized value
  * @memberof message
  */
-function SERIALIZE (msg) {
+export function SERIALIZE (msg) {
   return JSON.stringify(msg)
 }
 
@@ -74,7 +74,7 @@ function SERIALIZE (msg) {
  * @return{SignedMessage} - message type
  * @memberof message
  */
-function DESERIALIZE (data) {
+export function DESERIALIZE (data) {
   return JSON.parse(data, JSON_REVIVER_FUNC)
 }
 
@@ -83,7 +83,7 @@ function DESERIALIZE (data) {
  * @returns {SignedMessage} - message type
  * @memberof message
  */
-function DESERIALIZE_AND_DECODE_MESSAGE (data) {
+export function DESERIALIZE_AND_DECODE_MESSAGE (data) {
   const jsonObj = DESERIALIZE(data)
   if (jsonObj.hasOwnProperty('classType')) {
     switch (jsonObj.classType) {
@@ -131,7 +131,7 @@ function DESERIALIZE_AND_DECODE_MESSAGE (data) {
  * @property {Signature} signature - the signature for this message
  * @memberof message
  */
-class SignedMessage {
+export class SignedMessage {
   classType: string
   signature: any
   /** @constructor
@@ -199,7 +199,7 @@ class SignedMessage {
  * @property {Signature} signature
  * @memberof message
  */
-class Proof extends SignedMessage {
+export class Proof extends SignedMessage {
   nonce: any
   transferredAmount: any
   locksRoot: any
@@ -241,7 +241,7 @@ class Proof extends SignedMessage {
  * @property {Signature} signature
  * @memberof message
  */
-class ProofMessage extends SignedMessage {
+export class ProofMessage extends SignedMessage {
   nonce: any
   transferredAmount: any
   locksRoot: any
@@ -295,7 +295,7 @@ class ProofMessage extends SignedMessage {
  * @property {Buffer} hashLock - the keccak256 32 byte hash of the secret
  * @memberof message
  */
-class Lock extends Hashable {
+export class Lock extends Hashable {
   amount: any
   expiration: any
   hashLock: any
@@ -335,7 +335,7 @@ class Lock extends Hashable {
  * @property {Buffer} secret - the 32 byte secret
  * @memberof message
  */
-class OpenLock extends Lock {
+export class OpenLock extends Lock {
   secret: any
   constructor (lock, secret?) {
     super(lock)
@@ -356,7 +356,7 @@ class OpenLock extends Lock {
  * @property {Buffer} to - Ethereum Address of intended recipient
  * @memberof message
  */
-class DirectTransfer extends ProofMessage {
+export class DirectTransfer extends ProofMessage {
   msgID: any
   to: any
 
@@ -388,7 +388,7 @@ class DirectTransfer extends ProofMessage {
  * @property {Lock} lock
  * @memberof message
  */
-class LockedTransfer extends DirectTransfer {
+export class LockedTransfer extends DirectTransfer {
   lock: any
 
   constructor (options) {
@@ -425,7 +425,7 @@ class LockedTransfer extends DirectTransfer {
  * @property {Buffer} target - Ethereum address of mediating target
  * @memberof message
  */
-class MediatedTransfer extends LockedTransfer {
+export class MediatedTransfer extends LockedTransfer {
   initiator: any
   target: any
 
@@ -462,7 +462,7 @@ class MediatedTransfer extends LockedTransfer {
  * @memberof message
  * @extends SignedMessage
  */
-class RequestSecret extends SignedMessage {
+export class RequestSecret extends SignedMessage {
   msgID: any
   to: any
   hashLock: any
@@ -491,7 +491,7 @@ class RequestSecret extends SignedMessage {
  * @property {Buffer} secret - the hash secret
  * @memberof message
  */
-class RevealSecret extends SignedMessage {
+export class RevealSecret extends SignedMessage {
   secret: any
   to: any
 
@@ -523,7 +523,7 @@ class RevealSecret extends SignedMessage {
  * @property {Buffer} secret - the lock secret whos amount will be added to the transferredAmount of this messages proof
  * @memberof message
  */
-class SecretToProof extends ProofMessage {
+export class SecretToProof extends ProofMessage {
   msgID: any
   to: any
   secret: any
@@ -562,7 +562,7 @@ class SecretToProof extends ProofMessage {
  * @property {Buffer} messageHash - the messageHash of the acked message
  * @memberof message
  */
-class Ack {
+export class Ack {
   to: any
   messageHash: any
   msgID: any
@@ -578,7 +578,7 @@ class Ack {
  * Refer to: https://github.com/bitwiseshiftleft/sjcl/wiki/Symmetric-Crypto#seeding-the-generator
  * @memberof message
  */
-function StartEntropyCollector () {
+export function StartEntropyCollector () {
   sjcl.random.startCollectors()
 }
 
@@ -593,32 +593,9 @@ function StartEntropyCollector () {
  * @returns {SecretHashPair}
  * @memberof message
  */
-function GenerateRandomSecretHashPair () {
+export function GenerateRandomSecretHashPair () {
   let randomBuffer = sjcl.random.randomWords(256 / (4 * 8))
   let secret = util.addHexPrefix(sjcl.codec.hex.fromBits(randomBuffer))
   let hash = util.sha3(secret)
   return { 'secret': secret, 'hash': hash }
-}
-
-module.exports = {
-  SignedMessage,
-  ProofMessage,
-  DirectTransfer,
-  LockedTransfer,
-  MediatedTransfer,
-  RequestSecret,
-  RevealSecret,
-  SecretToProof,
-  Ack,
-  Lock,
-  JSON_REVIVER_FUNC,
-  GenerateRandomSecretHashPair,
-  StartEntropyCollector,
-  TO_BN,
-  OpenLock,
-  SERIALIZE,
-  DESERIALIZE,
-  DESERIALIZE_AND_DECODE_MESSAGE,
-  EMPTY_20BYTE_BUFFER,
-  EMPTY_32BYTE_BUFFER
 }

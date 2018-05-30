@@ -1,7 +1,7 @@
 import * as util from 'ethereumjs-util'
 
-const merkletree = require('./merkletree')
-const message = require('./message')
+import * as message from './message'
+import * as merkletree from './merkletree'
 
 /** @class channel state endpoint; each Channel is composed of two channel state represent both actors
  * @property {message.Proof} proof-the proof snapshot of this endpoint.  If this channel state represents the peer, this proof is submitted during
@@ -13,7 +13,7 @@ const message = require('./message')
  * @property {Buffer} address - the ethereum address of the particpant who's state this endpoint represents
  * @see Channel
  */
-class ChannelState {
+export class ChannelState {
   proof: any
   address: any
   depositBalance: any
@@ -29,6 +29,7 @@ class ChannelState {
     // dictionary of locks ordered by hashLock key
     this.pendingLocks = {}
     this.openLocks = {}
+
     this.merkleTree = options.merkleTree || new merkletree.MerkleTree([])
     // the amount the user has put into the channel
     this.depositBalance = options.depositBalance || new util.BN(0)
@@ -299,8 +300,4 @@ class ChannelState {
     }
     return lockProof
   }
-}
-
-module.exports = {
-  ChannelState
 }

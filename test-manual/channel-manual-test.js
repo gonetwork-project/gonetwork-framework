@@ -1,6 +1,6 @@
 const util = require('ethereumjs-util')
 
-const stateChannel = require('../src/state-channel')
+const stateChannel = require('../lib/state-channel')
 const bcs = require('../lib/blockchain/blockchain.js')
 const message = stateChannel.message
 

@@ -1,10 +1,10 @@
 var test = require('tape')
 const util = require('ethereumjs-util')
 
-var merkleTree = require('../src/state-channel/merkletree')
-var channelState = require('../src/state-channel/channel-state')
-var channelLib = require('../src/state-channel/channel')
-const message = require('../src/state-channel/message')
+var merkleTree = require('../lib/state-channel/merkletree')
+var channelState = require('../lib/state-channel/channel-state')
+var channelLib = require('../lib/state-channel/channel')
+const message = require('../lib/state-channel/message')
 
 var privateKey = util.toBuffer('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 var publicKey = util.privateToPublic(privateKey)

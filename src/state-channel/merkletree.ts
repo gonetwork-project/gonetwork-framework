@@ -1,6 +1,8 @@
 import * as util from 'ethereumjs-util'
 util.Buffer = require('buffer').Buffer // fixme: this should be not necessary
 
+// todo: Refactor to es6 class
+
 /**
  * @namespace merkletree
  */
@@ -16,8 +18,8 @@ util.Buffer = require('buffer').Buffer // fixme: this should be not necessary
  * @param {bool} ordered - determines if the elements preserve ordering as we walk up the tree to generate proofs
  * @memberof merkletree
  */
-function MerkleTree (this: any, elements, ordered) {
-  this.ordered = ordered
+export function MerkleTree (this: any, elements, ordered?) {
+  this.ordered = !!ordered
   // remove empty strings
   this.elements = elements.filter(function (n) { return n !== undefined })
 
@@ -204,7 +206,7 @@ MerkleTree.prototype.verify = function (proof, hashedElement) {
 /** Deprectated
  * @memberof message
  */
-function checkMerkleProofOrdered (proof, root, element, index) {
+export function checkMerkleProofOrdered (proof, root, element, index) {
   // use the index to determine the node ordering
   // index ranges 1 to n
 
@@ -240,7 +242,7 @@ function checkMerkleProofOrdered (proof, root, element, index) {
  * @returns {bool}
  * @memberof merkletree
  */
-function checkMerkleProof (proof, root, element) {
+export function checkMerkleProof (proof, root, element) {
   let buffer = proof.reduce(function (acc, currentValue) {
     return util.sha3(concatBuffer(acc, currentValue))
   }, element)
@@ -250,7 +252,7 @@ function checkMerkleProof (proof, root, element) {
  * @param {MerkleTree} merkletree
  * @memberof merkletree
  */
-function printTree (merkletree) {
+export function printTree (merkletree) {
   for (let i = 0; i < merkletree.levels.length; i++) {
     let level = merkletree.levels[i]
     console.log('----------------LEVEL' + i + '--------- \r\n \r\n')
@@ -258,11 +260,4 @@ function printTree (merkletree) {
       console.log(util.bufferToHex(level[j]))
     }
   }
-}
-
-module.exports = {
-  MerkleTree,
-  checkMerkleProof,
-  checkMerkleProofOrdered,
-  printTree
 }

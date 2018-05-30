@@ -1,9 +1,9 @@
 var test = require('tape')
 var util = require('ethereumjs-util')
 
-var stateMachine = require('../src/state-channel/state-machine')
-var message = require('../src/state-channel/message')
-var channel = require('../src/state-channel/channel')
+var stateMachine = require('../lib/state-channel/state-machine')
+var message = require('../lib/state-channel/message')
+var channel = require('../lib/state-channel/channel')
 
 var privateKey = util.toBuffer('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 var publicKey = util.privateToPublic(privateKey)

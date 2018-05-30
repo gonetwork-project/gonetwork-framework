@@ -1,5 +1,5 @@
 const util = require('ethereumjs-util')
-var mt = require('../src/state-channel/merkletree')
+var mt = require('../lib/state-channel/merkletree')
 
 var elements = []
 for (var i = 0; i < 10; i++) {

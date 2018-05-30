@@ -1,10 +1,10 @@
 const test = require('tape')
 const util = require('ethereumjs-util')
 
-const engineLib = require('../src/state-channel/engine')
-const channel = require('../src/state-channel/channel')
-const message = require('../src/state-channel/message')
-const merkletree = require('../src/state-channel/merkletree')
+const Engine = require('../lib/state-channel').Engine
+const channel = require('../lib/state-channel').channel
+const message = require('../lib/state-channel').message
+const merkletree = require('../lib/state-channel').merkletree
 
 var privateKey = util.toBuffer('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 var publicKey = util.privateToPublic(privateKey)
@@ -147,7 +147,7 @@ function assertStateBN (assert, state, nonce, depositBalance, transferredAmount,
 }
 
 function createEngine (pkIndex, blockchainService) {
-  var e = new engineLib.Engine(pkAddr[pkIndex].address, function (msg) {
+  var e = new Engine(pkAddr[pkIndex].address, function (msg) {
     console.log('SIGNING MESSAGE')
     msg.sign(pkAddr[pkIndex].pk)
   }, blockchainService)
