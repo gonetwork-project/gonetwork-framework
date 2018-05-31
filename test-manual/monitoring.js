@@ -7,7 +7,7 @@ global.fetch = require('node-fetch')
 const Monitoring = require('../lib/index').Monitoring
 const infuraMonitoring = require('../lib/index').infuraMonitoring
 
-const persistentPath = __dirname + '/temp/infura.dat'
+const persistentPath = `${__dirname}/temp/infura.dat`
 
 // todo: make config configurable
 let cfg = require('./config/ropsten.monitoring')
@@ -15,22 +15,21 @@ let cfg = require('./config/ropsten.monitoring')
 const deleteFolderRecursive = path => {
   if (fs.existsSync(path)) {
     fs.readdirSync(path).forEach(function (file, index) {
-      var curPath = path + "/" + file;
+      var curPath = path + '/' + file
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
-        deleteFolderRecursive(curPath);
+        deleteFolderRecursive(curPath)
       } else { // delete file
-        fs.unlinkSync(curPath);
+        fs.unlinkSync(curPath)
       }
-    });
-    fs.rmdirSync(path);
+    })
+    fs.rmdirSync(path)
   }
 }
 
 deleteFolderRecursive(persistentPath)
 
-
 persist.initSync({
-  dir: __dirname + '/temp/infura.dat'
+  dir: `${__dirname}/temp/infura.dat`
 })
 
 console.log('CONFIG', cfg)

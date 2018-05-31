@@ -1,12 +1,16 @@
 {
-    "include": ["./src/**/*"],
-    "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "sourceMap": true,
-      "outDir": "./lib",  
-      "skipLibCheck": true,
-      "strict": true,  
-      "noImplicitAny": false,
-    }
+  "include": [
+    "./src/**/*"
+  ],
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "lib": ["es2015", "es2017"],
+    "sourceMap": true,
+    "sourceRoot": "./src",
+    "outDir": "./lib",
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false,
   }
+}

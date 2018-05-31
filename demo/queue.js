@@ -1,5 +1,5 @@
+const path = require('path')
 const Rx = require('rxjs')
-const readline = require('readline')
 const persist = require('node-persist')
 
 global.fetch = require('node-fetch')
@@ -7,7 +7,7 @@ global.fetch = require('node-fetch')
 const SendQueue = require('../lib/index').SendQueue
 
 persist.initSync({
-  dir: __dirname + '/queue.dat/'
+  dir: path.join(__dirname, '/queue.dat/')
 })
 const queue = new SendQueue({
   storage: {
