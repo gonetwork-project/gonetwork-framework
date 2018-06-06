@@ -16,14 +16,9 @@ const requestFactory = (network: string, token: string) =>
         params: [params]
       })
     })
-      // .then(x => {
-      //   console.log(x.status, x.statusText)
-      //   return x
-      // })
       .then(r => r.status === 200 ?
         r.json()
-          .then(r => {
-         //   console.log('RESPONSE', r, params)
+          .then((r: any) => {
             return r.result
           })
         : r.text())

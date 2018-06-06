@@ -26,7 +26,7 @@ export class SendQueue implements T.SendQueue {
                 headers: i.headers,
                 body: i.body
               }))
-                .mergeMap((r: any) =>
+                .mergeMap(r =>
                   r && r.status === 200 ?
                     Observable.defer(() => {
                       this._sendingQueue = this._sendingQueue.filter(s => s !== i)
