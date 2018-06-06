@@ -15,7 +15,7 @@ const KEY_PREFIX = '___ETH_MONITORING___'
 const LOGS_INTERVAL = 5 * 1000
 const TRANSACTION_INTERVAL = 5 * 1000
 
-export type MonitorAddress = [T.EthAddress, T.EthBlockNumber]
+export type MonitorAddress = [T.EthAddress, string]
 
 export interface State {
   addresses: MonitorAddress[],
@@ -35,13 +35,10 @@ export class Monitoring implements T.EthMonitoring {
   constructor (cfg: T.EthMonitoringConfig) {
     this._cfg = cfg
     this._state = cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress)
-      .then(s => s ? ({
-        addresses: (JSON.parse(s).addresses || []).map(a => [a[0], new util.BN(a[1])]),
-        transactions: (JSON.parse(s).transactions || [])
-      }) : ({
+      .then(s => s ? JSON.parse(s) : ({
         addresses: [
-          [cfg.channelManagerAddress, new util.BN(-1)],
-          ...cfg.tokenAddresses.map(t => [t, new util.BN(-1)])
+          [cfg.channelManagerAddress, '-1'],
+          ...cfg.tokenAddresses.map(t => [t, '-1'])
         ],
         transactions: []
       }))
@@ -62,7 +59,7 @@ export class Monitoring implements T.EthMonitoring {
   subscribeAddress = (a: T.EthAddress) =>
     this._state.then(s => {
       if (s.addresses.find(_a => _a[0] === a)) return Promise.resolve(false)
-      s.addresses.push([a, new util.BN(-1)])
+      s.addresses.push([a, '-1'])
       this._forceMonitoring.next(true)
       return this._saveState(s)
     })
@@ -139,9 +136,9 @@ export class Monitoring implements T.EthMonitoring {
                 .reduce((acc, x) => acc.concat([x]), [])
                 .mergeMap(gs =>
                   Observable.defer(() => {
-                    if (xs.key!.lt(blockNumber)) {
-                      // console.log(xs.key, blockNumber, gs)
-                      return this._cfg.getLogs(xs.key!.add(new util.BN(1)), blockNumber, gs)
+                    const bn = new util.BN(xs.key)
+                    if (bn.lt(blockNumber)) {
+                      return this._cfg.getLogs(bn.add(new util.BN(1)), blockNumber, gs)
                     } else {
                       return Observable.of([] as T.BlockchainEvent[])
                     }
@@ -160,7 +157,7 @@ export class Monitoring implements T.EthMonitoring {
                 addresses.forEach(add => {
                   const a = s.addresses.find(_a => _a[0] === add)
                   if (a) {
-                    a[1] = blockNumber
+                    a[1] = blockNumber.toString()
                   }
                 })
                 return this._saveState(s)
