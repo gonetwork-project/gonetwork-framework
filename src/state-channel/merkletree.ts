@@ -1,5 +1,5 @@
 import * as util from 'ethereumjs-util'
-util.Buffer = require('buffer').Buffer // fixme: this should be not necessary
+// util.Buffer = require('buffer').Buffer // fixme: this should be not necessary
 
 // todo: Refactor to es6 class
 
@@ -76,13 +76,11 @@ MerkleTree.prototype.sumLevel = function (elements) {
   while (k < elements.length) {
     let a = elements[k++]
     // var b = null
-    let hash = null
-    let buffer = null
     if (k < elements.length) {
       // concat buffers
-      buffer = concatBuffer(a, elements[k++], this.ordered)
+      const buffer = concatBuffer(a, elements[k++], this.ordered)
       // we re-use and blowup the hash value stored
-      hash = util.sha3(buffer)
+      const hash = util.sha3(buffer)
       result.push(hash)
     } else {
       // send up the hash as is on the tree

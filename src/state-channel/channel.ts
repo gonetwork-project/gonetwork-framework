@@ -1,6 +1,6 @@
 /** @namespace channel */
 
-const util = require('ethereumjs-util')
+import * as util from 'ethereumjs-util'
 
 import * as message from './message'
 

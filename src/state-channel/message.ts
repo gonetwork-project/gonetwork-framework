@@ -158,7 +158,7 @@ export class SignedMessage {
     // the same string in solidity before doing the ecrecovery.
     const buffer = this.getHash()
     // console.log('SIGNING buffer:' + buffer.toString('hex'))
-    this.signature = util.ecsign(buffer, privateKey)
+    this.signature = util.ecsign(buffer as any, privateKey)
   }
 
   /** _recoverAddress - recovers the ethereum address form the signature and message hash
@@ -166,7 +166,7 @@ export class SignedMessage {
    */
   _recoverAddress () {
     const buffer = this.getHash()
-    const pk = util.ecrecover(buffer, this.signature.v, util.toBuffer(this.signature.r), util.toBuffer(this.signature.s))
+    const pk = util.ecrecover(buffer as any, this.signature.v, util.toBuffer(this.signature.r), util.toBuffer(this.signature.s))
     const address = util.pubToAddress(pk)
     return address
   }
@@ -473,7 +473,7 @@ export class RequestSecret extends SignedMessage {
     this.msgID = TO_BN(options.msgID) || new util.BN(0)
     this.to = options.to || EMPTY_20BYTE_BUFFER
     this.hashLock = options.hashLock || EMPTY_32BYTE_BUFFER // Serializable Lock Object
-    this.amount = TO_BN(options.amount) || util.BN(0)
+    this.amount = TO_BN(options.amount) || new util.BN(0)
   }
 
   getHash () {
