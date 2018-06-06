@@ -2,16 +2,19 @@
 import { EventEmitter } from 'events'
 
 import { BlockchainEventType, BlockchainEvent } from './blockchain-events'
+
+import { BN } from 'bn.js'
+
+export { BN }
 export * from './blockchain-events'
 
-export type ChainId = string & { __CHAIN_ID__: true }
+export type ChainId = string
 export type BlockQuantity = 'latest'
 
 // todo: make it consistent either string or number
-export type EthAddress = (string | Buffer | any) & { __ETH_ADDRESS__: true }
-export type EthTransaction = string & { __ETH_TRANSACTION__: true }
-export type EthBlockNumber = BN & { __ETH_BLOCK_NUMBER__: true }
-export type BN = any & { __BIG_NUMBER__: true }
+export type EthAddress = (string | Buffer)
+export type EthTransaction = string
+export type EthBlockNumber = BN
 
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state
@@ -26,7 +29,7 @@ export type Ack = boolean & { __ACK__: true }
 export type InternalMessageOut = [MessageId, Payload, Ack]
 
 export type ReceivedMessage = {
-  peer: EthAddress
+  peer: string
   id: MessageId
   payload: Payload
 }
@@ -49,7 +52,7 @@ export interface Storage {
 }
 
 export interface P2PConfig {
-  address: EthAddress
+  address: string
   mqttUrl: string
   storage: Storage
 }
@@ -63,7 +66,7 @@ export interface P2P {
 
   // true indicates that massage has been persisted
   // false indicates that the message will not be sent (e.g. when status: broken)
-  send: (to: EthAddress, payload: Payload) => Promise<boolean>
+  send: (to: string, payload: Payload) => Promise<boolean>
 
   // cancels everything
   dispose: () => Promise<Error | null>

@@ -31,6 +31,7 @@
     "jsdocs": "^1.0.0"
   },
   "dependencies": {
+    "bn.js": "^4.11.8",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-tx": "^1.3.4",
     "ethereumjs-util": "^5.1.5",

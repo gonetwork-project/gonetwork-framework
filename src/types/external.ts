@@ -6,7 +6,7 @@ declare module 'bn.js' {
 
   type Endianness = 'le' | 'be'
 
-  export default class BN {
+  export class BN {
     constructor (n: number | string | number[] | Buffer, base?: number, endian?: Endianness)
     static isBN (b: any): boolean
     clone (): BN
@@ -58,7 +58,7 @@ declare module 'bn.js' {
   }
 }
 declare module 'ethereumjs-util' {
-  import BN from 'bn.js'
+  import { BN } from 'bn.js'
   import { Buffer } from 'buffer'
 
   export {

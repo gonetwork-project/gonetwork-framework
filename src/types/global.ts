@@ -41,6 +41,7 @@ interface Headers {
 interface Body {
   bodyUsed: boolean
   arrayBuffer (): Promise<ArrayBuffer>
+  // we don't needed
   // blob (): Promise<Blob>
   // formData (): Promise<FormData>
   json (): Promise<JSON>

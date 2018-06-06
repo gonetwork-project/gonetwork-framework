@@ -11,15 +11,15 @@ const MAX_RETRY_INTERVAL = 5 * 60 * 1000
 const NO_MESSAGES_ID = -1 as T.MessageId
 
 const KEY_PREFIX = '___CHANNEL___'
-const addressToChannelKey = (a: T.EthAddress) =>
+const addressToChannelKey = (a: string) =>
   `${KEY_PREFIX}${a}`
 const isChannelKey = (s: string) => s.startsWith(KEY_PREFIX)
 const addressFromChannelKey = (s: string) =>
   s.replace(KEY_PREFIX, '')
 
 const topicPaths = {
-  messages: (a: T.EthAddress) => `/messages/${a}`,
-  ack: (a: T.EthAddress) => `/ack/${a}`
+  messages: (a: string) => `/messages/${a}`,
+  ack: (a: string) => `/ack/${a}`
 }
 
 const emptyChannel = () => ({
@@ -37,7 +37,7 @@ export class P2P implements T.P2P {
   private _sendingSubs: {
     [key: string]: { unsubscribe: () => void }
   } = {}
-  private _address: T.EthAddress
+  private _address: string
   private _em = new EventEmitter()
   private _storage: T.Storage
   private _channels!: Promise<{ [key: string]: T.Channel }>
@@ -64,9 +64,9 @@ export class P2P implements T.P2P {
               // sync up state continue sending operations
               this._setStatus('connected')
               Object.keys(chs).forEach(k => {
-                this._setupSendingQueue(k as T.EthAddress)
+                this._setupSendingQueue(k as string)
                 this._sendingQueues[k].next(chs[k])
-                this._sendAck(k as T.EthAddress,
+                this._sendAck(k as string,
                   chs[k].lastIn || NO_MESSAGES_ID)
               })
             }
@@ -100,7 +100,7 @@ export class P2P implements T.P2P {
     return this._channels
   }
 
-  send (to: T.EthAddress, payload: T.Payload) {
+  send (to: string, payload: T.Payload) {
     if (!to || !payload || to === this._address) {
       return Promise.reject('WRONG_PARAMS')
     }
@@ -126,7 +126,7 @@ export class P2P implements T.P2P {
     this._em.removeListener(event, listener)
   }
 
-  private _setupSendingQueue = (address: T.EthAddress) => {
+  private _setupSendingQueue = (address: string) => {
     this._sendingQueues[address] = new Subject<T.Channel>()
     this._sendingSubs[address] = this._sendingQueues[address]
       .switchMap(ch => {
@@ -137,7 +137,7 @@ export class P2P implements T.P2P {
       })
       .subscribe()
   }
-  private _keepSending = (to: T.EthAddress, msg: T.InternalMessageOut, nextRetry = FIRST_RETRY_AFTER) => {
+  private _keepSending = (to: string, msg: T.InternalMessageOut, nextRetry = FIRST_RETRY_AFTER) => {
     this._client.then(c => c.publish(
       topicPaths.messages(to),
       JSON.stringify({
@@ -152,7 +152,7 @@ export class P2P implements T.P2P {
           Math.min(2 * nextRetry, MAX_RETRY_INTERVAL)))
   }
 
-  private _getChannel = (address: T.EthAddress) => this._channels
+  private _getChannel = (address: string) => this._channels
     .then(cs => {
       if (!cs[address]) {
         const ch = emptyChannel()
@@ -164,7 +164,7 @@ export class P2P implements T.P2P {
       return cs[address]
     })
 
-  private _saveChannel = (address: T.EthAddress, channel: T.Channel) =>
+  private _saveChannel = (address: string, channel: T.Channel) =>
     this._storage.setItem(addressToChannelKey(address), JSON.stringify(channel))
 
   private _handleMessageReceived = (m: T.ReceivedMessage) => {
@@ -216,7 +216,7 @@ export class P2P implements T.P2P {
         }
       })
   }
-  private _sendAck = (peer: T.EthAddress, id: T.MessageId) => {
+  private _sendAck = (peer: string, id: T.MessageId) => {
     this._client.then(c => c.publish(
       topicPaths.ack(peer),
       JSON.stringify({
@@ -226,7 +226,7 @@ export class P2P implements T.P2P {
     ))
   }
 
-  private _brokenChannel = (peer: T.EthAddress, ch: T.Channel, reason: string, info?: any) => {
+  private _brokenChannel = (peer: string, ch: T.Channel, reason: string, info?: any) => {
     ch.isBroken = true
     ch.brokenInfo = {
       reason: reason,

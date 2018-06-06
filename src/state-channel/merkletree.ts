@@ -1,5 +1,5 @@
 import * as util from 'ethereumjs-util'
-// util.Buffer = require('buffer').Buffer // fixme: this should be not necessary
+import { Buffer } from 'buffer'
 
 // todo: Refactor to es6 class
 
@@ -103,9 +103,9 @@ function concatBuffer (a, b, ordered?) {
   // TypedArrays apparent supported across all browser, have to see if safari webkit supports
   // incremental sort of buffers
   if (!ordered) {
-    return util.Buffer.concat([a, b].sort(Buffer.compare))
+    return Buffer.concat([a, b].sort(Buffer.compare))
   } else {
-    return util.Buffer.concat([a, b])
+    return Buffer.concat([a, b])
   }
 }
 
@@ -116,7 +116,7 @@ function concatBuffer (a, b, ordered?) {
 MerkleTree.prototype.generateProof = function (hashedElement) {
   let result: any[] = []
   let k = 0
-  if (!(hashedElement.length === 32 && util.Buffer.isBuffer(hashedElement))) {
+  if (!(hashedElement.length === 32 && Buffer.isBuffer(hashedElement))) {
     throw new Error('a proof can only be generated for a hashed element, please try hashing your element before sending')
   }
   // Get the index of the element first
@@ -156,7 +156,7 @@ MerkleTree.prototype._getProofPair = function (index, level) {
 }
 
 MerkleTree.prototype.push = function (hashedElement) {
-  if (!(hashedElement.length === 32 && util.Buffer.isBuffer(hashedElement))) {
+  if (!(hashedElement.length === 32 && Buffer.isBuffer(hashedElement))) {
     throw new Error('a proof can only be generated for a hashed element, please try hashing your element before sending')
   }
   this.elements.push(hashedElement)
