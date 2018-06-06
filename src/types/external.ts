@@ -163,3 +163,23 @@ declare module 'ethereumjs-util' {
   export function baToJSON (ba: Buffer): string
   export function baToJSON (ba: any[]): string[]
 }
+
+// todo: improve - be aware that these types were added by analazying source code
+declare module 'ethereumjs-abi' {
+  export function methodID (name: string, types: string[]): Buffer
+  export function eventID (name: string, types: string[]): Buffer
+
+  export function rawDecode (types: string[], data: any): any[]
+  export function rawEncode (types: string[], values: any[]): Buffer
+  export function simpleDecode (method: string, data: any): any[]
+  export function simpleEncode (method: string): Buffer
+
+  export function solidityPack (types: string[], values: any[]): Buffer
+  export function soliditySHA3 (types: string[], values: any[]): Buffer
+  export function soliditySHA256 (types: string[], values: any[]): Buffer
+  export function solidityRIPEMD160 (types: string[], values: any[]): Buffer
+  export function stringify (types: string[], values: any[]): string[]
+
+  export function fromSerpent (sig: string[]): string[]
+  export function toSerpent (types: string[]): string
+}
