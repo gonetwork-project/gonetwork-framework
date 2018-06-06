@@ -360,7 +360,7 @@ export class BlockchainService implements T.BlockchainService {
     })
 
     let methodSignature = abi.methodID(functionRef.name, inputs)
-    let paramsEncoded = ''
+    let paramsEncoded: string|Buffer = ''
     if (params.length > 0) {
       paramsEncoded = abi.rawEncode(inputs, params)
     }

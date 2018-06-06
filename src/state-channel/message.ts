@@ -1,6 +1,6 @@
 import * as util from 'ethereumjs-util'
-const sjcl = require('sjcl')
-const abi = require('ethereumjs-abi')
+import * as sjcl from 'sjcl'
+import * as abi from 'ethereumjs-abi'
 
 /**
  * @namespace message

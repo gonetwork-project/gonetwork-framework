@@ -1,5 +1,5 @@
 import * as util from 'ethereumjs-util'
-const machina = require('machina')
+import * as machina from 'machina'
 
 import * as channel from './channel'
 
