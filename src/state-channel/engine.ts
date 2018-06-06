@@ -5,7 +5,8 @@ import * as channelLib from './channel'
 import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
-const events = require('events')
+import * as events from 'events'
+import { BlockchainService } from '..'
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -25,6 +26,25 @@ const events = require('events')
  * @property {object} blockchain
  */
 export class Engine extends events.EventEmitter {
+  // dictionary of channels[peerAddress] that are pending mining
+  pendingChannels = {}
+  channels = {}
+  // dictionary of channels[peerState.address.toString('hex')];
+  channelByPeer = {}
+  // dictionary of messages[msgID] = statemachine.*
+  messageState = {}
+
+  currentBlock = new util.BN(0)
+  msgID = new util.BN(0)
+
+  publicKey = undefined // fixme
+  initiatorStateMachine = stateMachineLib.InitiatorFactory()
+  targetStateMachine = stateMachineLib.TargetFactory()
+
+  address: Buffer
+  signature: any
+  blockchain: BlockchainService
+
   /**
    * @constructror.
    * @param {Buffer} address - your ethereum address; ETH Address is merely the last 20 bytes of the keccak256 hash of the public key given the public private key pair.
@@ -35,22 +55,12 @@ export class Engine extends events.EventEmitter {
     // @ts-ignore FIXME
     super()
 
-    // dictionary of channels[peerAddress] that are pending mining
-    this.pendingChannels = {}
-    this.channels = {}
-    // dictionary of channels[peerState.address.toString('hex')];
-    this.channelByPeer = {}
-    // dictionary of messages[msgID] = statemachine.*
-    this.messageState = {}
-
-    this.currentBlock = new util.BN(0)
-    this.msgID = new util.BN(0)
-
-    this.publicKey = undefined // fixme
     this.address = address
-    this.initiatorStateMachine = stateMachineLib.InitiatorFactory()
-    this.targetStateMachine = stateMachineLib.TargetFactory()
-    let self = this
+    this.signature = signatureService
+    this.blockchain = blockchainService
+
+    const self = this
+
     this.initiatorStateMachine.on('*', function (event, state) {
       self.handleEvent(event, state)
     })
@@ -58,13 +68,10 @@ export class Engine extends events.EventEmitter {
       self.handleEvent(event, state)
     })
 
-    this.signature = signatureService
-    this.blockchain = blockchainService
     // sanity check
     if (!channelLib.SETTLE_TIMEOUT.gt(channelLib.REVEAL_TIMEOUT)) {
       throw new Error('SETTLE_TIMEOUT must be strictly and much larger then REVEAL_TIMEOUT')
     }
-    this.currentBlock = new util.BN(0)
   }
 
   /**
@@ -240,8 +247,9 @@ export class Engine extends events.EventEmitter {
       to: channel.peerState.address
     })
 
-    this.messageState[msgID] = new stateMachineLib.MessageState(mediatedTransferState, this.initiatorStateMachine)
-    this.messageState[msgID].applyMessage('init')
+    const msgKey = msgID.toString()
+    this.messageState[msgKey] = new stateMachineLib.MessageState(mediatedTransferState, this.initiatorStateMachine)
+    this.messageState[msgKey].applyMessage('init')
   }
 
   /**
@@ -422,6 +430,7 @@ export class Engine extends events.EventEmitter {
     this.pendingChannels[peerAddress.toString('hex')] = true
     let self = this
     let _peerAddress = peerAddress
+    // @ts-ignore FIXME
     return this.blockchain.newChannel(peerAddress, channelLib.SETTLE_TIMEOUT).then(function (vals) {
       // ChannelNew(address netting_channel,address participant1,address participant2,uint settle_timeout);
       // var channelAddress = vals[0];
@@ -453,6 +462,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
+    // @ts-ignore FIXME
     return this.blockchain.closeChannel(channelAddress, proof).then(function (closingAddress) {
       // channelAddress,closingAddress,block
       // TODO: @Artur, only call this after the transaction is mined i.e. txMulitplexer
@@ -479,6 +489,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
+    // @ts-ignore FIXME
     return this.blockchain.updateTransfer(channelAddress, proof).then(function (nodeAddress) {
       // self.onTransferUpdated(nodeAddress)
     }).catch(function (err) {
@@ -508,6 +519,7 @@ export class Engine extends events.EventEmitter {
       let _secret = p.openLock.secret
       let _channelAddress = channelAddress
       let self = this
+      // @ts-ignore FIXME
       let promise = this.blockchain.withdrawLock(channelAddress, p.encodeLock(), p.merkleProof, _secret)
         .then(function (vals) {
           // var secret = vals[0];
@@ -541,7 +553,8 @@ export class Engine extends events.EventEmitter {
     let _channelAddress = channelAddress
     let self = this
     channel.issueSettle(this.currentBlock)
-    return self.blockChain.settle(_channelAddress).then(function () {
+    // @ts-ignore FIXME (blockchain was misspelled: blockChain)
+    return self.blockchain.settle(_channelAddress).then(function () {
       // return self.onChannelSettled(_channelAddress);
     }).catch(function (err) {
       return self.onChannelSettledError(_channelAddress, err)
@@ -567,7 +580,8 @@ export class Engine extends events.EventEmitter {
     }
     let _channelAddress = channelAddress
     let self = this
-    return self.blockChain.depoist(_channelAddress, amount).then(function (vals) {
+    // @ts-ignore FIXME (blockchain and deposit were misspelled: blockChain and depoist)
+    return self.blockchain.deposit(_channelAddress, amount).then(function (vals) {
       // event ChannelNewBalance(address token_address, address participant, uint balance);
       // var tokenAddress = vals[0];
       // var nodeAddress = vals[1];
@@ -592,7 +606,8 @@ export class Engine extends events.EventEmitter {
     }
     let channel = this.channels[channelAddress.toString('hex')]
     let _channelAddress = channel.channelAddress
-    return self.blockChain.approve(self.blockchain.tokenAddress, channel.channelAddress, amount)
+     // @ts-ignore FIXME (blockchain was misspelled: blockChain)
+    return self.blockchain.approve(self.blockchain.tokenAddress, channel.channelAddress, amount)
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
         // var owner = vals[0];
@@ -612,9 +627,8 @@ export class Engine extends events.EventEmitter {
    */
   approveChannelManager (amount) {
     const self = this
-    return self.blockChain.approve(self.blockchain.gotokenAddress,
-      self.blockchain.chanelManagerAddress,
-      amount)
+      // @ts-ignore FIXME (blockchain was misspelled: blockChain)
+    return self.blockchain.approve(self.blockchain.gotokenAddress, self.blockchain.chanelManagerAddress, amount)
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
         // var owner = vals[0];
