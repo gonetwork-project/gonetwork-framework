@@ -14,21 +14,21 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^9.6.6",
+    "@types/sjcl": "^1.0.28",
+    "ethereumjs-wallet": "^0.6.0",
+    "jsdocs": "^1.0.0",
     "node-fetch": "^2.1.2",
     "node-persist": "^2.1.0",
+    "solc": "^0.4.21",
     "standard": "^10.0.3",
     "tape": "^4.9.0",
+    "truffle-contract": "^3.0.5",
+    "truffle-wallet-provider": "0.0.5",
     "ts-loader": "^4.2.0",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
     "typescript": "^2.8.3",
-    "web3": "^1.0.0-beta.34",
-    "ethereumjs-wallet": "^0.6.0",
-    "truffle-wallet-provider": "0.0.5",
-    "solc": "^0.4.21",
-    "truffle-contract": "^3.0.5",
-    "qrcode": "^1.2.0",
-    "jsdocs": "^1.0.0"
+    "web3": "^1.0.0-beta.34"
   },
   "dependencies": {
     "bn.js": "^4.11.8",
