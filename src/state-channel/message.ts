@@ -23,7 +23,7 @@ export const EMPTY_20BYTE_BUFFER = Buffer.alloc(20)
 /** @class A hashable interface class
  * @memberof message
  */
-class Hashable {
+export class Hashable {
   /** getMessageHash - must implement */
   getMessageHash () {
     throw new Error('unimplemented getMessageHash')
