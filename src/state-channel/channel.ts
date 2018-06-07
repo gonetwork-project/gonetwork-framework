@@ -481,6 +481,7 @@ export class Channel {
       try {
         return new OpenLockProof({ 'openLock': lock, 'merkleProof': self.peerState.generateLockProof(lock) })
       } catch (err) {
+        // todo: this is a very critical - you still should be able to unlock rest of the lock
         console.log(err)
       }
     })

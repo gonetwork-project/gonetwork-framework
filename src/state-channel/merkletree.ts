@@ -197,8 +197,7 @@ MerkleTree.prototype.findElement = function (hashedElement) {
  * @returns {bool}
  */
 MerkleTree.prototype.verify = function (proof, hashedElement) {
-  // @ts-ignore FIXME
-  return checkMerkleProof(proof, this.getRoot(), hashedElement, this.ordered)
+  return checkMerkleProof(proof, this.getRoot(), hashedElement)
 }
 
 /** Deprectated
