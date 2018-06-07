@@ -1,6 +1,8 @@
 import * as util from 'ethereumjs-util'
 import * as sjcl from 'sjcl'
 import * as abi from 'ethereumjs-abi'
+import { BN } from 'bn.js'
+import { EthAddress, EthPrivateKey, EthNonce, EthBlockNumber } from '../types'
 
 /**
  * @namespace message
@@ -33,11 +35,12 @@ class Hashable {
  * @returns {BN}
  * @memberof message
  */
-export function TO_BN (value) {
+// FIXME - remove `any` and the following errors
+export function TO_BN (value: number | BN | any) {
   if (util.BN.isBN(value)) {
     return value
   } else {
-    return new util.BN(value, 16)
+    return new util.BN(value as number, 16)
   }
 }
 
@@ -47,7 +50,7 @@ export function TO_BN (value) {
  * @returns {} - deserialized value
  * @memberof message
  */
-export function JSON_REVIVER_FUNC (k, v) {
+export function JSON_REVIVER_FUNC (k: object, v: any) {
   if (
     v !== null &&
     typeof v === 'object' &&
@@ -65,7 +68,7 @@ export function JSON_REVIVER_FUNC (k, v) {
  * @returns {string} - serialized value
  * @memberof message
  */
-export function SERIALIZE (msg) {
+export function SERIALIZE (msg: SignedMessage) {
   return JSON.stringify(msg)
 }
 
@@ -74,8 +77,8 @@ export function SERIALIZE (msg) {
  * @return{SignedMessage} - message type
  * @memberof message
  */
-export function DESERIALIZE (data) {
-  return JSON.parse(data, JSON_REVIVER_FUNC)
+export function DESERIALIZE (data: string) {
+  return JSON.parse(data, JSON_REVIVER_FUNC) as SignedMessage
 }
 
 /** Deserialize a received message and create the appropriate object type based on classType property
@@ -83,7 +86,7 @@ export function DESERIALIZE (data) {
  * @returns {SignedMessage} - message type
  * @memberof message
  */
-export function DESERIALIZE_AND_DECODE_MESSAGE (data) {
+export function DESERIALIZE_AND_DECODE_MESSAGE (data: string) {
   const jsonObj = DESERIALIZE(data)
   if (jsonObj.hasOwnProperty('classType')) {
     switch (jsonObj.classType) {
@@ -94,11 +97,11 @@ export function DESERIALIZE_AND_DECODE_MESSAGE (data) {
       case 'ProofMessage':
         return new ProofMessage(jsonObj)
       case 'Lock':
-        return new Lock(jsonObj)
+        return new Lock(jsonObj as any) // FIXME
       case 'OpenLock':
         return new OpenLock(jsonObj)
       case 'DirectTransfer':
-        return new DirectTransfer(jsonObj)
+        return new DirectTransfer(jsonObj as any) // FIXME
       case 'LockedTransfer':
         return new LockedTransfer(jsonObj)
       case 'MediatedTransfer':
@@ -125,6 +128,9 @@ export function DESERIALIZE_AND_DECODE_MESSAGE (data) {
  * @property {Buffer} s
  * @property {int} v
  */
+export interface Signature {
+  r: Buffer, s: Buffer, v: number
+}
 
 /** @class Signed message base class that generates a keccak256 hash and signs using ECDSA
  * @property {string} classType - base class type used for reflection
@@ -133,7 +139,7 @@ export function DESERIALIZE_AND_DECODE_MESSAGE (data) {
  */
 export class SignedMessage {
   classType: string
-  signature: any
+  signature: Signature
   /** @constructor
    * @param {object} options
    * @param {Signature} [options.signature] - sets the signature of the message, useful during deserilaization of SignedMessage
@@ -151,7 +157,7 @@ export class SignedMessage {
   /** sign - signs the message with the private key and sets the signature property
    * @param {Buffer} privateKey
    */
-  sign (privateKey) {
+  sign (privateKey: Buffer) {
     // Geth and thus web3 prepends the string \x19Ethereum Signed Message:\n<length of message>
     // to all data before signing it (https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign).
     // If you want to verify such a signature from Solidity from web3/geth, you'll have to prepend
@@ -185,7 +191,7 @@ export class SignedMessage {
    * @returns {bool}
    */
   isSigned () {
-    return !(this.signature === null)
+    return this.signature !== null
   }
 }
 
@@ -200,11 +206,11 @@ export class SignedMessage {
  * @memberof message
  */
 export class Proof extends SignedMessage {
-  nonce: any
-  transferredAmount: any
-  locksRoot: any
-  channelAddress: any
-  messageHash: any
+  nonce: EthNonce
+  transferredAmount: BN
+  locksRoot: Buffer
+  channelAddress: Buffer
+  messageHash: Buffer
 
   constructor (options) {
     super(options)
@@ -231,6 +237,15 @@ export class Proof extends SignedMessage {
   }
 }
 
+export interface ProofMessageOptions {
+  nonce: EthNonce
+  transferredAmount: BN
+  locksRoot: Buffer
+  channelAddress: Buffer
+  messageHash: Buffer
+  signature: Signature
+}
+
 /** @class
  * @extends SignedMessage
  * @property {BN} nonce
@@ -242,21 +257,21 @@ export class Proof extends SignedMessage {
  * @memberof message
  */
 export class ProofMessage extends SignedMessage {
-  nonce: any
-  transferredAmount: any
-  locksRoot: any
-  channelAddress: any
-  messageHash: any
+  nonce: EthNonce
+  transferredAmount: BN
+  locksRoot: Buffer
+  channelAddress: Buffer
+  messageHash: Buffer
 
-  constructor (options) {
+  constructor (options: Partial<ProofMessageOptions>) {
     super(options)
 
     this.nonce = TO_BN(options.nonce) || new util.BN(0)
     this.transferredAmount = TO_BN(options.transferredAmount) || new util.BN(0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
-    this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER
-    this.signature = options.signature || null
+    this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER;
+    (this as any).signature = options.signature || null // fixme
   }
 
   getHash () {
@@ -288,6 +303,12 @@ export class ProofMessage extends SignedMessage {
   }
 }
 
+export interface LockOptions {
+  amount: number | BN
+  expiration: number | EthBlockNumber
+  hashLock: Buffer
+}
+
 /** @class A hashed lock that prevents transfers from being completed until secret is provided
  * @extends Hashable
  * @property {BN} amount - the amount of money that will be transferred if the secret is revealed
@@ -296,9 +317,9 @@ export class ProofMessage extends SignedMessage {
  * @memberof message
  */
 export class Lock extends Hashable {
-  amount: any
-  expiration: any
-  hashLock: any
+  amount: BN
+  expiration: EthBlockNumber
+  hashLock: Buffer
 
   /** @constructor
    * @param {object} options
@@ -306,7 +327,7 @@ export class Lock extends Hashable {
    * @param {(int|BN)} options.expiration=0
    * @param {Buffer} options.hashLock=EMPTY_32BYTE_BUFFER
    */
-  constructor (options) {
+  constructor (options: Partial<LockOptions>) {
     super()
 
     this.amount = TO_BN(options.amount) || new util.BN(0)
@@ -336,7 +357,7 @@ export class Lock extends Hashable {
  * @memberof message
  */
 export class OpenLock extends Lock {
-  secret: any
+  secret: Buffer
   constructor (lock, secret?) {
     super(lock)
     this.secret = secret
@@ -349,6 +370,11 @@ export class OpenLock extends Lock {
   }
 }
 
+export interface DirectTransferOptions extends Partial<ProofMessageOptions> {
+  msgID: BN
+  to: Buffer
+}
+
 /** @class A direct transfer that can be sent to an engine instance to immediately complete a transfer of funds.
  * Once a direct transfer is sent, the actor sending the message can consider the funds transferred (Given a reliable transport)
  * @extends ProofMessage
@@ -357,10 +383,10 @@ export class OpenLock extends Lock {
  * @memberof message
  */
 export class DirectTransfer extends ProofMessage {
-  msgID: any
-  to: any
+  msgID: BN
+  to: Buffer
 
-  constructor (options) {
+  constructor (options: DirectTransferOptions) {
     super(options)
 
     this.msgID = TO_BN(options.msgID) || new util.BN(0)
@@ -389,13 +415,14 @@ export class DirectTransfer extends ProofMessage {
  * @memberof message
  */
 export class LockedTransfer extends DirectTransfer {
-  lock: any
+  lock!: Lock // FIXME - remove !
 
-  constructor (options) {
+  constructor (options) { // todo: add ts definition and in all other places
     super(options)
     if (!options.lock) {
-      options.lock = new Lock({})
-    } else if (options.lock instanceof Lock) {
+      options.lock = new Lock({}) // fixme: make params immutable
+    }
+    if (options.lock instanceof Lock) {
       this.lock = options.lock
     } else if (options.lock instanceof Object) {
       this.lock = new Lock(options.lock)
@@ -422,12 +449,13 @@ export class LockedTransfer extends DirectTransfer {
 /** @class similar to a locked transfer however, this message has a target and to field.
  * This message type is the foundation for mediated transfers.
  * @extends LockedTransfer
+ * @property {Buffer} initiator - Ethereum address of initiating party
  * @property {Buffer} target - Ethereum address of mediating target
  * @memberof message
  */
 export class MediatedTransfer extends LockedTransfer {
-  initiator: any
-  target: any
+  initiator: Buffer
+  target: Buffer
 
   constructor (options) {
     super(options)
@@ -463,14 +491,14 @@ export class MediatedTransfer extends LockedTransfer {
  * @extends SignedMessage
  */
 export class RequestSecret extends SignedMessage {
-  msgID: any
-  to: any
-  hashLock: any
-  amount: any
+  msgID: BN
+  to: Buffer
+  hashLock: Buffer
+  amount: BN
 
   constructor (options) {
     super(options)
-    this.msgID = TO_BN(options.msgID) || new util.BN(0)
+    this.msgID = TO_BN(options.msgID) || new util.BN(0) // fixme: using zero does not feel rigth; fix here and everywhere else
     this.to = options.to || EMPTY_20BYTE_BUFFER
     this.hashLock = options.hashLock || EMPTY_32BYTE_BUFFER // Serializable Lock Object
     this.amount = TO_BN(options.amount) || new util.BN(0)
@@ -487,16 +515,19 @@ export class RequestSecret extends SignedMessage {
 
 /** @class RevealSecret - in response to a RequestSecret
  * @extends SignedMessage
+ * @property {BN} msgID
  * @property {Buffer} to - Ethereum Address
  * @property {Buffer} secret - the hash secret
  * @memberof message
  */
 export class RevealSecret extends SignedMessage {
-  secret: any
-  to: any
+  msgID: BN
+  secret: Buffer
+  to: EthAddress
 
   constructor (options) {
     super(options)
+    this.msgID = TO_BN(options.msgID) || new util.BN(0)
     this.secret = options.secret || EMPTY_32BYTE_BUFFER
     this.to = options.to || EMPTY_20BYTE_BUFFER
   }
@@ -524,9 +555,9 @@ export class RevealSecret extends SignedMessage {
  * @memberof message
  */
 export class SecretToProof extends ProofMessage {
-  msgID: any
-  to: any
-  secret: any
+  msgID: BN
+  to: Buffer
+  secret: Buffer
 
   constructor (options) {
     super(options)
@@ -563,9 +594,9 @@ export class SecretToProof extends ProofMessage {
  * @memberof message
  */
 export class Ack {
-  to: any
-  messageHash: any
-  msgID: any
+  to: Buffer
+  messageHash: Buffer
+  msgID: BN
 
   constructor (options) {
     this.to = options.to || EMPTY_20BYTE_BUFFER

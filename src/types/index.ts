@@ -15,6 +15,8 @@ export type BlockQuantity = 'latest'
 export type EthAddress = (string | Buffer)
 export type EthTransaction = string
 export type EthBlockNumber = BN
+export type EthNonce = BN
+export type EthPrivateKey = (string | Buffer)
 
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state

@@ -1,12 +1,14 @@
 import * as util from 'ethereumjs-util'
+import * as events from 'events'
+import { BN } from 'bn.js'
 
 import * as messageLib from './message'
 import * as channelLib from './channel'
 import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
-import * as events from 'events'
 import { BlockchainService } from '..'
+import { EthBlockNumber } from '../types'
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -34,7 +36,7 @@ export class Engine extends events.EventEmitter {
   // dictionary of messages[msgID] = statemachine.*
   messageState = {}
 
-  currentBlock = new util.BN(0)
+  currentBlock = new util.BN(0) as EthBlockNumber
   msgID = new util.BN(0)
 
   publicKey = undefined // fixme
@@ -51,8 +53,7 @@ export class Engine extends events.EventEmitter {
    * @param {Function} signatureService - the callback that requests the privatekey for signing of messages.  This allows the user to store the private key in a secure store or other means
    * @param {BlockchainService} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
    */
-  constructor (address, signatureService, blockchainService) {
-    // @ts-ignore FIXME
+  constructor (address: Buffer, signatureService: Function, blockchainService: BlockchainService) {
     super()
 
     this.address = address
@@ -81,7 +82,7 @@ export class Engine extends events.EventEmitter {
    * @throws "Invalid Message: no signature found"
    * @throws "Invalid Message: uknown message received"
    */
-  onMessage (message) {
+  onMessage (message: messageLib.SignedMessage) {
     // TODO: all messages must be signed here?
     if (!message.isSigned()) {
       throw new Error('Invalid Message: no signature found')
@@ -102,16 +103,16 @@ export class Engine extends events.EventEmitter {
     }
 
     // FIXME - msgID seems to be not always there
-    return new messageLib.Ack({ msgID: (message as any).msgID, messageHash: message.getHash(), to: message.from })
+    return new messageLib.Ack({ msgID: message.msgID, messageHash: message.getHash(), to: message.from })
   }
 
-  onRequestSecret (requestSecret) {
-    if (this.messageState.hasOwnProperty(requestSecret.msgID)) {
-      this.messageState[requestSecret.msgID].applyMessage('receiveRequestSecret', requestSecret)
+  onRequestSecret (requestSecret: messageLib.RequestSecret) {
+    if (this.messageState.hasOwnProperty(requestSecret.msgID.toString())) {
+      this.messageState[requestSecret.msgID.toString()].applyMessage('receiveRequestSecret', requestSecret)
     }
   }
 
-  onRevealSecret (revealSecret) {
+  onRevealSecret (revealSecret: messageLib.RevealSecret) {
     // handle reveal secret for all channels that have a lock created by it
     // we dont care where it came from unless we want to progress our state machine
     let errors: any[] = []
@@ -138,7 +139,7 @@ export class Engine extends events.EventEmitter {
     })
   }
 
-  onSecretToProof (secretToProof) {
+  onSecretToProof (secretToProof: messageLib.SecretToProof) {
     // handle reveal secret for all channels that have a lock created by it.
     // this is in the case where for some reason we get a SecretToProof before
     // a reveal secret
@@ -171,14 +172,15 @@ export class Engine extends events.EventEmitter {
 
     let channel = this.channelByPeer[secretToProof.from.toString('hex')]
     channel.handleTransfer(secretToProof, this.currentBlock)
-    if (this.messageState.hasOwnProperty(secretToProof.msgID)) {
-      this.messageState[secretToProof.msgID].applyMessage('receiveSecretToProof', secretToProof)
+    if (this.messageState.hasOwnProperty(secretToProof.msgID.toString())) {
+      this.messageState[secretToProof.msgID.toString()].applyMessage('receiveSecretToProof', secretToProof)
     } else {
+      // todo: improve error propagation
       // Something went wrong with the statemachine :(
     }
   }
 
-  onDirectTransfer (directTransfer) {
+  onDirectTransfer (directTransfer: messageLib.DirectTransfer) {
     if (!this.channelByPeer.hasOwnProperty(directTransfer.from.toString('hex'))) {
       throw new Error('Invalid DirectTransfer: channel does not exist')
     }
@@ -192,7 +194,7 @@ export class Engine extends events.EventEmitter {
     channel.handleTransfer(directTransfer, this.currentBlock)
   }
 
-  onMediatedTransfer (mediatedTransfer) {
+  onMediatedTransfer (mediatedTransfer: messageLib.MediatedTransfer) {
     if (!this.channelByPeer.hasOwnProperty(mediatedTransfer.from.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
@@ -206,8 +208,8 @@ export class Engine extends events.EventEmitter {
     channel.handleTransfer(mediatedTransfer, this.currentBlock)
     if (mediatedTransfer.target.compare(this.address) === 0) {
       console.log('Start targetStateMachine')
-      this.messageState[mediatedTransfer.msgID] = new stateMachineLib.MessageState(mediatedTransfer, this.targetStateMachine)
-      this.messageState[mediatedTransfer.msgID].applyMessage('init', this.currentBlock)
+      this.messageState[mediatedTransfer.msgID.toString()] = new stateMachineLib.MessageState(mediatedTransfer, this.targetStateMachine)
+      this.messageState[mediatedTransfer.msgID.toString()].applyMessage('init', this.currentBlock)
     }
   }
 
@@ -222,7 +224,7 @@ export class Engine extends events.EventEmitter {
    * @throws "Invalid MediatedTransfer: channel does not exist"
    * @throws 'Invalid Channel State:state channel is not open'
    */
-  sendMediatedTransfer (to, target, amount, expiration, secret, hashLock) {
+  sendMediatedTransfer (to: Buffer, target: Buffer, amount: BN, expiration: EthBlockNumber, secret: Buffer, hashLock: Buffer) {
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
@@ -255,11 +257,11 @@ export class Engine extends events.EventEmitter {
   /**
    * Send a direct transfer to your channel partner.  This method calls send(directTransfer) and applies the directTransfer to the local channel state.
    * @param {Buffer} to - eth address who this message will be sent to.  Only differs from target if mediating a transfer
-   * @param {Buffer} transferredAmount - the monotonically increasing amount to send.  This value is set by taking the previous transferredAmount + amount you want to transfer.
+   * @param {BN} transferredAmount - the monotonically increasing amount to send.  This value is set by taking the previous transferredAmount + amount you want to transfer.
    * @throws "Invalid MediatedTransfer: unknown to address"
    * @throws 'Invalid DirectTransfer:state channel is not open'
    */
-  sendDirectTransfer (to, transferredAmount) {
+  sendDirectTransfer (to: Buffer, transferredAmount: BN) {
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: unknown to address')
     }
@@ -285,7 +287,7 @@ export class Engine extends events.EventEmitter {
    * or implement webRTC p2p protocol for transport etc.
    * @param {message} msg - A message implementation in the message namespace
    */
-  send (msg) {
+  send (msg: messageLib.SignedMessage) {
     console.log('SENDING:' + messageLib.SERIALIZE(msg))
   }
 
@@ -293,7 +295,7 @@ export class Engine extends events.EventEmitter {
    * @param {string} event - the GOT.* namespaced event triggered asynchronously by external engine components i.e. stateMachine, on-chain event handlers,etc.
    * @param {object} state - the accompanying object state
    */
-  handleEvent (event, state) {
+  handleEvent (event, state) { // todo: improve and unify events accross rest of the project
     try {
       if (event.startsWith('GOT.')) {
         let channel
@@ -388,7 +390,7 @@ export class Engine extends events.EventEmitter {
    * and channel lifecycle management
    * @param {BN} block - the latest mined block
    */
-  onBlock (block) {
+  onBlock (block: EthBlockNumber) {
     if (block.lt(this.currentBlock)) {
       throw new Error('Block Error: block count must be monotonically increasing')
     }
@@ -420,7 +422,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel is mined.  If there is an error during any point of execution in the mining
    * the onChannelNewError(peerAddress) is called
    */
-  newChannel (peerAddress) {
+  newChannel (peerAddress: Buffer) {
     // is this a blocking call?
     if (!this.pendingChannels.hasOwnProperty(peerAddress.toString('hex')) &&
       this.channelByPeer.hasOwnProperty(peerAddress.toString('hex')) &&
@@ -449,7 +451,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelCloseError(channelAddress) is called
    */
-  closeChannel (channelAddress) {
+  closeChannel (channelAddress: Buffer) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Close: unknown channel')
     }
@@ -477,7 +479,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onTransferUpdatedError(channelAddress) is called
    */
-  transferUpdate (channelAddress) {
+  transferUpdate (channelAddress: Buffer) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid TransferUpdate: unknown channel')
     }
@@ -503,7 +505,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelSecretRevealedError(channelAddress) is called for each lock that was not successfully withdrawn on-chain and must be reissued
    */
-  withdrawPeerOpenLocks (channelAddress) {
+  withdrawPeerOpenLocks (channelAddress: Buffer) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Withdraw: unknown channel')
     }
@@ -541,8 +543,8 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelSettledError(channelAddress) is called
    */
-  settleChannel (channelAddress) {
-    if (!this.channels.hasOwnProperty(channelAddress)) {
+  settleChannel (channelAddress: Buffer) {
+    if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Settle: unknown channel')
     }
     let channel = this.channels[channelAddress.toString('hex')]
@@ -570,8 +572,8 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelNewBalanceError(channelAddress) is called
    */
-  depositChannel (channelAddress, amount) {
-    if (!this.channels.hasOwnProperty(channelAddress)) {
+  depositChannel (channelAddress: Buffer, amount: BN) {
+    if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Settle: unknown channel')
     }
     let channel = this.channels[channelAddress.toString('hex')]
@@ -599,9 +601,9 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onApprovalError(channelAddress) is called
    */
-  approveChannel (channelAddress, amount) {
+  approveChannel (channelAddress: Buffer, amount: BN) {
     const self = this
-    if (!this.channels.hasOwnProperty(channelAddress)) {
+    if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid approve Channel: unknown channel')
     }
     let channel = this.channels[channelAddress.toString('hex')]
@@ -625,7 +627,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onApprovalError() is called
    */
-  approveChannelManager (amount) {
+  approveChannelManager (amount: BN) {
     const self = this
       // @ts-ignore FIXME (blockchain was misspelled: blockChain)
     return self.blockchain.approve(self.blockchain.gotokenAddress, self.blockchain.chanelManagerAddress, amount)
@@ -646,20 +648,21 @@ export class Engine extends events.EventEmitter {
    * @param {BN} value - the allowance that was set
    */
   onApproval (owner, spender, value) {
-    return true
+    return true // todo
   }
 
   onApprovalError (address, err?) {
-    return true
+    return true // todo
   }
 
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a new channel is created by the channel manager
    * @param {String} channelAddress - ethereum address hexString
    * @param {String} addressOne - ethereum address hexString
    * @param {String} addressTwo - ethereum address hexString
    * @param {BN} settleTimeout- the settle_timeout for the channel
    */
-  onChannelNew (channelAddress, addressOne, addressTwo, settleTimeout) {
+  onChannelNew (channelAddress: Buffer, addressOne: Buffer, addressTwo: Buffer, settleTimeout: BN) {
     let peerAddress: any = null
     if (addressOne.compare(this.address) === 0) {
       peerAddress = addressTwo
@@ -686,7 +689,7 @@ export class Engine extends events.EventEmitter {
     // constructor(peerState,myState,channelAddress,settleTimeout,revealTimeout,currentBlock){
     let channel = new channelLib.Channel(stateTwo, stateOne, channelAddress,
       this.currentBlock)
-    this.channels[channel.channelAddress.toString('hex')] = channel
+    this.channels[util.toBuffer(channel.channelAddress).toString('hex')] = channel
     this.channelByPeer[channel.peerState.address.toString('hex')] = channel
 
     if (this.pendingChannels.hasOwnProperty(peerAddress.toString('hex'))) {
@@ -695,7 +698,7 @@ export class Engine extends events.EventEmitter {
     return true
   }
 
-  onChannelNewError (peerAddress, err?) {
+  onChannelNewError (peerAddress: Buffer, err?) {
     if (this.pendingChannels.hasOwnProperty(peerAddress.toString('hex'))) {
       delete this.pendingChannels[peerAddress.toString('hex')]
     }
@@ -703,25 +706,27 @@ export class Engine extends events.EventEmitter {
     // TODO: emit UnableToCreate Channel with Peer
   }
 
+   // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel has tokens deposited into it on-chain
    * @param {String} channelAddress - ethereum address hexString
    * @param {String} address - the particpants ethereum address in hexString who deposited the funds
    * @param {String} balance - the new deposited balance for the participant in the channel
    */
-  onChannelNewBalance (channelAddress, address, balance) {
+  onChannelNewBalance (channelAddress: Buffer, address: Buffer, balance: BN) {
     this.channels[channelAddress.toString('hex')].onChannelNewBalance(address, balance)
-    return true
+    return true // todo
   }
 
   onChannelNewBalanceError (address, err?) {
-    return false
+    return false // todo
   }
 
+   // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a  channel is closed on chain identifying which of the partners initiated the close
    * @param {String} channelAddress - ethereum address hexString
    * @param {String} closingAddress - ethereum address hexString
    */
-  onChannelClose (channelAddress, closingAddress) {
+  onChannelClose (channelAddress: Buffer, closingAddress: Buffer) {
     let channel = this.channels[channelAddress.toString('hex')]
     channel.onChannelClose(closingAddress, this.currentBlock)
     if (closingAddress.compare(this.address) !== 0) {
@@ -730,33 +735,36 @@ export class Engine extends events.EventEmitter {
     return true
   }
 
-  onChannelCloseError (channelAddress, proof) {
+  onChannelCloseError (channelAddress: Buffer, err?) {
     let channel = this.channels[channelAddress.toString('hex')]
     return channel.onChannelCloseError()
   }
 
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a the counterpary has updated their transfer proof on-chain
    * @param {String} channelAddress - ethereum address hexString
    * @param {String} nodeAddress - the party who submitted the proof
    */
-  onTransferUpdated (channelAddress, nodeAddress) {
+  onTransferUpdated (channelAddress: Buffer, nodeAddress: Buffer) {
     return this.channels[channelAddress.toString('hex')].onTransferUpdated(nodeAddress, this.currentBlock)
   }
 
-  onTransferUpdatedError (channelAddress, err?) {
+  onTransferUpdatedError (channelAddress: Buffer, err?) {
     return this.channels[channelAddress.toString('hex')].onTransferUpdatedError()
   }
 
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel is settled on-chain
    * @param {String} channelAddress - ethereum address hexString
    */
-  onChannelSettled (channelAddress) {
+  onChannelSettled (channelAddress: Buffer) {
     return this.channels[channelAddress.toString('hex')].onChannelSettled(this.currentBlock)
   }
-  onChannelSettledError (channelAddress, err?) {
+  onChannelSettledError (channelAddress: Buffer, err?) {
     return this.channels[channelAddress.toString('hex')].onChannelSettledError()
   }
 
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a lock has been withdrawn on-chain.  If a user was withholding the secret in a mediate transfer,
    * the party can now unlock the pending locks in the other channels.  This is why it is essential in a mediated transfer setting
    * that each hop decrements the expiration by a safe margin such that they may claim a lock off chain in case of byzantine faults
@@ -764,13 +772,14 @@ export class Engine extends events.EventEmitter {
    * @param {String} secret - the 32 byte secret in hexString
    * @param {String} receiverAddress - ethereum address hexString which unlocked the lock on-chain
    */
-  onChannelSecretRevealed (channelAddress, secret, receiverAddress) {
+  onChannelSecretRevealed (channelAddress: Buffer, secret: Buffer, receiverAddress: Buffer) {
     return this.channels[channelAddress.toString('hex')].onChannelSecretRevealed(secret, receiverAddress, this.currentBlock)
   }
-  onChannelSecretRevealedError (channelAddress, secret, err?) {
+  onChannelSecretRevealedError (channelAddress: Buffer, secret: Buffer, err?) {
     return this.channels[channelAddress.toString('hex')].onChannelSecretRevealedError(secret)
   }
 
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel has been closed and the channel lifetime exceeds the refund interval.
    * i.e. channel.closedBlock - channel.openedBlock > refundInterval.  This is in hopes to incentives longer lived state channels
    * by reducing the cost of their deployment for longer periods.
@@ -778,7 +787,7 @@ export class Engine extends events.EventEmitter {
    * @param {String} receiverAddress - ethereum address hexString of the party that received the refund
    * @param {BN} amount- the amount of GOT refunded
    */
-  onRefund (channelAddress, receiverAddress, amount) {
+  onRefund (channelAddress: Buffer, receiverAddress: Buffer, amount: BN) {
     return true
   }
 }

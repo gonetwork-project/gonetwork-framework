@@ -1,8 +1,10 @@
 /** @namespace channel */
 
 import * as util from 'ethereumjs-util'
-
 import * as message from './message'
+import { BN } from 'bn.js'
+
+import { EthBlockNumber, EthNonce } from '../types'
 
 // Transfers apply state mutations to the channel object.  Once a transfer is verified
 // we apply it to the Channel
@@ -20,12 +22,12 @@ export const CHANNEL_STATE_OPEN = 'opened'
 export const CHANNEL_STATE_SETTLED = 'settled'
 
 /** @memberof channel */
-export const SETTLE_TIMEOUT = new util.BN(100)
+export const SETTLE_TIMEOUT = new BN(100)
 // the minimum amount of time we need from the expiration of a lock to safely unlock
 // this property should be negotiable by the users based on their level of conservantiveness
 // in addition to expection of settled locks
 /** @memberof channel */
-export const REVEAL_TIMEOUT = new util.BN(15)
+export const REVEAL_TIMEOUT = new BN(15)
 
 /** @class Channel represents the states between two participants.  State synchronization occurs against channel endpoints.
  * Channels rely on monotonically increasing simplex channels to track net value transfer flux. Rather then leveraging Poon-Dryja style
@@ -55,25 +57,25 @@ export const REVEAL_TIMEOUT = new util.BN(15)
 export class Channel {
   peerState: any
   myState: any
-  channelAddress: any
-  openedBlock: any
+  channelAddress: Buffer
+  openedBlock: EthBlockNumber
 
-  issuedCloseBlock: any = null
-  issuedTransferUpdateBlock: any = null
-  issuedSettleBlock: any = null
-  closedBlock: any = null
-  settledBlock: any = null
-  updatedProofBlock: any = null
+  issuedCloseBlock: EthBlockNumber | null = null
+  issuedTransferUpdateBlock: EthBlockNumber | null = null
+  issuedSettleBlock: EthBlockNumber | null = null
+  closedBlock: EthBlockNumber | null = null
+  settledBlock: EthBlockNumber | null = null
+  updatedProofBlock: EthBlockNumber | null = null
   withdrawnLocks: any = {}
 
   /**
    * @constructor
    * @param {ChannelState} peerState - The initialized ChannelState object representing a peer.
    * @param {ChannelState} myState - The initialized ChannelState object representing my state.
-   * @param {Bytes} channelAddress - The on chain netting channel ethereum contract address.
+   * @param {Buffer} channelAddress - The on chain netting channel ethereum contract address.
    * @param {BN} currentBlock - The current block number on ethereum.
    */
-  constructor (peerState, myState, channelAddress, currentBlock) {
+  constructor (peerState, myState, channelAddress: Buffer, currentBlock: EthBlockNumber) {
     this.peerState = peerState // channelState.ChannelStateSync
     this.myState = myState// channelState.ChannelStateSync
     this.channelAddress = channelAddress || message.EMPTY_20BYTE_BUFFER
@@ -88,8 +90,8 @@ export class Channel {
    * @param {BN} currentBlock - The current block number
    * @returns {BN}
    */
-  transferrableFromTo (from, to, currentBlock?) {
-    let safeBlock = null
+  transferrableFromTo (from, to, currentBlock?: EthBlockNumber) {
+    let safeBlock: EthBlockNumber | null = null
     if (currentBlock) {
       safeBlock = currentBlock.add(REVEAL_TIMEOUT)
     }
@@ -102,7 +104,7 @@ export class Channel {
    * @param {BN} currentBlock
    * @returns {BN}
    */
-  getChannelExpirationBlock (currentBlock) {
+  getChannelExpirationBlock (currentBlock: EthBlockNumber) {
     if (this.closedBlock) {
       return this.closedBlock.add(SETTLE_TIMEOUT)
     } else {
@@ -135,7 +137,7 @@ export class Channel {
    * @throws "Invalid Message: Expected RevealSecret"
    * @throws "Invalid Secret: Unknown secret revealed"
    */
-  handleRevealSecret (revealSecret) {
+  handleRevealSecret (revealSecret: message.RequestSecret) {
     if (!(revealSecret instanceof message.RevealSecret)) {
       throw new Error('Invalid Message: Expected RevealSecret')
     }
@@ -168,7 +170,7 @@ export class Channel {
    * @throws "Invalid transfer: cannot update a closing channel"
    * @throws "Invalid Transfer: unknown from"
    */
-  handleTransfer (transfer, currentBlock) {
+  handleTransfer (transfer: message.DirectTransfer | message.LockedTransfer, currentBlock: EthBlockNumber) {
     // check the direction of data flow
     if (!this.isOpen()) {
       throw new Error('Invalid transfer: cannot update a closing channel')
@@ -200,7 +202,7 @@ export class Channel {
    * @throws "Invalid transferredAmount: Insufficient Balance:..."
    * @returns {bool} - true if transfer applied to channelState
    */
-  handleTransferFromTo (from, to, transfer, currentBlock) {
+  handleTransferFromTo (from, to, transfer: message.DirectTransfer | message.LockedTransfer, currentBlock: EthBlockNumber) {
     if (!(transfer instanceof message.ProofMessage)) {
       throw new Error('Invalid Transfer Type')
     }
@@ -210,7 +212,7 @@ export class Channel {
       throw new Error('Invalid Channel Address: channel address mismatch')
     }
 
-    if (!proof.nonce.eq(from.nonce.add(new util.BN(1)))) {
+    if (!proof.nonce.eq(from.nonce.add(new BN(1)))) {
       throw new Error('Invalid nonce: Nonce must be incremented by 1')
     }
 
@@ -226,7 +228,7 @@ export class Channel {
         throw new Error('Invalid LocksRoot for LockedTransfer')
       }
       // validate lock as well
-      if (lock.amount.lte(new util.BN(0))) {
+      if (lock.amount.lte(new BN(0))) {
         throw new Error('Invalid Lock: Lock amount must be greater than 0')
       }
 
@@ -292,7 +294,7 @@ export class Channel {
 
   /** @returns {BN} incremented nonce */
   incrementedNonce () {
-    return this.myState.nonce.add(new util.BN(1))
+    return this.myState.nonce.add(new BN(1)) as EthNonce
   }
 
   /** create a locked transfer from myState for peerState
@@ -304,15 +306,15 @@ export class Channel {
    * @returns message.LockedTransfer
    * @throws "Insufficient funds: lock amount must be less than or equal to transferrable amount"
    */
-  createLockedTransfer (msgID, hashLock, amount, expirationBlock, currentBlock) {
+  createLockedTransfer (msgID: BN, hashLock: Buffer, amount: BN, expirationBlock: EthBlockNumber, currentBlock: EthBlockNumber) {
     let transferrable = this.transferrableFromTo(this.myState, this.peerState, currentBlock)
-    if (amount.lte(new util.BN(0)) || transferrable.lt(amount)) {
+    if (amount.lte(new BN(0)) || transferrable.lt(amount)) {
       throw new Error('Insufficient funds: lock amount must be less than or equal to transferrable amount')
     }
 
     let lock = new message.Lock({ amount: amount, expiration: expirationBlock, hashLock: hashLock })
 
-    let lockedTransfer = new message.LockedTransfer({
+    return new message.LockedTransfer({
       msgID: msgID,
       nonce: this.incrementedNonce(),
       channelAddress: this.channelAddress,
@@ -321,7 +323,6 @@ export class Channel {
       locksRoot: this.myState._computeMerkleTreeWithHashlock(lock).getRoot(),
       lock: lock
     })
-    return lockedTransfer
   }
 
   /** create a direct transfer from myState to peerState
@@ -330,10 +331,10 @@ export class Channel {
    * @returns message.DirectTransfer
    * @throws "Insufficient funds: direct transfer cannot be completed:..."
    */
-  createDirectTransfer (msgID, transferredAmount) {
+  createDirectTransfer (msgID: BN, transferredAmount: BN) {
     let transferrable = this.transferrableFromTo(this.myState, this.peerState)
 
-    if (transferredAmount.lte(new util.BN(0)) ||
+    if (transferredAmount.lte(new BN(0)) ||
       transferredAmount.lte(this.myState.transferredAmount) ||
       transferredAmount.gt(transferrable)) {
       throw new Error('Insufficient funds: direct transfer cannot be completed:' +
@@ -341,16 +342,14 @@ export class Channel {
         transferrable.toString(10))
     }
 
-    let directTransfer = new message.DirectTransfer({
+    return new message.DirectTransfer({
       msgID: msgID,
       nonce: this.incrementedNonce(),
       channelAddress: this.channelAddress,
       transferredAmount: transferredAmount,
       to: this.peerState.address,
       locksRoot: this.myState.merkleTree.getRoot()
-
     })
-    return directTransfer
   }
   /** create a mediated transfer from myState to target using the peerState as a mediator and is set as the to address.
    * This holds if there exists a route in the
@@ -359,14 +358,14 @@ export class Channel {
    * @param {Buffer} hashLock - the keccak256 hash of the secret
    * @param {BN} amount
    * @param {BN} expirationBlock
-   * @param {BN} expirationBlock
    * @param {Buffer} target - the intended recipient of the locked transfer.  This target node will make the RevealSecret request
    * direction to the initiator
    * @param {Buffer} initiator - myState ethereum address
    * @param {BN} currentBlock
    * @returns message.MediatedTransfer
    */
-  createMediatedTransfer (msgID, hashLock, amount, expiration, target, initiator, currentBlock) {
+  createMediatedTransfer (msgID: BN, hashLock: Buffer, amount: BN, expiration: EthBlockNumber,
+    target: Buffer, initiator: Buffer, currentBlock: EthBlockNumber) {
     let lockedTransfer = this.createLockedTransfer(msgID, hashLock, amount, expiration, currentBlock)
     let mediatedTransfer = new message.MediatedTransfer(
       Object.assign(
@@ -383,7 +382,7 @@ export class Channel {
    * @param {Buffer} secret
    * @returns {message.SecretToProof}
    */
-  createSecretToProof (msgID, secret) {
+  createSecretToProof (msgID: BN, secret: Buffer) {
     let lock = this.myState.getLockFromSecret(secret)
     if (!lock) {
       console.log(Object.keys(this.myState.openLocks).map(function (l) {
@@ -393,7 +392,7 @@ export class Channel {
     }
     let mt = this.myState._computeMerkleTreeWithoutHashlock(lock)
     let transferredAmount = this.myState.transferredAmount.add(lock.amount)
-    let secretToProof = new message.SecretToProof({
+    return new message.SecretToProof({
       msgID: msgID,
       nonce: this.incrementedNonce(),
       channelAddress: this.channelAddress,
@@ -402,17 +401,17 @@ export class Channel {
       locksRoot: mt.getRoot(),
       secret: secret
     })
-    return secretToProof
   }
 
+  // todo: check if @returns is proper JSDoc
   /** handle a block update
    * @param {BN} currentBlock
-   * @returns {string[]} - GOT.* events to be processed
+   * @returns {[string,Buffer][]} - GOT.* events to be processed
    * @see Engine.handleEvent
    */
-  onBlock (currentBlock) {
+  onBlock (currentBlock: EthBlockNumber) {
     // we use to auto issue settle but now we leave it to the user.
-    let events: any[] = []
+    let events: [string,Buffer][] = []
     if (this.canIssueSettle(currentBlock)) {
       events.push(['GOT.issueSettle', this.channelAddress])
     }
@@ -427,19 +426,19 @@ export class Channel {
   /** @param {BN} currentBlock
    * @returns {bool}
    */
-  canIssueSettle (currentBlock) {
-    return (this.closedBlock &&
+  canIssueSettle (currentBlock: EthBlockNumber) {
+    return !!(this.closedBlock &&
       currentBlock.gt(this.closedBlock.add(SETTLE_TIMEOUT)))
   }
 
-  issueSettle (currentBlock) {
+  issueSettle (currentBlock: EthBlockNumber) {
     if (this.canIssueSettle(currentBlock)) {
       this.issuedSettleBlock = currentBlock
     }
     return this.issuedSettleBlock
   }
 
-  issueClose (currentBlock) {
+  issueClose (currentBlock: EthBlockNumber) {
     if (!this.issuedCloseBlock && !this.closedBlock) {
       this.issuedCloseBlock = currentBlock
 
@@ -448,14 +447,14 @@ export class Channel {
     throw new Error('Channel Error: In Closing State or Is Closed')
   }
 
-  issueTransferUpdate (currentBlock) {
+  issueTransferUpdate (currentBlock: EthBlockNumber) {
     if (!this.issuedCloseBlock) {
       this.issuedTransferUpdateBlock = currentBlock
       return this.peerState.proof.signature ? this.peerState.proof : null
     }
   }
 
-  issueWithdrawPeerOpenLocks (currentBlock) {
+  issueWithdrawPeerOpenLocks (currentBlock: EthBlockNumber) {
     // TODO: Enable this with updated Test
     // if(!this.updatedProofBlock){
     //   throw new Error("Channel Error: Cannot withdraw lock without updating proof to blockchain");
@@ -488,7 +487,7 @@ export class Channel {
     return lockProofs
   }
 
-  onChannelNewBalance (address, balance) {
+  onChannelNewBalance (address: Buffer, balance: BN) {
     if (this.myState.address.compare(address) === 0) {
       this._handleDepositFrom(this.myState, balance)
     } else if (this.peerState.address.compare(address) === 0) {
@@ -505,7 +504,7 @@ export class Channel {
     }
   }
 
-  onChannelClose (closingAddress, block) {
+  onChannelClose (closingAddress: Buffer, block: EthBlockNumber) {
     if (!this.closedBlock) {
       this.closedBlock = block
       if (this.issuedCloseBlock) {
@@ -549,19 +548,19 @@ export class Channel {
     }
   }
 
-  onChannelSecretRevealed (secret, receiverAddress, block) {
+  onChannelSecretRevealed (secret: Buffer, receiverAddress: Buffer, block: EthBlockNumber) {
     let hashKey = util.addHexPrefix((util.sha3(secret)).toString('hex'))
     if (this.withdrawnLocks.hasOwnProperty(hashKey)) {
       this.withdrawnLocks[hashKey] = block
     }
   }
 
-  onChannelSecretRevealedError (secret) {
+  onChannelSecretRevealedError (secret: Buffer) {
     let hashKey = util.addHexPrefix((util.sha3(secret)).toString('hex'))
     this.withdrawnLocks[hashKey] = null
   }
 
-  onRefund (receiverAddress, amount) {
+  onRefund (receiverAddress: Buffer, amount: BN) {
     throw new Error('NOT_IMPLEMENTED')
   }
 }

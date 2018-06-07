@@ -52,7 +52,7 @@ export class ChannelState {
    * @throws "Invalid Lock: lock already registered"
    * @throws "Invalid hashLockRoot"
    */
-  applyLockedTransfer (lockedTransfer) {
+  applyLockedTransfer (lockedTransfer: message.LockedTransfer | message.MediatedTransfer) {
     if (!(lockedTransfer instanceof message.LockedTransfer)) {
       throw new Error('Invalid Message Type: DirectTransfer expected')
     }
@@ -77,7 +77,7 @@ export class ChannelState {
    * @throws "Invalid Message Type: DirectTransfer expected"
    * @throws "Invalid hashLockRoot"
    */
-  applyDirectTransfer (directTransfer) {
+  applyDirectTransfer (directTransfer: message.DirectTransfer) {
     if (!(directTransfer instanceof message.DirectTransfer)) {
       throw new Error('Invalid Message Type: DirectTransfer expected')
     }
@@ -92,7 +92,7 @@ export class ChannelState {
    * @throws "Invalid Message Type: RevealSecret expected"
    * @throws "Invalid Lock: uknown lock secret received"
    */
-  applyRevealSecret (revealSecret) {
+  applyRevealSecret (revealSecret: message.RevealSecret) {
     if (!(revealSecret instanceof message.RevealSecret)) {
       throw new Error('Invalid Message Type: RevealSecret expected')
     }
@@ -117,7 +117,7 @@ export class ChannelState {
    * @throws "Invalid Lock: uknown lock secret received"
    * @throws "Invalid hashLockRoot in SecretToProof"
    */
-  applySecretToProof (secretToProof) {
+  applySecretToProof (secretToProof: message.SecretToProof) {
     if (!(secretToProof instanceof message.SecretToProof)) {
       throw new Error('Invalid Message Type: SecretToProof expected')
     }
@@ -160,7 +160,7 @@ export class ChannelState {
    * @param {message.Lock}
    * @returns {merkletree.MerkleTree}
    */
-  _computeMerkleTreeWithHashlock (lock) {
+  _computeMerkleTreeWithHashlock (lock: message.Lock) {
     let mt = new merkletree.MerkleTree(Object.values(
       Object.assign(
         {},
@@ -179,7 +179,7 @@ export class ChannelState {
    * @param {message.Lock}
    * @returns {merkletree.MerkleTree}
    */
-  _computeMerkleTreeWithoutHashlock (lock) {
+  _computeMerkleTreeWithoutHashlock (lock: message.Lock) {
     let hashLockKey = lock.hashLock.toString('hex')
     let locks = Object.assign({}, this.pendingLocks, this.openLocks)
     if (!locks.hasOwnProperty(hashLockKey)) {
@@ -200,7 +200,7 @@ export class ChannelState {
    * @param {Buffer} secret
    * @returns {(message.Lock| message.OpenLock | null)}
    */
-  getLockFromSecret (secret) {
+  getLockFromSecret (secret: Buffer) {
     let hashLock = util.sha3(secret)
     let hashLockKey = hashLock.toString('hex')
     if (this.pendingLocks.hasOwnProperty(hashLockKey)) {
@@ -216,7 +216,7 @@ export class ChannelState {
    * @param {message.Lock} lock
    * @returns {bool}
    */
-  containsLock (lock) {
+  containsLock (lock: message.Lock) {
     let hashLockKey = lock.hashLock.toString('hex')
     return this.pendingLocks.hasOwnProperty(hashLockKey) || this.openLocks.hasOwnProperty(hashLockKey)
   }
@@ -242,7 +242,7 @@ export class ChannelState {
    * @param {BN} safeBlock
    * @returns {BN}
    */
-  lockedAmount (safeBlock) {
+  lockedAmount (safeBlock: util.BN) {
     // we only want lockedAmounts that have not yet expired
     return this._lockAmount(Object.values(this.pendingLocks), safeBlock)
   }
@@ -261,7 +261,7 @@ export class ChannelState {
    * @param {BN} safeBlock - safe expiration time
    * @returns {BN}
    */
-  _lockAmount (locksArray, safeBlock?) {
+  _lockAmount (locksArray: message.Lock[], safeBlock?: util.BN) {
     if (safeBlock) {
       safeBlock = message.TO_BN(safeBlock)
       return locksArray.reduce(function (sum, lock) {
@@ -292,12 +292,12 @@ export class ChannelState {
    * @param {message.OpenLock} lock
    * @returns {Buffer[]}
    */
-  generateLockProof (lock) {
+  generateLockProof (lock: message.OpenLock) {
     let lockProof = this.merkleTree.generateProof(lock.getMessageHash())
     let verified = merkletree.checkMerkleProof(lockProof, this.merkleTree.getRoot(), lock.getMessageHash())
     if (!verified) {
       throw new Error('Error creating lock proof')
     }
-    return lockProof
+    return lockProof as Buffer[]
   }
 }
