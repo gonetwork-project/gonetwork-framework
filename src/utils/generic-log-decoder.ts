@@ -1,7 +1,7 @@
 import * as T from '../types'
 
-const abi = require('ethereumjs-abi')
-const util = require('ethereumjs-util')
+import * as abi from 'ethereumjs-abi'
+import * as util from 'ethereumjs-util'
 
 export default class GenericLogDecoder {
   private eventMap: any
@@ -40,7 +40,7 @@ export default class GenericLogDecoder {
 
       let eventDef = this.eventMap[log.topics[0]]
 
-      let data = Buffer.concat(log.topics.slice(1).concat(log.data).map(y => new util.toBuffer(y)))
+      let data = Buffer.concat(log.topics.slice(1).concat(log.data).map(y => util.toBuffer(y)))
 
       result = abi.rawDecode(eventDef.inputs.map(x => x.type), data)
         .reduce((r, y, i) => {

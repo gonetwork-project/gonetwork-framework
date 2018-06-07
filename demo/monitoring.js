@@ -1,5 +1,6 @@
 const path = require('path')
 const persist = require('node-persist')
+const Rx = require('rxjs')
 
 global.fetch = require('node-fetch')
 
@@ -14,7 +15,8 @@ const monitoring = new Monitoring(
   Object.assign(
     infuraMonitoring(cfg.NETWORK, cfg.TOKEN),
     {
-      registry: cfg.REGISTRY,
+      channelManagerAddress: cfg.CHANNEL_MANAGER_ADDRESS,
+      tokenAddresses: cfg.TOKEN_ADDRESSES,
       storage: {
         getItem: (id) => persist.get(id),
         setItem: (id, item) => persist.set(id, item),
@@ -35,5 +37,16 @@ const monitoring = new Monitoring(
 // monitoring.transactionReceipt('0x6b9171e0a25bd22f5bd96196c27121915326400f3746bd32c1c6fca07d609683')
 //   .then(tx => console.log('TX', tx))
 
-monitoring.transactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
-  .then(tx => console.log('TX', tx))
+// monitoring.transactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
+//   .then(tx => console.log('TX', tx))
+
+Rx.Observable.fromEvent(monitoring, 'ChannelNew')
+  .take(10)
+  .map((ev) => ev.netting_channel.toString('hex'))
+  .map(add => `0x${add}`)
+  .concatMap(add =>
+    Rx.Observable.timer(2500)
+      .mapTo(add)
+      .do(monitoring.subscribeAddress)
+  )
+  .subscribe()

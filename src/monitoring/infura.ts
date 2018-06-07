@@ -1,4 +1,6 @@
-import { EthMonitoringInfo, EthAddress } from '../types'
+import * as util from 'ethereumjs-util'
+
+import { EthMonitoringInfo, EthAddress, EthBlockNumber } from '../types'
 
 let i = 0
 
@@ -16,25 +18,26 @@ const requestFactory = (network: string, token: string) =>
         params: [params]
       })
     })
-      // .then(x => {
-      //   console.log(x.status, x.statusText)
-      //   return x
-      // })
       .then(r => r.status === 200 ?
         r.json()
-          .then(r => {
-         //   console.log('RESPONSE', r, params)
-            return r.result
-          })
-        : r.text())
-
-const toHex = (n: number) => `0x${Number(n).toString(16)}`
+          .then((r: any) => r.result)
+        : Promise.reject(r))
+      // .then(x => {
+      //   console.log(method, params, x)
+      //   return x
+      // })
 
 export const infuraMonitoring = (network: string, token: string, request = requestFactory(network, token)):
   EthMonitoringInfo => ({
-    blockNumber: () => request('eth_blockNumber'),
-    getLogs: (fromBlock, toBlock, address) =>
-      request('eth_getLogs', { fromBlock: toHex(fromBlock), toBlock: toHex(toBlock), address: address[0] }),
+    blockNumber: () => request('eth_blockNumber')
+      .then(n => new util.BN(n)),
+    getLogs: (fromBlock: EthBlockNumber, toBlock: EthBlockNumber, address: EthAddress | EthAddress[]) =>
+      request('eth_getLogs', {
+        // todo
+        fromBlock: util.addHexPrefix(fromBlock.toString()),
+        toBlock: util.addHexPrefix(toBlock.toString()),
+        address: address
+      }),
     getTransactionReceipt: (tx) =>
       request('eth_getTransactionReceipt', tx)
   })

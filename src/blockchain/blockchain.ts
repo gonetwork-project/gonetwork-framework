@@ -194,7 +194,7 @@ export class BlockchainService implements T.BlockchainService {
         : new Error());
   }
 
-  fetchAndDecodeTx (functionRef, nonce: BN, gasPrice: BN, gasLimit: BN, to: Buffer, value: BN, params: any[]) {
+  fetchAndDecodeTx (functionRef, nonce: BN, gasPrice: BN, gasLimit: BN | number, to: Buffer, value: BN | null, params: any[]) {
     return fetch(this.providerUrl,
       {
         "method": 'POST',
@@ -360,7 +360,7 @@ export class BlockchainService implements T.BlockchainService {
     })
 
     let methodSignature = abi.methodID(functionRef.name, inputs)
-    let paramsEncoded = ''
+    let paramsEncoded: string|Buffer = ''
     if (params.length > 0) {
       paramsEncoded = abi.rawEncode(inputs, params)
     }
