@@ -4,7 +4,7 @@
 
 Consolidated framework with state channel engine, blockchain service, and transport layer implementation.
 
-GoNetwork Documentations [WIP] : https://gonetwork.co/docs
+GoNetwork Documentations [WIP] : https://gonetwork.co/docs/Engine.html
 
 Quick Start
 ===========
