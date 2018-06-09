@@ -57,7 +57,7 @@ client2.on('message', function (topic, msg) {
   // count++;
   if (count === 0) {
     start = Date.now()
-  } else if (count === 999) {
+  } else {
     var proof = engine2.channels[channelAddress.toString('hex')].issueClose()
     console.log(proof)
     end = Date.now()
