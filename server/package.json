@@ -1,0 +1,16 @@
+{
+  "name": "simulator-server",
+  "version": "1.0.0",
+  "description": "provides mqtt-broker and testrpc start|stop commands",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "ethereumjs-testrpc": "^6.0.3",
+    "express": "^4.16.3",
+    "mosca": "^2.8.2"
+  }
+}
