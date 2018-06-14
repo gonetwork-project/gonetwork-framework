@@ -36,6 +36,12 @@ const CONTRACT_NAMES = [
   'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract'
 ]
 
+const SHORT_NAMES = {
+  HumanStandardToken: 'Token',
+  ChannelManagerContract: 'Manager',
+  NettingChannelContract: 'Channel'
+}
+
 const IMPORTS = [
 `import * as BN from 'bn.js'`
 ].join('\n')
@@ -55,7 +61,7 @@ const reduceIO = (ios: AbiIO[]) =>
     return acc
   }, {})
 
-const handleEvents = (evs: AbiEvent[]) => {
+const handleEvents = (evs: AbiEvent[], shortName: string) => {
   const i = evs.reduce((acc, e) => {
     acc.types.push(e.name)
     acc.args[e.name] = reduceIO(e.inputs)
@@ -63,8 +69,8 @@ const handleEvents = (evs: AbiEvent[]) => {
   }, { types: [], args: {} } as { types: string[], args: object })
 
   return [
-    `export type Events = ${i.types.map(t => `'${t}'`).join(' | ')}`,
-    `export type EventsToArgs = ${JSON.stringify(i.args, null, 2).replace(/[\"\,]/g, '')}`
+    `export type ${shortName}Events = ${i.types.map(t => `'${t}'`).join(' | ')}`,
+    `export type ${shortName}EventsToArgs = ${JSON.stringify(i.args, null, 2).replace(/[\"\,]/g, '')}`
   ].join('\n\n')
 }
 
@@ -77,7 +83,7 @@ const handleConstructor = () => ''
 const handleFallback = () => ''
 
 const handlers: {
-  [k: string]: (p: any) => string
+  [k: string]: (p: any, shortName: string) => string
 } = {
   event_: handleEvents,
   constructor_: handleConstructor,
@@ -90,7 +96,7 @@ const handleContract = (outDir: string) => ([n, c]: [string, any]): Observable<a
     .groupBy((e: any) => e.type + '_') // constructor is a special js word
     .mergeMap(g =>
       g.toArray()
-        .map(x => handlers[g.key](x))
+        .map(x => handlers[g.key](x, SHORT_NAMES[n]))
         .do(x => g.key === 'function_' && log(g.key, x))
     )
       .toArray()
