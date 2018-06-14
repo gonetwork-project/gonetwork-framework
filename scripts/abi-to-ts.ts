@@ -36,37 +36,43 @@ const CONTRACT_NAMES = [
   'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract'
 ]
 
-const SHORT_NAMES = {
+const SHORT_NAMES: { [k: string]: string } = {
   HumanStandardToken: 'Token',
   ChannelManagerContract: 'Manager',
   NettingChannelContract: 'Channel'
 }
 
+const ACHTUNG = '// \u26A0 !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND \u26A0\n'
 const IMPORTS = [
-`import * as BN from 'bn.js'`
+  `import BN from 'bn.js'`
 ].join('\n')
 
-const readContracts = (p) =>
+const readContracts = (p: string) =>
   CONTRACT_NAMES.map(c => ([c, require(`${p}/${c}.json`)]))
 
-const abiTypesToTs = {
+const abiTypesToTs: { [k: string]: string } = {
   address: 'Buffer',
+  'address[]': 'Buffer[]',
   uint256: 'BN',
-  bytes32: 'Buffer'
+  bytes32: 'Buffer',
+  bytes: 'Buffer',
+  bool: 'boolean',
+  string: 'string'
 }
 
-const reduceIO = (ios: AbiIO[]) =>
-  ios.reduce((acc, io) => {
-    acc[io.name] = abiTypesToTs[io.type]
+const reduceIO = (ios?: AbiIO[]) =>
+  ios && ios.reduce((acc, io, idx) => {
+    acc[io.name || `anon_${idx}`] = abiTypesToTs[io.type]
     return acc
-  }, {})
+  }, {} as { [k: string]: string })
 
 const handleEvents = (evs: AbiEvent[], shortName: string) => {
   const i = evs.reduce((acc, e) => {
     acc.types.push(e.name)
-    acc.args[e.name] = reduceIO(e.inputs)
+    // todo: check if _types needed at all
+    acc.args[e.name] = Object.assign({ _type: `'${e.name}'` }, reduceIO(e.inputs))
     return acc
-  }, { types: [], args: {} } as { types: string[], args: object })
+  }, { types: [], args: {} } as { types: string[], args: { [k: string]: object } })
 
   return [
     `export type ${shortName}Events = ${i.types.map(t => `'${t}'`).join(' | ')}`,
@@ -74,11 +80,28 @@ const handleEvents = (evs: AbiEvent[], shortName: string) => {
   ].join('\n\n')
 }
 
-const handleFunctions = () => {
-  return ''
+const handleFunctions = (fns: AbiFunction[], shortName: string) => {
+  const i = fns.reduce((acc, f) => {
+    const params = f.inputs.length > 0 && reduceIO(f.inputs)
+    const out = f.outputs!.length > 0 && reduceIO(f.outputs)
+    acc.inOut[f.name] = [params || 'null', out || 'void']
+    acc.order[f.name] = f.inputs.map(x => `'${x.name}'`)
+    return acc
+  }, { inOut: {}, order: {} })
+
+  return [
+    `export type ${shortName}ParamsOutput = ${JSON.stringify(i.inOut, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}ParamsOrder = ${JSON.stringify(i.order, null, 2).replace(/[\"]/g, '')}`
+  ].join('\n\n')
 }
 
-const handleConstructor = () => ''
+const handleConstructor = (fns: AbiFunction[], shortName: string) => {
+  if (fns.length !== 1) throw new Error('EXACTLY_ONE_EXPECTED')
+  const c = fns[0]
+  const ins = JSON.stringify(reduceIO(c.inputs), null, 2).replace(/[\"\,]/g, '')
+  return `export interface ${shortName}ConstructorParams ${ins}`
+
+}
 
 const handleFallback = () => ''
 
@@ -91,20 +114,18 @@ const handlers: {
   fallback_: handleFallback
 }
 
-const handleContract = (outDir: string) => ([n, c]: [string, any]): Observable<any> =>
+const handleContract = (outDir: string) => ([n, c]: [string, any]) =>
   $.from(c.abi)
     .groupBy((e: any) => e.type + '_') // constructor is a special js word
     .mergeMap(g =>
       g.toArray()
         .map(x => handlers[g.key](x, SHORT_NAMES[n]))
-        .do(x => g.key === 'function_' && log(g.key, x))
     )
-      .toArray()
-      .map(gs => [IMPORTS].concat(gs).filter(Boolean))
-      .map(gs => gs.join('\n\n') + '\n')
-      .do(gen => fs.writeFileSync(`${outDir}/${n}.ts`, gen, 'utf8'))
+    .toArray()
+    .map(gs => [IMPORTS].concat(gs).filter(Boolean))
+    .map(gs => gs.join(`\n\n${ACHTUNG}\n`) + '\n')
+    .do(gen => fs.writeFileSync(`${outDir}/${n}.ts`, gen, 'utf8'))
 
 $.from(readContracts(contractsDir))
-  .mergeMap(handleContract(outDir))
-  .do(log)
+  .mergeMap(handleContract(outDir) as any)
   .subscribe()
