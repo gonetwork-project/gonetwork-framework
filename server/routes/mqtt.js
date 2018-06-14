@@ -15,7 +15,6 @@ router.post('/start', (req, res) => {
 		console.log(`Server started at port: ${config.mqttPort}`);
 		res.json({ success: true });
 	});
-	console.log(server);
 });
 
 router.post('/stop', (req, res) => {
@@ -25,7 +24,6 @@ router.post('/stop', (req, res) => {
 	}
 
 	server.close();
-	//TODO stop server
 	
 	res.json({success: true});
 });
