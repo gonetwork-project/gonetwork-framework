@@ -36,12 +36,22 @@ const CONTRACT_NAMES = [
   'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract'
 ]
 
+const IMPORTS = [
+`import * as BN from 'bn.js'`
+].join('\n')
+
 const readContracts = (p) =>
   CONTRACT_NAMES.map(c => ([c, require(`${p}/${c}.json`)]))
 
+const abiTypesToTs = {
+  address: 'Buffer',
+  uint256: 'BN',
+  bytes32: 'Buffer'
+}
+
 const reduceIO = (ios: AbiIO[]) =>
   ios.reduce((acc, io) => {
-    acc[io.name] = io.type
+    acc[io.name] = abiTypesToTs[io.type]
     return acc
   }, {})
 
@@ -59,7 +69,7 @@ const handleEvents = (evs: AbiEvent[]) => {
 }
 
 const handleFunctions = () => {
-  return 'Functions'
+  return ''
 }
 
 const handleConstructor = () => ''
@@ -83,6 +93,9 @@ const handleContract = (outDir: string) => ([n, c]: [string, any]): Observable<a
         .map(x => handlers[g.key](x))
         .do(x => g.key === 'function_' && log(g.key, x))
     )
+      .toArray()
+      .map(gs => [IMPORTS].concat(gs).filter(Boolean))
+      .map(gs => gs.join('\n\n') + '\n')
       .do(gen => fs.writeFileSync(`${outDir}/${n}.ts`, gen, 'utf8'))
 
 $.from(readContracts(contractsDir))
