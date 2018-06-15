@@ -22,10 +22,10 @@ export type ContractOut<CB extends ContractBase> = {
   [K in keyof CB]: CB[K][1]
 }
 
-export type CreateTxParams<In extends ({} | null)> = (tParams?: Partial<TxParams>) => (params: In) => TxParams
+export type MethodCall<In extends ({} | null), Out> = (tParams?: Partial<TxParams>) => (params: In) => Out
 
 export type ParamsFn<T extends { [K: string]: [any, any]}> = {
-  [K in keyof T]: CreateTxParams<T[K][0]>
+  [K in keyof T]: MethodCall<T[K][0], TxParams>
 }
 
 export type CreateTxConstParams<In extends ({} | null)> = (tParams?: Partial<TxParams>) => (params: In) => TxParams

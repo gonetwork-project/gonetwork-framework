@@ -63,9 +63,11 @@ export interface TxConstParams extends TxParamsRequired, Partial<Signature> {
   chainId?: number
 }
 
-// todo: discuss defaults
-export interface TxParams extends TxConstParams {
+export interface TxParamsWithGas {
   value: BN // defaults to 0
   gasLimit: BN
   gasPrice: BN
 }
+
+// todo: discuss defaults
+export interface TxParams extends TxConstParams, TxParamsWithGas {}

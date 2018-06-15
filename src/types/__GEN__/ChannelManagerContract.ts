@@ -3,9 +3,38 @@ import { Address } from '../eth'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type ManagerPayIO = {}
+export type ManagerIO = {
+  transferOwnership: [
+    {
+      newOwner: Address
+    },
+    void
+  ],
+  collectFees: [
+    null,
+    void
+  ],
+  newChannel: [
+    {
+      partner: Address,
+      settle_timeout: BN
+    },
+    {
+      anon_0: Address
+    }
+  ]
+}
 
-export const ManagerPayOrdIO = {}
+export const ManagerOrdIO = {
+  transferOwnership: [
+    'newOwner'
+  ],
+  collectFees: [],
+  newChannel: [
+    'partner',
+    'settle_timeout'
+  ]
+}
 
 export type ManagerConstIO = {
   contractExists: [
@@ -86,39 +115,6 @@ export const ManagerConstOrdIO = {
     'node_address'
   ],
   getChannelsParticipants: []
-}
-
-export type ManagerIO = {
-  transferOwnership: [
-    {
-      newOwner: Address
-    },
-    void
-  ],
-  collectFees: [
-    null,
-    void
-  ],
-  newChannel: [
-    {
-      partner: Address,
-      settle_timeout: BN
-    },
-    {
-      anon_0: Address
-    }
-  ]
-}
-
-export const ManagerOrdIO = {
-  transferOwnership: [
-    'newOwner'
-  ],
-  collectFees: [],
-  newChannel: [
-    'partner',
-    'settle_timeout'
-  ]
 }
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠

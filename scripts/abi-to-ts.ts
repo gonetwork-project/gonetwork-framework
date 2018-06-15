@@ -91,17 +91,17 @@ const reduceFunctions = (fns: AbiFunction[]) =>
   }, { inOut: {}, order: {} })
 
 const handleFunctions = (fns: AbiFunction[], shortName: string) => {
-  const p = reduceFunctions(fns.filter(fn => fn.payable))
+  // const p = reduceFunctions(fns.filter(fn => fn.payable))
   const c = reduceFunctions(fns.filter(fn => fn.constant))
   const o = reduceFunctions(fns.filter(fn => !(fn.constant || fn.payable)))
 
   return [
-    `export type ${shortName}PayIO = ${JSON.stringify(p.inOut, null, 2).replace(/[\"]/g, '')}`,
-    `export const ${shortName}PayOrdIO = ${JSON.stringify(p.order, null, 2).replace(/[\"]/g, '')}`,
-    `export type ${shortName}ConstIO = ${JSON.stringify(c.inOut, null, 2).replace(/[\"]/g, '')}`,
-    `export const ${shortName}ConstOrdIO = ${JSON.stringify(c.order, null, 2).replace(/[\"]/g, '')}`,
+    // `export type ${shortName}PayIO = ${JSON.stringify(p.inOut, null, 2).replace(/[\"]/g, '')}`,
+    // `export const ${shortName}PayOrdIO = ${JSON.stringify(p.order, null, 2).replace(/[\"]/g, '')}`,
     `export type ${shortName}IO = ${JSON.stringify(o.inOut, null, 2).replace(/[\"]/g, '')}`,
-    `export const ${shortName}OrdIO = ${JSON.stringify(o.order, null, 2).replace(/[\"]/g, '')}`
+    `export const ${shortName}OrdIO = ${JSON.stringify(o.order, null, 2).replace(/[\"]/g, '')}`,
+    `export type ${shortName}ConstIO = ${JSON.stringify(c.inOut, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}ConstOrdIO = ${JSON.stringify(c.order, null, 2).replace(/[\"]/g, '')}`
   ].join('\n\n')
 }
 

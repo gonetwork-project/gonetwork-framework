@@ -3,9 +3,74 @@ import { Address } from '../eth'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type ChannelPayIO = {}
+export type ChannelIO = {
+  deposit: [
+    {
+      amount: BN
+    },
+    {
+      anon_0: boolean
+    }
+  ],
+  close: [
+    {
+      nonce: BN,
+      transferred_amount: BN,
+      locksroot: Buffer,
+      extra_hash: Buffer,
+      signature: Buffer
+    },
+    void
+  ],
+  updateTransfer: [
+    {
+      nonce: BN,
+      transferred_amount: BN,
+      locksroot: Buffer,
+      extra_hash: Buffer,
+      signature: Buffer
+    },
+    void
+  ],
+  withdraw: [
+    {
+      locked_encoded: Buffer,
+      merkle_proof: Buffer,
+      secret: Buffer
+    },
+    void
+  ],
+  settle: [
+    null,
+    void
+  ]
+}
 
-export const ChannelPayOrdIO = {}
+export const ChannelOrdIO = {
+  deposit: [
+    'amount'
+  ],
+  close: [
+    'nonce',
+    'transferred_amount',
+    'locksroot',
+    'extra_hash',
+    'signature'
+  ],
+  updateTransfer: [
+    'nonce',
+    'transferred_amount',
+    'locksroot',
+    'extra_hash',
+    'signature'
+  ],
+  withdraw: [
+    'locked_encoded',
+    'merkle_proof',
+    'secret'
+  ],
+  settle: []
+}
 
 export type ChannelConstIO = {
   refund: [
@@ -144,75 +209,6 @@ export const ChannelConstOrdIO = {
   computeLockHash: [
     'lock'
   ]
-}
-
-export type ChannelIO = {
-  deposit: [
-    {
-      amount: BN
-    },
-    {
-      anon_0: boolean
-    }
-  ],
-  close: [
-    {
-      nonce: BN,
-      transferred_amount: BN,
-      locksroot: Buffer,
-      extra_hash: Buffer,
-      signature: Buffer
-    },
-    void
-  ],
-  updateTransfer: [
-    {
-      nonce: BN,
-      transferred_amount: BN,
-      locksroot: Buffer,
-      extra_hash: Buffer,
-      signature: Buffer
-    },
-    void
-  ],
-  withdraw: [
-    {
-      locked_encoded: Buffer,
-      merkle_proof: Buffer,
-      secret: Buffer
-    },
-    void
-  ],
-  settle: [
-    null,
-    void
-  ]
-}
-
-export const ChannelOrdIO = {
-  deposit: [
-    'amount'
-  ],
-  close: [
-    'nonce',
-    'transferred_amount',
-    'locksroot',
-    'extra_hash',
-    'signature'
-  ],
-  updateTransfer: [
-    'nonce',
-    'transferred_amount',
-    'locksroot',
-    'extra_hash',
-    'signature'
-  ],
-  withdraw: [
-    'locked_encoded',
-    'merkle_proof',
-    'secret'
-  ],
-  settle: []
 }
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠

@@ -3,9 +3,67 @@ import { Address } from '../eth'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type TokenPayIO = {}
+export type TokenIO = {
+  approve: [
+    {
+      _spender: Address,
+      _value: BN
+    },
+    {
+      success: boolean
+    }
+  ],
+  transferFrom: [
+    {
+      _from: Address,
+      _to: Address,
+      _value: BN
+    },
+    {
+      success: boolean
+    }
+  ],
+  transfer: [
+    {
+      _to: Address,
+      _value: BN
+    },
+    {
+      success: boolean
+    }
+  ],
+  approveAndCall: [
+    {
+      _spender: Address,
+      _value: BN,
+      _extraData: Buffer
+    },
+    {
+      success: boolean
+    }
+  ]
+}
 
-export const TokenPayOrdIO = {}
+export const TokenOrdIO = {
+  approve: [
+    '_spender',
+    '_value'
+  ],
+  transferFrom: [
+    '_from',
+    '_to',
+    '_value'
+  ],
+  transfer: [
+    '_to',
+    '_value'
+  ],
+  approveAndCall: [
+    '_spender',
+    '_value',
+    '_extraData'
+  ]
+}
 
 export type TokenConstIO = {
   name: [
@@ -67,68 +125,6 @@ export const TokenConstOrdIO = {
   allowance: [
     '_owner',
     '_spender'
-  ]
-}
-
-export type TokenIO = {
-  approve: [
-    {
-      _spender: Address,
-      _value: BN
-    },
-    {
-      success: boolean
-    }
-  ],
-  transferFrom: [
-    {
-      _from: Address,
-      _to: Address,
-      _value: BN
-    },
-    {
-      success: boolean
-    }
-  ],
-  transfer: [
-    {
-      _to: Address,
-      _value: BN
-    },
-    {
-      success: boolean
-    }
-  ],
-  approveAndCall: [
-    {
-      _spender: Address,
-      _value: BN,
-      _extraData: Buffer
-    },
-    {
-      success: boolean
-    }
-  ]
-}
-
-export const TokenOrdIO = {
-  approve: [
-    '_spender',
-    '_value'
-  ],
-  transferFrom: [
-    '_from',
-    '_to',
-    '_value'
-  ],
-  transfer: [
-    '_to',
-    '_value'
-  ],
-  approveAndCall: [
-    '_spender',
-    '_value',
-    '_extraData'
   ]
 }
 
