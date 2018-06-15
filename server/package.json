@@ -11,6 +11,8 @@
     "body-parser": "^1.18.3",
     "ethereumjs-testrpc": "^6.0.3",
     "express": "^4.16.3",
-    "mosca": "^2.8.2"
+    "mosca": "^2.8.2",
+    "truffle-contract": "^3.0.5",
+    "web3": "^0.20.1"
   }
 }
