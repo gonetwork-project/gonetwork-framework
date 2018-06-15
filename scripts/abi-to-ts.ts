@@ -26,9 +26,9 @@ type AbiFunction = {
 
 const $ = Observable
 
-const DEFAULT_ROOT = path.join(__dirname, '..', 'smart-contracts', 'build')
-const contractsDir = path.join(DEFAULT_ROOT, 'contracts')
-const outDir = path.join(DEFAULT_ROOT, 'types')
+const DEFAULT_ROOT = path.join(__dirname, '..')
+const contractsDir = path.join(DEFAULT_ROOT, 'smart-contracts', 'build', 'contracts')
+const outDir = path.join(DEFAULT_ROOT, 'src', 'types', '__GEN__')
 
 const log = console.log.bind(console)
 
@@ -44,15 +44,16 @@ const SHORT_NAMES: { [k: string]: string } = {
 
 const ACHTUNG = '// \u26A0 !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND \u26A0\n'
 const IMPORTS = [
-  `import BN from 'bn.js'`
+  `import { BN } from 'bn.js'`,
+  `import { Address } from '../eth'`
 ].join('\n')
 
 const readContracts = (p: string) =>
   CONTRACT_NAMES.map(c => ([c, require(`${p}/${c}.json`)]))
 
 const abiTypesToTs: { [k: string]: string } = {
-  address: 'Buffer',
-  'address[]': 'Buffer[]',
+  address: 'Address',
+  'address[]': 'Address[]',
   uint256: 'BN',
   bytes32: 'Buffer',
   bytes: 'Buffer',
@@ -80,8 +81,8 @@ const handleEvents = (evs: AbiEvent[], shortName: string) => {
   ].join('\n\n')
 }
 
-const handleFunctions = (fns: AbiFunction[], shortName: string) => {
-  const i = fns.reduce((acc, f) => {
+const reduceFunctions = (fns: AbiFunction[]) =>
+  fns.reduce((acc, f) => {
     const params = f.inputs.length > 0 && reduceIO(f.inputs)
     const out = f.outputs!.length > 0 && reduceIO(f.outputs)
     acc.inOut[f.name] = [params || 'null', out || 'void']
@@ -89,9 +90,18 @@ const handleFunctions = (fns: AbiFunction[], shortName: string) => {
     return acc
   }, { inOut: {}, order: {} })
 
+const handleFunctions = (fns: AbiFunction[], shortName: string) => {
+  const p = reduceFunctions(fns.filter(fn => fn.payable))
+  const c = reduceFunctions(fns.filter(fn => fn.constant))
+  const o = reduceFunctions(fns.filter(fn => !(fn.constant || fn.payable)))
+
   return [
-    `export type ${shortName}ParamsOutput = ${JSON.stringify(i.inOut, null, 2).replace(/[\"]/g, '')}`,
-    `export const ${shortName}ParamsOrder = ${JSON.stringify(i.order, null, 2).replace(/[\"]/g, '')}`
+    `export type ${shortName}PayIO = ${JSON.stringify(p.inOut, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}PayOrdIO = ${JSON.stringify(p.order, null, 2).replace(/[\"]/g, '')}`,
+    `export type ${shortName}ConstIO = ${JSON.stringify(c.inOut, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}ConstOrdIO = ${JSON.stringify(c.order, null, 2).replace(/[\"]/g, '')}`,
+    `export type ${shortName}IO = ${JSON.stringify(o.inOut, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}OrdIO = ${JSON.stringify(o.order, null, 2).replace(/[\"]/g, '')}`
   ].join('\n\n')
 }
 

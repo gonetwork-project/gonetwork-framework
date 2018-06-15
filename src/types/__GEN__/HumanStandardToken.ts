@@ -1,37 +1,23 @@
-import BN from 'bn.js'
+import { BN } from 'bn.js'
+import { Address } from '../eth'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type TokenParamsOutput = {
+export type TokenPayIO = {}
+
+export const TokenPayOrdIO = {}
+
+export type TokenConstIO = {
   name: [
     null,
     {
       anon_0: string
     }
   ],
-  approve: [
-    {
-      _spender: Buffer,
-      _value: BN
-    },
-    {
-      success: boolean
-    }
-  ],
   totalSupply: [
     null,
     {
       supply: BN
-    }
-  ],
-  transferFrom: [
-    {
-      _from: Buffer,
-      _to: Buffer,
-      _value: BN
-    },
-    {
-      success: boolean
     }
   ],
   decimals: [
@@ -46,7 +32,7 @@ export type TokenParamsOutput = {
   ],
   balanceOf: [
     {
-      _owner: Buffer
+      _owner: Address
     },
     {
       balance: BN
@@ -58,27 +44,64 @@ export type TokenParamsOutput = {
       anon_0: string
     }
   ],
-  transfer: [
+  allowance: [
     {
-      _to: Buffer,
+      _owner: Address,
+      _spender: Address
+    },
+    {
+      remaining: BN
+    }
+  ]
+}
+
+export const TokenConstOrdIO = {
+  name: [],
+  totalSupply: [],
+  decimals: [],
+  version: [],
+  balanceOf: [
+    '_owner'
+  ],
+  symbol: [],
+  allowance: [
+    '_owner',
+    '_spender'
+  ]
+}
+
+export type TokenIO = {
+  approve: [
+    {
+      _spender: Address,
       _value: BN
     },
     {
       success: boolean
     }
   ],
-  allowance: [
+  transferFrom: [
     {
-      _owner: Buffer,
-      _spender: Buffer
+      _from: Address,
+      _to: Address,
+      _value: BN
     },
     {
-      remaining: BN
+      success: boolean
+    }
+  ],
+  transfer: [
+    {
+      _to: Address,
+      _value: BN
+    },
+    {
+      success: boolean
     }
   ],
   approveAndCall: [
     {
-      _spender: Buffer,
+      _spender: Address,
       _value: BN,
       _extraData: Buffer
     },
@@ -88,31 +111,19 @@ export type TokenParamsOutput = {
   ]
 }
 
-export const TokenParamsOrder = {
-  name: [],
+export const TokenOrdIO = {
   approve: [
     '_spender',
     '_value'
   ],
-  totalSupply: [],
   transferFrom: [
     '_from',
     '_to',
     '_value'
   ],
-  decimals: [],
-  version: [],
-  balanceOf: [
-    '_owner'
-  ],
-  symbol: [],
   transfer: [
     '_to',
     '_value'
-  ],
-  allowance: [
-    '_owner',
-    '_spender'
   ],
   approveAndCall: [
     '_spender',
@@ -136,14 +147,14 @@ export type TokenEvents = 'Transfer' | 'Approval'
 export type TokenEventsToArgs = {
   Transfer: {
     _type: 'Transfer'
-    _from: Buffer
-    _to: Buffer
+    _from: Address
+    _to: Address
     _value: BN
   }
   Approval: {
     _type: 'Approval'
-    _owner: Buffer
-    _spender: Buffer
+    _owner: Address
+    _spender: Address
     _value: BN
   }
 }

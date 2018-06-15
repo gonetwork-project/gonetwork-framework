@@ -1,8 +1,13 @@
-import BN from 'bn.js'
+import { BN } from 'bn.js'
+import { Address } from '../eth'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type ChannelParamsOutput = {
+export type ChannelPayIO = {}
+
+export const ChannelPayOrdIO = {}
+
+export type ChannelConstIO = {
   refund: [
     null,
     {
@@ -15,11 +20,11 @@ export type ChannelParamsOutput = {
       settle_timeout: BN,
       opened: BN,
       closed: BN,
-      closing_address: Buffer,
-      token: Buffer,
+      closing_address: Address,
+      token: Address,
       updated: boolean,
-      goToken: Buffer,
-      channel_manager: Buffer
+      goToken: Address,
+      channel_manager: Address
     }
   ],
   refund_interval: [
@@ -40,54 +45,14 @@ export type ChannelParamsOutput = {
       anon_0: BN
     }
   ],
-  deposit: [
-    {
-      amount: BN
-    },
-    {
-      anon_0: boolean
-    }
-  ],
   addressAndBalance: [
     null,
     {
-      participant1: Buffer,
+      participant1: Address,
       balance1: BN,
-      participant2: Buffer,
+      participant2: Address,
       balance2: BN
     }
-  ],
-  close: [
-    {
-      nonce: BN,
-      transferred_amount: BN,
-      locksroot: Buffer,
-      extra_hash: Buffer,
-      signature: Buffer
-    },
-    void
-  ],
-  updateTransfer: [
-    {
-      nonce: BN,
-      transferred_amount: BN,
-      locksroot: Buffer,
-      extra_hash: Buffer,
-      signature: Buffer
-    },
-    void
-  ],
-  withdraw: [
-    {
-      locked_encoded: Buffer,
-      merkle_proof: Buffer,
-      secret: Buffer
-    },
-    void
-  ],
-  settle: [
-    null,
-    void
   ],
   settleTimeout: [
     null,
@@ -98,7 +63,7 @@ export type ChannelParamsOutput = {
   tokenAddress: [
     null,
     {
-      anon_0: Buffer
+      anon_0: Address
     }
   ],
   opened: [
@@ -116,13 +81,13 @@ export type ChannelParamsOutput = {
   closingAddress: [
     null,
     {
-      anon_0: Buffer
+      anon_0: Address
     }
   ],
   participantData: [
     null,
     {
-      anon_0: Buffer,
+      anon_0: Address,
       anon_1: BN,
       anon_2: Buffer
     }
@@ -156,16 +121,78 @@ export type ChannelParamsOutput = {
   ]
 }
 
-export const ChannelParamsOrder = {
+export const ChannelConstOrdIO = {
   refund: [],
   data: [],
   refund_interval: [],
   contract_version: [],
   fee: [],
+  addressAndBalance: [],
+  settleTimeout: [],
+  tokenAddress: [],
+  opened: [],
+  closed: [],
+  closingAddress: [],
+  participantData: [],
+  decodeLock: [
+    'lock'
+  ],
+  computeMerkleRoot: [
+    'lock',
+    'merkle_proof'
+  ],
+  computeLockHash: [
+    'lock'
+  ]
+}
+
+export type ChannelIO = {
+  deposit: [
+    {
+      amount: BN
+    },
+    {
+      anon_0: boolean
+    }
+  ],
+  close: [
+    {
+      nonce: BN,
+      transferred_amount: BN,
+      locksroot: Buffer,
+      extra_hash: Buffer,
+      signature: Buffer
+    },
+    void
+  ],
+  updateTransfer: [
+    {
+      nonce: BN,
+      transferred_amount: BN,
+      locksroot: Buffer,
+      extra_hash: Buffer,
+      signature: Buffer
+    },
+    void
+  ],
+  withdraw: [
+    {
+      locked_encoded: Buffer,
+      merkle_proof: Buffer,
+      secret: Buffer
+    },
+    void
+  ],
+  settle: [
+    null,
+    void
+  ]
+}
+
+export const ChannelOrdIO = {
   deposit: [
     'amount'
   ],
-  addressAndBalance: [],
   close: [
     'nonce',
     'transferred_amount',
@@ -185,33 +212,17 @@ export const ChannelParamsOrder = {
     'merkle_proof',
     'secret'
   ],
-  settle: [],
-  settleTimeout: [],
-  tokenAddress: [],
-  opened: [],
-  closed: [],
-  closingAddress: [],
-  participantData: [],
-  decodeLock: [
-    'lock'
-  ],
-  computeMerkleRoot: [
-    'lock',
-    'merkle_proof'
-  ],
-  computeLockHash: [
-    'lock'
-  ]
+  settle: []
 }
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
 export interface ChannelConstructorParams {
-  token_address: Buffer
-  participant1: Buffer
-  participant2: Buffer
+  token_address: Address
+  participant1: Address
+  participant2: Address
   timeout: BN
-  gotoken_address: Buffer
+  gotoken_address: Address
 }
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
@@ -221,17 +232,17 @@ export type ChannelEvents = 'ChannelNewBalance' | 'ChannelClosed' | 'TransferUpd
 export type ChannelEventsToArgs = {
   ChannelNewBalance: {
     _type: 'ChannelNewBalance'
-    token_address: Buffer
-    participant: Buffer
+    token_address: Address
+    participant: Address
     balance: BN
   }
   ChannelClosed: {
     _type: 'ChannelClosed'
-    closing_address: Buffer
+    closing_address: Address
   }
   TransferUpdated: {
     _type: 'TransferUpdated'
-    node_address: Buffer
+    node_address: Address
   }
   ChannelSettled: {
     _type: 'ChannelSettled'
@@ -239,11 +250,11 @@ export type ChannelEventsToArgs = {
   ChannelSecretRevealed: {
     _type: 'ChannelSecretRevealed'
     secret: Buffer
-    receiver_address: Buffer
+    receiver_address: Address
   }
   Refund: {
     _type: 'Refund'
-    receiver: Buffer
+    receiver: Address
     amount: BN
   }
 }

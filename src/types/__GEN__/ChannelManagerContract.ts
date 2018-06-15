@@ -1,11 +1,16 @@
-import BN from 'bn.js'
+import { BN } from 'bn.js'
+import { Address } from '../eth'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type ManagerParamsOutput = {
+export type ManagerPayIO = {}
+
+export const ManagerPayOrdIO = {}
+
+export type ManagerConstIO = {
   contractExists: [
     {
-      channel: Buffer
+      channel: Address
     },
     {
       anon_0: boolean
@@ -14,7 +19,7 @@ export type ManagerParamsOutput = {
   owner: [
     null,
     {
-      anon_0: Buffer
+      anon_0: Address
     }
   ],
   contract_version: [
@@ -29,76 +34,49 @@ export type ManagerParamsOutput = {
       anon_0: BN
     }
   ],
-  transferOwnership: [
-    {
-      newOwner: Buffer
-    },
-    void
-  ],
-  collectFees: [
-    null,
-    void
-  ],
-  newChannel: [
-    {
-      partner: Buffer,
-      settle_timeout: BN
-    },
-    {
-      anon_0: Buffer
-    }
-  ],
   getChannelsAddresses: [
     null,
     {
-      anon_0: Buffer[]
+      anon_0: Address[]
     }
   ],
   tokenAddress: [
     null,
     {
-      anon_0: Buffer
+      anon_0: Address
     }
   ],
   getChannelWith: [
     {
-      partner: Buffer
+      partner: Address
     },
     {
-      anon_0: Buffer
+      anon_0: Address
     }
   ],
   nettingContractsByAddress: [
     {
-      node_address: Buffer
+      node_address: Address
     },
     {
-      anon_0: Buffer[]
+      anon_0: Address[]
     }
   ],
   getChannelsParticipants: [
     null,
     {
-      anon_0: Buffer[]
+      anon_0: Address[]
     }
   ]
 }
 
-export const ManagerParamsOrder = {
+export const ManagerConstOrdIO = {
   contractExists: [
     'channel'
   ],
   owner: [],
   contract_version: [],
   fee: [],
-  transferOwnership: [
-    'newOwner'
-  ],
-  collectFees: [],
-  newChannel: [
-    'partner',
-    'settle_timeout'
-  ],
   getChannelsAddresses: [],
   tokenAddress: [],
   getChannelWith: [
@@ -110,11 +88,44 @@ export const ManagerParamsOrder = {
   getChannelsParticipants: []
 }
 
+export type ManagerIO = {
+  transferOwnership: [
+    {
+      newOwner: Address
+    },
+    void
+  ],
+  collectFees: [
+    null,
+    void
+  ],
+  newChannel: [
+    {
+      partner: Address,
+      settle_timeout: BN
+    },
+    {
+      anon_0: Address
+    }
+  ]
+}
+
+export const ManagerOrdIO = {
+  transferOwnership: [
+    'newOwner'
+  ],
+  collectFees: [],
+  newChannel: [
+    'partner',
+    'settle_timeout'
+  ]
+}
+
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
 export interface ManagerConstructorParams {
-  gotoken: Buffer
-  token_address: Buffer
+  gotoken: Address
+  token_address: Address
 }
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
@@ -124,15 +135,15 @@ export type ManagerEvents = 'ChannelNew' | 'ChannelDeleted' | 'FeesCollected' | 
 export type ManagerEventsToArgs = {
   ChannelNew: {
     _type: 'ChannelNew'
-    netting_channel: Buffer
-    participant1: Buffer
-    participant2: Buffer
+    netting_channel: Address
+    participant1: Address
+    participant2: Address
     settle_timeout: BN
   }
   ChannelDeleted: {
     _type: 'ChannelDeleted'
-    caller_address: Buffer
-    partner: Buffer
+    caller_address: Address
+    partner: Address
   }
   FeesCollected: {
     _type: 'FeesCollected'
@@ -141,7 +152,7 @@ export type ManagerEventsToArgs = {
   }
   OwnershipTransferred: {
     _type: 'OwnershipTransferred'
-    previousOwner: Buffer
-    newOwner: Buffer
+    previousOwner: Address
+    newOwner: Address
   }
 }
