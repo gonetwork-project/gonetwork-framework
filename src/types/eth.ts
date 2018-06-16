@@ -30,17 +30,52 @@ export enum CHAIN_ID {
   GETH_PRIVATE_CHAINS = 1337 // default
 }
 
+export type BNorNum = BN | number
 // https://etherconverter.online/
-export type Wei = BN & { __Wei__: true }
-export type Gwei = BN & { __Gwei__: true }
-export type Ether = BN & { __Ether__: true }
+export type Wei = BNorNum & { __Wei__: true }
+export type Gwei = BNorNum & { __Gwei__: true }
+export type Ether = BNorNum & { __Ether__: true }
 
-export type Address = Buffer
-export type Nonce = BN
-export type BlockNumber = BN
+export type Address = Buffer & { __Address__: true }
+export type PrivKey = Buffer & { __PrivKey__: true }
 
-export type GasLimit = BN
-export type GasPrice = Gwei
+export type Nonce = BNorNum & { __Nonce__: true }
+export type BlockNumber = BNorNum & { __BlockNumber__: true }
+
+export type GasLimit = BNorNum & { __GasLimit__: true }
+export type GasPrice = Gwei & { __GasPrice__: true }
+
+// we group them in one place to easily add all required functionalieties
+
+export interface BasicRaw {
+  Address: Buffer
+  PrivKey: Buffer
+
+  Nonce: BNorNum
+  BlockNumber: BNorNum
+
+  Wei: BNorNum
+  Gwei: BNorNum
+  Ether: BNorNum
+
+  GasLimit: BNorNum
+  GasPrice: BNorNum
+}
+
+export interface Basic {
+  Address: Address
+  PrivKey: PrivKey
+
+  Nonce: Nonce
+  BlockNumber: BlockNumber
+
+  Wei: Wei
+  Gwei: Gwei
+  Ether: Ether
+
+  GasLimit: GasLimit
+  GasPrice: GasPrice
+}
 
 // Tx
 export type TxDataType = Buffer | BN | Buffer[] | string | boolean
@@ -48,8 +83,8 @@ export type TxDataType = Buffer | BN | Buffer[] | string | boolean
 export type TxData = TxDataType[]
 
 export interface TxParamsRequired {
-  nonce: BN
-  to: Buffer
+  nonce: Nonce
+  to: Address
 }
 
 export interface Signature {
@@ -60,13 +95,13 @@ export interface Signature {
 export interface TxConstParams extends TxParamsRequired, Partial<Signature> {
   data: TxData | null
 
-  chainId?: number
+  chainId?: CHAIN_ID
 }
 
 export interface TxParamsWithGas {
-  value: BN // defaults to 0
-  gasLimit: BN
-  gasPrice: BN
+  value: Wei // defaults to 0
+  gasLimit: GasLimit
+  gasPrice: GasPrice
 }
 
 // todo: discuss defaults
