@@ -18,6 +18,7 @@ const NettingChannelContract = require('../../smart-contracts/build/contracts/Ne
 const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
 import * as T from '../types'
+import * as E from 'eth-types'
 import { BN } from '../types'
 
 
@@ -41,7 +42,7 @@ const HumanStandardTokenAbi = HumanStandardTokenContract.abi.reduce(function (r,
 /*** Class that provides a lightweight minimalist approach means to interact with the blockchain using promises over the contract ABI's*/
 export class BlockchainService implements T.BlockchainService {
 
-  chainId: T.ChainId
+  chainId: E.ChainId
   signatureCallback: any
   providerUrl: string
 
@@ -394,7 +395,7 @@ export class BlockchainService implements T.BlockchainService {
 
 
 
-  ethCall (params: any[], blockQuantity?: T.BlockQuantity) {
+  ethCall (params: any[], blockQuantity?: any) {
     if (!blockQuantity) {
       blockQuantity = 'latest'
     }

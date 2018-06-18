@@ -7,19 +7,21 @@ import * as util from 'ethereumjs-util'
 
 import { decode } from './log-decoder'
 
-import * as T from '../types'
 import { as, add } from '../utils'
+
+import * as T from '../types'
+import * as E from 'eth-types'
 
 // todo: make it configurable
 const KEY_PREFIX = '___ETH_MONITORING___'
 const LOGS_INTERVAL = 5 * 1000
 const TRANSACTION_INTERVAL = 5 * 1000
 
-export type MonitorAddress = [T.EthAddress, string]
+export type MonitorAddress = [E.Address, string]
 
 export interface State {
   addresses: MonitorAddress[],
-  transactions: T.EthAddress[]
+  transactions: E.Address[]
 }
 
 export class Monitoring implements T.EthMonitoring {
@@ -27,10 +29,10 @@ export class Monitoring implements T.EthMonitoring {
   private _em = new EventEmitter()
   private _state: Promise<State>
   private _sub: any
-  private _transactions: Subject<T.EthTransaction> = new Subject()
+  private _transactions: Subject<E.TxHash> = new Subject()
   private _blockNumberSub = new BehaviorSubject<util.BN | undefined>(undefined)
   private _forceMonitoring = new Subject<boolean>()
-  private _toSubscribe: T.EthAddress[] = []
+  private _toSubscribe: E.Address[] = []
 
   constructor (cfg: T.EthMonitoringConfig) {
     this._cfg = cfg
@@ -56,7 +58,7 @@ export class Monitoring implements T.EthMonitoring {
         .subscribe()
   }
 
-  subscribeAddress = (a: T.EthAddress) =>
+  subscribeAddress = (a: E.Address) =>
     this._state.then(s => {
       if (s.addresses.find(_a => _a[0] === a)) return Promise.resolve(false)
       s.addresses.push([a, '-1'])
@@ -64,7 +66,7 @@ export class Monitoring implements T.EthMonitoring {
       return this._saveState(s)
     })
 
-  unsubscribeAddress = (a: T.EthAddress) => {
+  unsubscribeAddress = (a: E.Address) => {
     if (a === this._cfg.channelManagerAddress) return Promise.resolve(false)
     return this._state.then(s => {
       s.addresses = s.addresses.filter(_a => _a[0] === a)
@@ -123,7 +125,7 @@ export class Monitoring implements T.EthMonitoring {
       n => n
     )
       // .do(x => console.log('BN-SUBJECT', x))
-      .filter(x => x !== undefined) as Observable<T.EthBlockNumber>)
+      .filter(x => x !== undefined) as Observable<E.BlockNumber>)
       .do(bn => console.log('MONITORING -- BLOCK:', bn))
       .exhaustMap(blockNumber =>
         Observable.defer(() => this._state)
@@ -149,7 +151,7 @@ export class Monitoring implements T.EthMonitoring {
                     .reduce((acc, logs) => ({
                       logs: acc.logs.concat(logs),
                       addresses: acc.addresses.concat(gs)
-                    }), { logs: [] as any, addresses: [] as T.EthAddress[] })
+                    }), { logs: [] as any, addresses: [] as E.Address[] })
                 ))
               .do(x => x.logs.length && console.log('BLOCK:', blockNumber, ' -- NEW_EVENTS_COUNT:', x.logs.length, ' ADDRESSES COUNT: ', s.addresses.length))
               // .do(x => console.log('NEW_EVENTS', x.logs))

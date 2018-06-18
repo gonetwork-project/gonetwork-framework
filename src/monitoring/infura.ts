@@ -1,6 +1,7 @@
 import * as util from 'ethereumjs-util'
 
-import { EthMonitoringInfo, EthAddress, EthBlockNumber } from '../types'
+import { EthMonitoringInfo } from '../types'
+import { Address, BlockNumber } from 'eth-types'
 import { as } from '../utils'
 
 let i = 0
@@ -32,7 +33,7 @@ export const infuraMonitoring = (network: string, token: string, request = reque
   EthMonitoringInfo => ({
     blockNumber: () => request('eth_blockNumber')
       .then(n => as.BlockNumber(n)),
-    getLogs: (fromBlock: EthBlockNumber, toBlock: EthBlockNumber, address: EthAddress | EthAddress[]) =>
+    getLogs: (fromBlock: BlockNumber, toBlock: BlockNumber, address: Address | Address[]) =>
       request('eth_getLogs', {
         // todo
         fromBlock: util.addHexPrefix(fromBlock.toString()),

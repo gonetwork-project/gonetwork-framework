@@ -12,16 +12,6 @@ export * from './contracts'
 
 import * as E from 'eth-types'
 
-export type ChainId = string
-export type BlockQuantity = 'latest'
-
-// todo: make it consistent either string or number
-export type EthAddress = E.Address
-export type EthTransaction = string
-export type EthBlockNumber = E.BlockNumber
-export type EthNonce = E.Nonce
-export type EthPrivateKey = E.PrivateKey
-
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state
   | 'connecting' | 'connected' | 'broken' | 'disposed'
@@ -96,26 +86,26 @@ export interface SendQueue {
 }
 
 export interface EthMonitoringInfo {
-  blockNumber: () => Promise<EthBlockNumber>
-  getLogs: (fromBlock: EthBlockNumber,
-    toBlock: EthBlockNumber,
-    address: EthAddress[])
+  blockNumber: () => Promise<E.BlockNumber>
+  getLogs: (fromBlock: E.BlockNumber,
+    toBlock: E.BlockNumber,
+    address: E.Address[])
     => Promise<C.BlockchainEvent[]>
-  getTransactionReceipt: (tx: EthTransaction) =>
+  getTransactionReceipt: (tx: E.TxHash) =>
     Promise<any>
 }
 
 export interface EthMonitoringConfig extends EthMonitoringInfo {
-  channelManagerAddress: EthAddress
-  tokenAddresses: EthAddress[]
+  channelManagerAddress: E.Address
+  tokenAddresses: E.Address[]
   storage: Storage
 }
 export interface EthMonitoring {
 
-  subscribeAddress: (ch: EthAddress) => Promise<Boolean>
-  unsubscribeAddress: (ch: EthAddress) => Promise<Boolean>
+  subscribeAddress: (ch: E.Address) => Promise<Boolean>
+  unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
 
-  transactionReceipt: (tx: EthTransaction) => Promise<Boolean>
+  transactionReceipt: (tx: E.TxHash) => Promise<Boolean>
 
   // split per Event type and enforce callback types
   on: (e: C.BlockchainEventType, listener: (...args: any[]) => void) => void

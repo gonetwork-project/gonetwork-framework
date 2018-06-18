@@ -29,6 +29,9 @@ declare module 'eth-types' {
   export type AddressHex = string & { __AddressHex__: true }
   export type PrivateKey = Buffer & { __PrivKey__: true }
 
+  // todo: finish
+  export type TxHash = string & { __TransactionHash__: true }
+
   export type Nonce = BN & { __Nonce__: true }
   export type BlockNumber = BN & { __BlockNumber__: true }
 

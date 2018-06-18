@@ -8,7 +8,7 @@ import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
 import { BlockchainService } from '..'
-import { EthBlockNumber } from '../types'
+import { BlockNumber } from 'eth-types'
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -36,7 +36,7 @@ export class Engine extends events.EventEmitter {
   // dictionary of messages[msgID] = statemachine.*
   messageState = {}
 
-  currentBlock = new util.BN(0) as EthBlockNumber
+  currentBlock = new util.BN(0) as BlockNumber
   msgID = new util.BN(0)
 
   publicKey = undefined // fixme
@@ -224,7 +224,7 @@ export class Engine extends events.EventEmitter {
    * @throws "Invalid MediatedTransfer: channel does not exist"
    * @throws 'Invalid Channel State:state channel is not open'
    */
-  sendMediatedTransfer (to: Buffer, target: Buffer, amount: BN, expiration: EthBlockNumber, secret: Buffer, hashLock: Buffer) {
+  sendMediatedTransfer (to: Buffer, target: Buffer, amount: BN, expiration: BlockNumber, secret: Buffer, hashLock: Buffer) {
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
@@ -390,7 +390,7 @@ export class Engine extends events.EventEmitter {
    * and channel lifecycle management
    * @param {BN} block - the latest mined block
    */
-  onBlock (block: EthBlockNumber) {
+  onBlock (block: BlockNumber) {
     if (block.lt(this.currentBlock)) {
       throw new Error('Block Error: block count must be monotonically increasing')
     }

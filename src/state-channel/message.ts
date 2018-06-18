@@ -2,7 +2,7 @@ import * as util from 'ethereumjs-util'
 import * as sjcl from 'sjcl'
 import * as abi from 'ethereumjs-abi'
 import { BN } from 'bn.js'
-import { EthAddress, EthPrivateKey, EthNonce, EthBlockNumber } from '../types'
+import { Address, PrivateKey, Nonce, BlockNumber } from 'eth-types'
 
 /**
  * @namespace message
@@ -206,7 +206,7 @@ export class SignedMessage {
  * @memberof message
  */
 export class Proof extends SignedMessage {
-  nonce: EthNonce
+  nonce: Nonce
   transferredAmount: BN
   locksRoot: Buffer
   channelAddress: Buffer
@@ -238,7 +238,7 @@ export class Proof extends SignedMessage {
 }
 
 export interface ProofMessageOptions {
-  nonce: EthNonce
+  nonce: Nonce
   transferredAmount: BN
   locksRoot: Buffer
   channelAddress: Buffer
@@ -257,7 +257,7 @@ export interface ProofMessageOptions {
  * @memberof message
  */
 export class ProofMessage extends SignedMessage {
-  nonce: EthNonce
+  nonce: Nonce
   transferredAmount: BN
   locksRoot: Buffer
   channelAddress: Buffer
@@ -305,7 +305,7 @@ export class ProofMessage extends SignedMessage {
 
 export interface LockOptions {
   amount: number | BN
-  expiration: number | EthBlockNumber
+  expiration: number | BlockNumber
   hashLock: Buffer
 }
 
@@ -318,7 +318,7 @@ export interface LockOptions {
  */
 export class Lock extends Hashable {
   amount: BN
-  expiration: EthBlockNumber
+  expiration: BlockNumber
   hashLock: Buffer
 
   /** @constructor
@@ -459,8 +459,8 @@ export class MediatedTransfer extends LockedTransfer {
 
   constructor (options) {
     super(options)
-    this.target = options.target || EMPTY_20BYTE_BUFFER // EthAddress
-    this.initiator = options.initiator || EMPTY_20BYTE_BUFFER// EthAddress
+    this.target = options.target || EMPTY_20BYTE_BUFFER // Address
+    this.initiator = options.initiator || EMPTY_20BYTE_BUFFER// Address
   }
 
   getMessageHash () {
@@ -523,7 +523,7 @@ export class RequestSecret extends SignedMessage {
 export class RevealSecret extends SignedMessage {
   msgID: BN
   secret: Buffer
-  to: EthAddress
+  to: Address
 
   constructor (options) {
     super(options)
