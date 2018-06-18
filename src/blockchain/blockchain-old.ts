@@ -393,8 +393,6 @@ export class BlockchainService implements T.BlockchainService {
     return tx
   }
 
-
-
   ethCall (params: any[], blockQuantity?: any) {
     if (!blockQuantity) {
       blockQuantity = 'latest'

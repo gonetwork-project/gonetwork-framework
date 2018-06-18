@@ -1,8 +1,8 @@
 import * as E from 'eth-types'
 import * as util from 'ethereumjs-util'
 
-import * as Tx from './tx'
-import { as, castToHex } from '../utils/eth-utils'
+import * as Tx from './tx-utils'
+import { as } from '../utils/eth-utils'
 
 interface Account {
   addressStr: string, privateKeyStr: string,

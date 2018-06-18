@@ -38,13 +38,13 @@ const expandParamsToTx = (order: any, types: any, defaultFn: typeof txParamsWith
         return new Tx(tx)
       }
       return acc
-    }, {} as { [k: string]: C.FunctionCall<any, any> })
+    }, {} as { [k: string]: C.CreateTxParams<any, any> })
 
 // changes state do require gas
 export const paramsToTx = {
-  token: expandParamsToTx(C.TokenOrdIO, C.TokenTypesIO, txParamsWithDefaults) as C.ParamsFn<C.TokenIO, Tx>,
-  manager: expandParamsToTx(C.ManagerOrdIO, C.ManagerTypesIO, txParamsWithDefaults) as C.ParamsFn<C.ManagerIO, Tx>,
-  channel: expandParamsToTx(C.ChannelOrdIO, C.ChannelTypesIO, txParamsWithDefaults) as C.ParamsFn<C.ChannelIO, Tx>
+  token: expandParamsToTx(C.TokenOrdIO, C.TokenTypesIO, txParamsWithDefaults) as C.FunctionCall<C.TokenIO, Tx>,
+  manager: expandParamsToTx(C.ManagerOrdIO, C.ManagerTypesIO, txParamsWithDefaults) as C.FunctionCall<C.ManagerIO, Tx>,
+  channel: expandParamsToTx(C.ChannelOrdIO, C.ChannelTypesIO, txParamsWithDefaults) as C.FunctionCall<C.ChannelIO, Tx>
 }
 
 // read-only do not require gas

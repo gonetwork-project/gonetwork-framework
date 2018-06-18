@@ -102,6 +102,11 @@ declare module 'eth-types' {
   // todo: discuss defaults
   export interface TxParams extends TxConstParams, TxParamsWithGas { }
 
+  export interface TxResult<T = any> {
+    result: T
+    // todo: fill
+  }
+
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
 
   export type ChainId = 1 | 2 | 3 | 4 | 30 | 31 | 42 | 61 | 62 | 1337
