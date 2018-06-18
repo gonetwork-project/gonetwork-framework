@@ -20,7 +20,7 @@ const cast = <O, N extends O> (v: O) => v as N
 const castNum = <O extends (BN | number), N extends O> (v: O) =>
   (BN.isBN(v) ? v : new BN(v as number)) as N
 
-export const to: {
+export const as: {
   [K in keyof E.BasicRaw]: (v: E.BasicRaw[K]) => E.Basic[K]
 } = {
   // Buffer

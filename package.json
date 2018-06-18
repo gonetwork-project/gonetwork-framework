@@ -4,7 +4,7 @@
   "description": "blockchain-service & state-channel engine for react-native environments",
   "main": "lib/index.js",
   "scripts": {
-    "test": "test",
+    "test": "jest",
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
     "lint-js": "node node_modules/standard/bin/cmd 'src/state-channel/**/*.js' 'test/**/*.js' 'demo/**/*.js'",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
@@ -13,9 +13,11 @@
   "author": "Amit Shah",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^23.1.0",
     "@types/node": "^9.6.21",
     "@types/sjcl": "^1.0.28",
     "ethereumjs-wallet": "^0.6.0",
+    "jest": "^23.1.0",
     "jsdocs": "^1.0.0",
     "node-fetch": "^2.1.2",
     "node-persist": "^2.1.0",
@@ -24,6 +26,7 @@
     "tape": "^4.9.0",
     "truffle-contract": "^3.0.5",
     "truffle-wallet-provider": "0.0.5",
+    "ts-jest": "^22.4.6",
     "ts-loader": "^4.2.0",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
@@ -41,5 +44,19 @@
     "rxjs": "^5.5.8",
     "sjcl": "^1.0.7"
   },
-  "typings": "./lib/index.d.ts"
+  "typings": "./lib/index.d.ts",
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  }
 }
