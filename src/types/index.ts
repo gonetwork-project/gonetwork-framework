@@ -10,15 +10,17 @@ import { BN } from 'bn.js'
 export { BN }
 export * from './contracts'
 
+import * as E from 'eth-types'
+
 export type ChainId = string
 export type BlockQuantity = 'latest'
 
 // todo: make it consistent either string or number
-export type EthAddress = (string | Buffer)
+export type EthAddress = E.Address
 export type EthTransaction = string
-export type EthBlockNumber = BN
-export type EthNonce = BN
-export type EthPrivateKey = (string | Buffer)
+export type EthBlockNumber = E.BlockNumber
+export type EthNonce = E.Nonce
+export type EthPrivateKey = E.PrivateKey
 
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state

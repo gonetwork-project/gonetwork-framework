@@ -1,6 +1,7 @@
 import * as util from 'ethereumjs-util'
 
 import { EthMonitoringInfo, EthAddress, EthBlockNumber } from '../types'
+import { as } from '../utils'
 
 let i = 0
 
@@ -30,7 +31,7 @@ const requestFactory = (network: string, token: string) =>
 export const infuraMonitoring = (network: string, token: string, request = requestFactory(network, token)):
   EthMonitoringInfo => ({
     blockNumber: () => request('eth_blockNumber')
-      .then(n => new util.BN(n)),
+      .then(n => as.BlockNumber(n)),
     getLogs: (fromBlock: EthBlockNumber, toBlock: EthBlockNumber, address: EthAddress | EthAddress[]) =>
       request('eth_getLogs', {
         // todo

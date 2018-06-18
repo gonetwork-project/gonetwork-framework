@@ -20,8 +20,11 @@ export const CHAIN_ID: Readonly<E.ChainIds> = {
   GETH_PRIVATE_CHAINS: 1337 // default
 }
 
+export const add = <T extends BN> (a: T, b: T) => a.add(b) as T
+export const add1 = <T extends BN> (n: T) => n.add(new BN(1)) as T
+
 const cast = <O, N extends O> (v: O) => v as N
-const castNum = <O extends (BN | number), N extends O> (v: O) =>
+const castNum = <O extends (BN | number | string), N extends O> (v: O) =>
   (BN.isBN(v) ? v : new BN(v as number)) as N
 
 export const castToHex = <O extends (Buffer | string), N extends O> (

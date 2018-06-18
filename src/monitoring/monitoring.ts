@@ -8,6 +8,7 @@ import * as util from 'ethereumjs-util'
 import { decode } from './log-decoder'
 
 import * as T from '../types'
+import { as, add } from '../utils'
 
 // todo: make it configurable
 const KEY_PREFIX = '___ETH_MONITORING___'
@@ -135,9 +136,10 @@ export class Monitoring implements T.EthMonitoring {
                 .reduce((acc, x) => acc.concat([x]), [])
                 .mergeMap(gs =>
                   Observable.defer(() => {
-                    const bn = new util.BN(xs.key)
+                   // const bn = new util.BN(xs.key)
+                    const bn = as.BlockNumber(xs.key)
                     if (bn.lt(blockNumber)) {
-                      return this._cfg.getLogs(bn.add(new util.BN(1)), blockNumber, gs)
+                      return this._cfg.getLogs(add(bn, as.BlockNumber(1)), blockNumber, gs)
                     } else {
                       return Observable.of([] as T.BlockchainEvent[])
                     }

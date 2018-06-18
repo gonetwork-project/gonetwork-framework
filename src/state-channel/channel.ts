@@ -3,6 +3,7 @@
 import * as util from 'ethereumjs-util'
 import * as message from './message'
 import { BN } from 'bn.js'
+import { as, add } from '../utils'
 
 import { EthBlockNumber, EthNonce } from '../types'
 
@@ -93,7 +94,7 @@ export class Channel {
   transferrableFromTo (from, to, currentBlock?: EthBlockNumber) {
     let safeBlock: EthBlockNumber | null = null
     if (currentBlock) {
-      safeBlock = currentBlock.add(REVEAL_TIMEOUT)
+      safeBlock = add(currentBlock, as.BlockNumber(REVEAL_TIMEOUT))
     }
     return from.depositBalance
       .sub((from.transferredAmount.add(from.lockedAmount(safeBlock)).add(from.unlockedAmount())))

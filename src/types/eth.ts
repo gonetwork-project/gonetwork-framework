@@ -19,20 +19,20 @@ declare module 'eth-types' {
   // IMPORTANT - be aware that there is another popular BigNumber.js lib used in the ecosystem (maybe more)
   import { BN } from 'bn.js'
 
-  export type BNorNum = BN | number
+  export type BN_Num_Str = BN | number | string
   // https://etherconverter.online/
-  export type Wei = BNorNum & { __Wei__: true }
-  export type Gwei = BNorNum & { __Gwei__: true }
-  export type Ether = BNorNum & { __Ether__: true }
+  export type Wei = BN & { __Wei__: true }
+  export type Gwei = BN & { __Gwei__: true }
+  export type Ether = BN & { __Ether__: true }
 
   export type Address = Buffer & { __Address__: true }
   export type AddressHex = string & { __AddressHex__: true }
   export type PrivateKey = Buffer & { __PrivKey__: true }
 
-  export type Nonce = BNorNum & { __Nonce__: true }
-  export type BlockNumber = BNorNum & { __BlockNumber__: true }
+  export type Nonce = BN & { __Nonce__: true }
+  export type BlockNumber = BN & { __BlockNumber__: true }
 
-  export type GasLimit = BNorNum & { __GasLimit__: true }
+  export type GasLimit = BN & { __GasLimit__: true }
   export type GasPrice = Gwei & { __GasPrice__: true }
 
   // we group them in one place to easily add all required functionalieties
@@ -42,15 +42,15 @@ declare module 'eth-types' {
     AddressHex: string
     PrivateKey: Buffer
 
-    Nonce: BNorNum
-    BlockNumber: BNorNum
+    Nonce: BN_Num_Str
+    BlockNumber: BN_Num_Str
 
-    Wei: BNorNum
-    Gwei: BNorNum
-    Ether: BNorNum
+    Wei: BN_Num_Str
+    Gwei: BN_Num_Str
+    Ether: BN_Num_Str
 
-    GasLimit: BNorNum
-    GasPrice: BNorNum
+    GasLimit: BN_Num_Str
+    GasPrice: BN_Num_Str
   }
 
   export interface Basic {
