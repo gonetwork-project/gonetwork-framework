@@ -11,6 +11,6 @@ const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelCon
 export type Decode<E> = (log: any) => E
 export const decode = (log: any) => decoder.decode(log)
 
-export const decodeChannelManager: Decode<T.ManagerEvent> = decode
-export const decodeNettingChannel: Decode<T.NettingEvent> = decode
-export const decodeToken: Decode<T.TokenEvent> = decode
+export const decodeChannelManager: Decode<T.ManagerEvents> = decode
+export const decodeNettingChannel: Decode<T.ChannelEvents> = decode
+export const decodeToken: Decode<T.TokenEvents> = decode

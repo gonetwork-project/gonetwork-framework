@@ -4,7 +4,6 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { EventEmitter } from 'events'
 
 import * as util from 'ethereumjs-util'
-import * as BN from 'bn.js'
 
 import { decode } from './log-decoder'
 

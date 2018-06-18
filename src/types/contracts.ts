@@ -7,6 +7,9 @@ export * from './__GEN__/ChannelManagerContract'
 // #endregion GENERATED
 
 import { TxParamsRequired, TxParamsWithGas } from 'eth-types'
+import { ChannelEvents } from './__GEN__/NettingChannelContract'
+import { ManagerEvents } from './__GEN__/ChannelManagerContract'
+import { TokenEvents } from './__GEN__/HumanStandardToken'
 
 export type Method<In, Out> = [In, Out]
 
@@ -33,3 +36,7 @@ export type CreateTxConstParams<In extends ({} | null), Out> = (provided: TxPara
 export type FunctionConstCall<T extends { [K: string]: [any, any] }, Out> = {
   [K in keyof T]: CreateTxConstParams<T[K][0], Out>
 }
+
+export type BlockchainEventType = ChannelEvents | ManagerEvents | TokenEvents
+
+export type BlockchainEvent = any

@@ -1,12 +1,14 @@
 
 import { EventEmitter } from 'events'
 
-import { BlockchainEventType, BlockchainEvent } from './blockchain-events'
+// import { BlockchainEventType, BlockchainEvent } from './contracts'
+
+import * as C from './contracts'
 
 import { BN } from 'bn.js'
 
 export { BN }
-export * from './blockchain-events'
+export * from './contracts'
 
 export type ChainId = string
 export type BlockQuantity = 'latest'
@@ -96,7 +98,7 @@ export interface EthMonitoringInfo {
   getLogs: (fromBlock: EthBlockNumber,
     toBlock: EthBlockNumber,
     address: EthAddress[])
-    => Promise<BlockchainEvent[]>
+    => Promise<C.BlockchainEvent[]>
   getTransactionReceipt: (tx: EthTransaction) =>
     Promise<any>
 }
@@ -114,8 +116,8 @@ export interface EthMonitoring {
   transactionReceipt: (tx: EthTransaction) => Promise<Boolean>
 
   // split per Event type and enforce callback types
-  on: (e: BlockchainEventType, listener: (...args: any[]) => void) => void
-  off: (e: BlockchainEventType, listener: (...args: any[]) => void) => void
+  on: (e: C.BlockchainEventType, listener: (...args: any[]) => void) => void
+  off: (e: C.BlockchainEventType, listener: (...args: any[]) => void) => void
 
   dispose: () => void
 }
