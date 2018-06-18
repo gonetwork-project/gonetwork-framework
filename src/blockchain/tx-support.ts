@@ -1,21 +1,24 @@
 import * as Tx from 'ethereumjs-tx'
-import { BN } from 'bn.js'
+
 import * as util from 'ethereumjs-util'
 import * as abi from 'ethereumjs-abi'
 
-import { as, CHAIN_ID } from '../utils'
+import { CHAIN_ID, addressToHex } from '../utils'
 
 import * as C from '../types/contracts'
 import * as E from 'eth-types'
 
+const castAddressOrMany = (v) => {
+  if (Array.isArray(v)) return v.map(a => addressToHex(a))
+  return addressToHex(v)
+}
+
 const encodeData = (name: string, types: string[], order: string[], data: E.TxParams[]) => {
-  // const mSig = abi.methodID(name, types)
-  // const d = (data && abi.rawEncode(types, data))
-  // return util.toBuffer('0x' + mSig.toString('hex') + (d ? d.toString('hex') : ''))
   return util.toBuffer([
     '0x',
     abi.methodID(name, types).toString('hex'),
-    abi.rawEncode(types, order.map(o => data[o]))
+    abi.rawEncode(types, order.map((o, idx) => types[idx].startsWith('addr') ?
+      castAddressOrMany(data[o]) : data[o]))
   ].join(''))
 }
 
@@ -31,7 +34,6 @@ const expandParamsToTx = (order: any, types: any, defaultFn: typeof txParamsWith
     .reduce((acc, k) => {
       acc[k] = pr => data => {
         const d = data ? encodeData(k, types[k], order[k], data) : null
-        console.log(data, d, k, types[k], order[k])
         const tx = (defaultFn as any)(d, pr)
         return new Tx(tx)
       }

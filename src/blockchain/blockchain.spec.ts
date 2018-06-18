@@ -2,7 +2,7 @@ import * as E from 'eth-types'
 import * as util from 'ethereumjs-util'
 
 import * as Tx from './tx-support'
-import { as } from '../utils/eth-utils'
+import { as, addressToHex } from '../utils/eth-utils'
 
 interface Account {
   addressStr: string, privateKeyStr: string,
@@ -32,9 +32,7 @@ test('const params to transaction [DATA]', () => {
     nonce: as.Nonce(0),
     to: acc2.address
   })({
-    // FIXME: Buffer/Address throws with 'Argument is not a number' - we need to uniform data passed here
-    // https://github.com/ethereumjs/ethereumjs-abi/blob/master/lib/index.js#L108
-    channel: `0x${acc2.address.toString('hex')}` as any
+    channel: acc2.address
   })
   t.sign(acc1.privateKey)
   expect(t.from.toString('hex')).toBe(acc1.addressStr)

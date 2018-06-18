@@ -26,6 +26,7 @@ declare module 'eth-types' {
   export type Ether = BNorNum & { __Ether__: true }
 
   export type Address = Buffer & { __Address__: true }
+  export type AddressHex = string & { __AddressHex__: true }
   export type PrivateKey = Buffer & { __PrivKey__: true }
 
   export type Nonce = BNorNum & { __Nonce__: true }
@@ -38,6 +39,7 @@ declare module 'eth-types' {
 
   export interface BasicRaw {
     Address: Buffer
+    AddressHex: string
     PrivateKey: Buffer
 
     Nonce: BNorNum
@@ -53,6 +55,7 @@ declare module 'eth-types' {
 
   export interface Basic {
     Address: Address
+    AddressHex: AddressHex
     PrivateKey: PrivateKey
 
     Nonce: Nonce
