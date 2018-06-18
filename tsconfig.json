@@ -1,6 +1,5 @@
 {
   "include": [
-    "./scripts/**/*",
     "./src/**/*"
   ],
   "compilerOptions": {

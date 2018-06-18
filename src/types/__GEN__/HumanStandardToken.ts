@@ -1,5 +1,5 @@
 import { BN } from 'bn.js'
-import { Address } from '../eth'
+import { Address } from 'eth-types'
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 

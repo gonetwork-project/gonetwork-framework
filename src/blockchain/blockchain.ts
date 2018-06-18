@@ -5,7 +5,7 @@
 * @Last Modified time: 2018-04-27 03:06:55
 */
 
-import * as EthereumTx from 'ethereumjs-tx'
+import * as Tx from 'ethereumjs-tx'
 import * as abi from 'ethereumjs-abi'
 import * as util from 'ethereumjs-util'
 import fetch from 'node-fetch'
@@ -321,9 +321,7 @@ export class BlockchainService implements T.BlockchainService {
     if (params.length > 0) {
       paramsEncoded = abi.rawEncode(inputs, params);
     }
-    inputs = functionRef.inputs.map(function (i) {
-      return i.type;
-    });
+   
     console.log(paramsEncoded);
     let data = util.toBuffer('0x' + methodSignature.toString('hex') +
       paramsEncoded.toString('hex'));
@@ -386,7 +384,7 @@ export class BlockchainService implements T.BlockchainService {
     if (value) {
       txParams.value = value
     }
-    let tx = new EthereumTx(txParams)
+    let tx = new Tx(txParams)
     this.signatureCallback(function (privateKey) {
       tx.sign(privateKey)
     })

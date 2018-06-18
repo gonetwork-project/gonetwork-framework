@@ -45,7 +45,7 @@ const SHORT_NAMES: { [k: string]: string } = {
 const ACHTUNG = '// \u26A0 !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND \u26A0\n'
 const IMPORTS = [
   `import { BN } from 'bn.js'`,
-  `import { Address } from '../eth'`
+  `import { Address } from 'eth-types'`
 ].join('\n')
 
 const readContracts = (p: string) =>

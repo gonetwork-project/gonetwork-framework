@@ -6,7 +6,7 @@ export * from './__GEN__/ChannelManagerContract'
 
 // #endregion GENERATED
 
-import { TxParamsRequired, TxParamsWithGas } from './eth'
+import { TxParamsRequired, TxParamsWithGas } from 'eth-types'
 
 export type Method<In, Out> = [In, Out]
 

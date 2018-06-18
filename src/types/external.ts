@@ -1,6 +1,7 @@
 // TODO IMPORTANT: handle licences properly
 
 // based on: https://github.com/machinomy/types-bn/blob/master/index.d.ts
+
 declare module 'bn.js' {
   import { Buffer } from 'buffer'
 
@@ -61,15 +62,11 @@ declare module 'ethereumjs-util' {
   import { BN } from 'bn.js'
   import { Buffer } from 'buffer'
 
+  import { Signature, PrivateKey } from 'eth-types'
+
   export {
     BN,
     Buffer
-  }
-
-  interface Signature {
-    v: number,
-    r: Buffer,
-    s: Buffer
   }
 
   export const MAX_INTEGER: BN
@@ -182,4 +179,23 @@ declare module 'ethereumjs-abi' {
 
   export function fromSerpent (sig: string[]): string[]
   export function toSerpent (types: string[]): string
+}
+
+declare module 'ethereumjs-tx' {
+
+  import { Signature, PrivateKey, TxConstParams, TxParams, Address } from 'eth-types'
+
+  // TODO:  this is only the part of the 'ethereumjs-tx' we use
+
+  class Tx {
+    from: Address
+    constructor (params: TxParams | TxConstParams)
+    sign (pk: PrivateKey): void // better would be to return Tx|TxConst
+    serialize (): Buffer
+  }
+
+  namespace Tx {
+  }
+
+  export = Tx
 }
