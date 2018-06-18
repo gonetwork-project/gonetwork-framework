@@ -30,10 +30,12 @@ test('const params to transaction [NO DATA]', () => {
 test('const params to transaction [DATA]', () => {
   const t = Tx.paramsToTxConst.manager.contractExists({
     nonce: as.Nonce(0),
-    to: acc1.address
+    to: acc2.address
   })({
-    channel: acc2.address
+    // FIXME: Buffer/Address throws with 'Argument is not a number' - we need to uniform data passed here
+    // https://github.com/ethereumjs/ethereumjs-abi/blob/master/lib/index.js#L108
+    channel: `0x${acc2.address.toString('hex')}` as any
   })
   t.sign(acc1.privateKey)
-  expect(t.from.toString('hex')).toBe(acc1.address)
+  expect(t.from.toString('hex')).toBe(acc1.addressStr)
 })

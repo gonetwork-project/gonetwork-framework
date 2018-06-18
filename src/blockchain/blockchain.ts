@@ -362,9 +362,9 @@ export class BlockchainService implements T.BlockchainService {
     if (params.length > 0) {
       paramsEncoded = abi.rawEncode(inputs, params)
     }
-    inputs = functionRef.inputs.map(function (i) {
-      return i.type
-    })
+    // inputs = functionRef.inputs.map(function (i) {
+    //   return i.type
+    // })
     let data = util.toBuffer('0x' + methodSignature.toString('hex') +
       (paramsEncoded as any).toString('hex'))
     if (DEBUG) {
