@@ -87,8 +87,9 @@ const reduceFunctions = (fns: AbiFunction[]) =>
     const out = f.outputs!.length > 0 && reduceIO(f.outputs)
     acc.inOut[f.name] = [params || 'null', out || 'void']
     acc.order[f.name] = f.inputs.map(x => `'${x.name}'`)
+    acc.types[f.name] = f.inputs.map(x => `'${x.type}'`)
     return acc
-  }, { inOut: {}, order: {} })
+  }, { inOut: {}, order: {}, types: {} })
 
 const handleFunctions = (fns: AbiFunction[], shortName: string) => {
   // const p = reduceFunctions(fns.filter(fn => fn.payable))
@@ -100,8 +101,10 @@ const handleFunctions = (fns: AbiFunction[], shortName: string) => {
     // `export const ${shortName}PayOrdIO = ${JSON.stringify(p.order, null, 2).replace(/[\"]/g, '')}`,
     `export type ${shortName}IO = ${JSON.stringify(o.inOut, null, 2).replace(/[\"]/g, '')}`,
     `export const ${shortName}OrdIO = ${JSON.stringify(o.order, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}TypesIO = ${JSON.stringify(o.types, null, 2).replace(/[\"]/g, '')}`,
     `export type ${shortName}ConstIO = ${JSON.stringify(c.inOut, null, 2).replace(/[\"]/g, '')}`,
-    `export const ${shortName}ConstOrdIO = ${JSON.stringify(c.order, null, 2).replace(/[\"]/g, '')}`
+    `export const ${shortName}ConstOrdIO = ${JSON.stringify(c.order, null, 2).replace(/[\"]/g, '')}`,
+    `export const ${shortName}ConstTypesIO = ${JSON.stringify(c.types, null, 2).replace(/[\"]/g, '')}`
   ].join('\n\n')
 }
 
@@ -133,7 +136,7 @@ const handleContract = (outDir: string) => ([n, c]: [string, any]) =>
     )
     .toArray()
     .map(gs => [IMPORTS].concat(gs).filter(Boolean))
-    .map(gs => gs.join(`\n\n${ACHTUNG}\n`) + '\n')
+    .map(gs => gs.join(`\n\n${ACHTUNG}\n`) + `\n\n${ACHTUNG}`)
     .do(gen => fs.writeFileSync(`${outDir}/${n}.ts`, gen, 'utf8'))
 
 $.from(readContracts(contractsDir))

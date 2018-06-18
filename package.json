@@ -8,7 +8,8 @@
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
     "lint-js": "node node_modules/standard/bin/cmd 'src/state-channel/**/*.js' 'test/**/*.js' 'demo/**/*.js'",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
-    "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration"
+    "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration",
+    "abi-to-ts": "cd scripts && rm abi-to-ts.js && (tsc abi-to-ts.ts || echo) && node abi-to-ts.js && cd .."
   },
   "author": "Amit Shah",
   "license": "MIT",

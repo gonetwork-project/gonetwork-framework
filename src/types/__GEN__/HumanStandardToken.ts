@@ -65,6 +65,27 @@ export const TokenOrdIO = {
   ]
 }
 
+export const TokenTypesIO = {
+  approve: [
+    'address',
+    'uint256'
+  ],
+  transferFrom: [
+    'address',
+    'address',
+    'uint256'
+  ],
+  transfer: [
+    'address',
+    'uint256'
+  ],
+  approveAndCall: [
+    'address',
+    'uint256',
+    'bytes'
+  ]
+}
+
 export type TokenConstIO = {
   name: [
     null,
@@ -128,6 +149,21 @@ export const TokenConstOrdIO = {
   ]
 }
 
+export const TokenConstTypesIO = {
+  name: [],
+  totalSupply: [],
+  decimals: [],
+  version: [],
+  balanceOf: [
+    'address'
+  ],
+  symbol: [],
+  allowance: [
+    'address',
+    'address'
+  ]
+}
+
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
 export interface TokenConstructorParams {
@@ -154,3 +190,5 @@ export type TokenEventsToArgs = {
     _value: BN
   }
 }
+
+// ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠

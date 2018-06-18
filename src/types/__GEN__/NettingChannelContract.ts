@@ -72,6 +72,32 @@ export const ChannelOrdIO = {
   settle: []
 }
 
+export const ChannelTypesIO = {
+  deposit: [
+    'uint256'
+  ],
+  close: [
+    'uint256',
+    'uint256',
+    'bytes32',
+    'bytes32',
+    'bytes'
+  ],
+  updateTransfer: [
+    'uint256',
+    'uint256',
+    'bytes32',
+    'bytes32',
+    'bytes'
+  ],
+  withdraw: [
+    'bytes',
+    'bytes',
+    'bytes32'
+  ],
+  settle: []
+}
+
 export type ChannelConstIO = {
   refund: [
     null,
@@ -211,6 +237,31 @@ export const ChannelConstOrdIO = {
   ]
 }
 
+export const ChannelConstTypesIO = {
+  refund: [],
+  data: [],
+  refund_interval: [],
+  contract_version: [],
+  fee: [],
+  addressAndBalance: [],
+  settleTimeout: [],
+  tokenAddress: [],
+  opened: [],
+  closed: [],
+  closingAddress: [],
+  participantData: [],
+  decodeLock: [
+    'bytes'
+  ],
+  computeMerkleRoot: [
+    'bytes',
+    'bytes'
+  ],
+  computeLockHash: [
+    'bytes'
+  ]
+}
+
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
 export interface ChannelConstructorParams {
@@ -254,3 +305,5 @@ export type ChannelEventsToArgs = {
     amount: BN
   }
 }
+
+// ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠

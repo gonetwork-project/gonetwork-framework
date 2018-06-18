@@ -36,6 +36,17 @@ export const ManagerOrdIO = {
   ]
 }
 
+export const ManagerTypesIO = {
+  transferOwnership: [
+    'address'
+  ],
+  collectFees: [],
+  newChannel: [
+    'address',
+    'uint256'
+  ]
+}
+
 export type ManagerConstIO = {
   contractExists: [
     {
@@ -117,6 +128,24 @@ export const ManagerConstOrdIO = {
   getChannelsParticipants: []
 }
 
+export const ManagerConstTypesIO = {
+  contractExists: [
+    'address'
+  ],
+  owner: [],
+  contract_version: [],
+  fee: [],
+  getChannelsAddresses: [],
+  tokenAddress: [],
+  getChannelWith: [
+    'address'
+  ],
+  nettingContractsByAddress: [
+    'address'
+  ],
+  getChannelsParticipants: []
+}
+
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
 export interface ManagerConstructorParams {
@@ -152,3 +181,5 @@ export type ManagerEventsToArgs = {
     newOwner: Address
   }
 }
+
+// ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
