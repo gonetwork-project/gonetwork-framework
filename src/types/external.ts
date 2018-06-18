@@ -190,7 +190,7 @@ declare module 'ethereumjs-tx' {
   class Tx {
     from: Address
     constructor (params: TxParams | TxConstParams)
-    sign (pk: PrivateKey): void // better would be to return Tx|TxConst
+    sign (pk: PrivateKey): void // better would be to return Tx
     serialize (): Buffer
   }
 

@@ -2,6 +2,7 @@ import * as T from '../types'
 
 import GenericLogDecoder from '../utils/generic-log-decoder'
 
+// todo: remove it and use generated stuff
 const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
 const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
 const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
