@@ -33,6 +33,7 @@ const expandParamsToTx = (order: any, types: any, defaultFn: typeof txParamsWith
   Object.keys(order)
     .reduce((acc, k) => {
       acc[k] = pr => data => {
+        // console.log(pr, data)
         const d = data ? encodeData(k, types[k], order[k], data) : null
         const tx = (defaultFn as any)(d, pr)
         return new Tx(tx)

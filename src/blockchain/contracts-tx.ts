@@ -22,7 +22,7 @@ export interface TxInfo {
   gasPrice: E.GasPrice
 }
 
-export interface BlockchainConfig {
+export interface ContractTxConfig {
   signatureCb: (cb: (pk: E.PrivateKey) => void) => void
   request: (rpcBody: any, tx: Tx) => Promise<E.TxResult> // todo: add proper type
   info: (from: E.Address, value?: E.Wei) => Promise<TxInfo>
@@ -33,7 +33,7 @@ export interface BlockchainConfig {
   token: E.Address
 }
 
-export default (cfg: BlockchainConfig) => {
+export default (cfg: ContractTxConfig) => {
 
   const paramsToRequest = (order: any, paramsToTx: C.FunctionCall<any, Tx>, contract: E.Address) => {
     return Object.keys(order)
