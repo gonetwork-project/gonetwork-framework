@@ -8,7 +8,7 @@ import { CHAIN_ID, addressToHex } from '../utils'
 import * as C from '../types/contracts'
 import * as E from 'eth-types'
 
-const castAddressOrMany = (v) => {
+export const castAddressOrMany = (v) => {
   if (Array.isArray(v)) return v.map(a => addressToHex(a))
   return addressToHex(v)
 }

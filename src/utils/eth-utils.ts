@@ -2,6 +2,10 @@ import * as E from 'eth-types'
 import { BN } from 'bn.js'
 import * as util from 'ethereumjs-util'
 
+export {
+  BN, util
+}
+
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
 export const CHAIN_ID: Readonly<E.ChainIds> = {
   MAINNET: 1,
@@ -20,15 +24,13 @@ const cast = <O, N extends O> (v: O) => v as N
 const castNum = <O extends (BN | number), N extends O> (v: O) =>
   (BN.isBN(v) ? v : new BN(v as number)) as N
 
-export const castToHex = <O extends (BN | Buffer | string), N extends O>(
-  isValid: (x: string) => boolean = () => true,
+export const castToHex = <O extends (Buffer | string), N extends O> (
+  isValid: (x: string) => boolean,
   message = 'Cannot convert to hex'
 ) => (v: O) => {
   let x: string
   if (v instanceof Buffer) {
     x = v.toString('hex')
-  } else if (BN.isBN(v)) {
-    x = v.toString()
   } else {
     x = v as string
   }
