@@ -3,7 +3,7 @@ import * as E from 'eth-types'
 
 import { as } from '../utils/eth-utils'
 
-interface Account {
+export interface Account {
   addressStr: string, privateKeyStr: string,
   address: E.Address, privateKey: E.PrivateKey
 }
