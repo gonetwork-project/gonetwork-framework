@@ -89,16 +89,16 @@ export class Monitoring implements T.Monitoring {
 
   transactionReceipt = (tx) =>
     Promise.reject('NOT_SUPPORTED')
-    // Observable.timer(0, TRANSACTION_INTERVAL)
-    //   .switchMap(() =>
-    //     Observable.defer(() => this._cfg.rpc.getTransactionReceipt(tx))
-    //       .catch((err) => {
-    //         console.log('TRANSACTION_MONITORING_ERROR', err)
-    //         return Observable.empty()
-    //       })
-    //   )
-    //   .take(1)
-    //   .toPromise()
+  // Observable.timer(0, TRANSACTION_INTERVAL)
+  //   .switchMap(() =>
+  //     Observable.defer(() => this._cfg.rpc.getTransactionReceipt(tx))
+  //       .catch((err) => {
+  //         console.log('TRANSACTION_MONITORING_ERROR', err)
+  //         return Observable.empty()
+  //       })
+  //   )
+  //   .take(1)
+  //   .toPromise()
 
   on (event: C.BlockchainEventType, listener: (...args: any[]) => void) {
     this._em.on(event, listener)
@@ -140,15 +140,13 @@ export class Monitoring implements T.Monitoring {
                 .reduce((acc, x) => acc.concat([x]), [])
                 .mergeMap(gs =>
                   Observable.defer(() => {
-                   // const bn = new util.BN(xs.key)
+                    // const bn = new util.BN(xs.key)
                     const bn = as.BlockNumber(xs.key)
                     if (bn.lt(blockNumber)) {
                       return this._cfg.rpc.getLogs({
-                        config: {
-                          fromBlock: add(bn, as.BlockNumber(1)),
-                          toBlock: blockNumber,
-                          address: gs
-                        }
+                        fromBlock: add(bn, as.BlockNumber(1)),
+                        toBlock: blockNumber,
+                        address: gs
                       })
                     } else {
                       return Observable.of([] as C.BlockchainEvent[])

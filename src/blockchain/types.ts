@@ -39,7 +39,7 @@ export type SupportedCalls = {
   getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
   blockNumber: CallSpec<null, E.BlockNumber>
   // please mind only events of our interest / if needed we can make generic
-  getLogs: CallSpec<{ config: LogsParams }, T.BlockchainEvent[]>
+  getLogs: CallSpec<LogsParams, T.BlockchainEvent[]>
 }
 
 // name, order, parse-result, defaults

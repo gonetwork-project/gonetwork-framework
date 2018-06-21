@@ -13,7 +13,6 @@ const managerAdd = as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df
 test('block-number', () =>
   rpc.blockNumber()
     .then(x => {
-      console.log(x.toString())
       expect(x.gte(1)).toBe(true)
     })
 )
@@ -27,11 +26,9 @@ test('transactions-count', () =>
 
 test.skip('logs -- all', () =>
   rpc.getLogs({
-    config: {
-      address: managerAdd,
-      fromBlock: as.BlockNumber(0),
-      toBlock: as.BlockNumber('latest')
-    }
+    address: managerAdd,
+    fromBlock: as.BlockNumber(0),
+    toBlock: as.BlockNumber('latest')
   })
     .then(x => {
       expect(x.length).toBeGreaterThanOrEqual(75)
@@ -40,11 +37,9 @@ test.skip('logs -- all', () =>
 
 test('logs -- few', () =>
   rpc.getLogs({
-    config: {
-      address: managerAdd,
-      fromBlock: as.BlockNumber('0x2f06c0'),
-      toBlock: as.BlockNumber('0x2f074b')
-    }
+    address: managerAdd,
+    fromBlock: as.BlockNumber('0x2f06c0'),
+    toBlock: as.BlockNumber('0x2f074b')
   })
     .then(x => {
       expect(x.length).toBe(4) // logs are immutable
