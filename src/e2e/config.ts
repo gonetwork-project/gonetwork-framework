@@ -26,10 +26,11 @@ export const accounts: Account[] = pks.map(pk => ({
   addressStr: util.addHexPrefix(util.privateToAddress((Buffer as any).from(pk, 'hex')).toString('hex'))
 }))
 
-export const tmpDir = path.resolve(__dirname, 'tmp')
+export const tmpDir = path.resolve(__dirname, '..', '..', 'temp')
 export const contractAddressesPath = path.resolve(tmpDir, 'contract-addresses.json')
 
 export const migrationDir = path.resolve(__dirname, '..', '..', 'smart-contracts')
+export const migrationBuildDir = path.resolve(migrationDir, 'build')
 
 if (!fs.existsSync(tmpDir)) {
   fs.mkdirSync(tmpDir)
