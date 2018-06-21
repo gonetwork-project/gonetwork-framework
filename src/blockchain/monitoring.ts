@@ -31,7 +31,7 @@ export class Monitoring implements T.Monitoring {
   private _state: Promise<State>
   private _sub: any
   private _transactions: Subject<E.TxHash> = new Subject()
-  private _blockNumberSub = new BehaviorSubject<util.BN | undefined>(undefined)
+  private _blockNumberSub = new BehaviorSubject<E.BlockNumber | undefined>(undefined)
   private _forceMonitoring = new Subject<boolean>()
   private _toSubscribe: E.Address[] = []
 
@@ -45,10 +45,10 @@ export class Monitoring implements T.Monitoring {
         ],
         transactions: []
       }))
-      .then(s => {
-        console.log('STATE', s)
-        return s
-      })
+
+    // FIXME: this is pretty ugly
+    this.on = this.on.bind(this)
+    this.off = this.off.bind(this)
 
     this._sub =
       this._monitorAddresses()
@@ -57,7 +57,10 @@ export class Monitoring implements T.Monitoring {
           this._monitorTransactions()
         )
         .subscribe()
+
   }
+
+  blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
 
   subscribeAddress = (a: E.Address) =>
     this._state.then(s => {
@@ -118,7 +121,7 @@ export class Monitoring implements T.Monitoring {
         Observable.defer(() => this._cfg.rpc.blockNumber())
           .retryWhen(errs => errs.delay(1000))
       )
-      .do(x => x !== this._blockNumber() && this._blockNumberSub.next(x))
+      .do(x => !x.eq(this._blockNumber() || 0) && this._blockNumberSub.next(x))
 
   private _monitorAddresses = () =>
     (Observable.combineLatest(
@@ -126,21 +129,17 @@ export class Monitoring implements T.Monitoring {
       this._forceMonitoring.merge(Observable.of(true)),
       n => n
     )
-      // .do(x => console.log('BN-SUBJECT', x))
       .filter(x => x !== undefined) as Observable<E.BlockNumber>)
-      .do(bn => console.log('MONITORING -- BLOCK:', bn))
       .exhaustMap(blockNumber =>
         Observable.defer(() => this._state)
           .mergeMap((s: State) =>
             Observable.from(s.addresses)
               .groupBy(a => a[1])
-              .do(xs => console.log('BY-LAST-BLOCK', xs.key))
               .mergeMap(xs => xs
                 .map(x => x[0])
                 .reduce((acc, x) => acc.concat([x]), [])
                 .mergeMap(gs =>
                   Observable.defer(() => {
-                    // const bn = new util.BN(xs.key)
                     const bn = as.BlockNumber(xs.key)
                     if (bn.lt(blockNumber)) {
                       return this._cfg.rpc.getLogs({
@@ -152,14 +151,11 @@ export class Monitoring implements T.Monitoring {
                       return Observable.of([] as C.BlockchainEvent[])
                     }
                   })
-                    .map(decode)
                     .reduce((acc, logs) => ({
                       logs: acc.logs.concat(logs),
                       addresses: acc.addresses.concat(gs)
                     }), { logs: [] as any, addresses: [] as E.Address[] })
                 ))
-              .do(x => x.logs.length && console.log('BLOCK:', blockNumber, ' -- NEW_EVENTS_COUNT:', x.logs.length, ' ADDRESSES COUNT: ', s.addresses.length))
-              // .do(x => console.log('NEW_EVENTS', x.logs))
               .do(({ logs }) => logs.forEach(l => this._em.emit(l._type, l)))
               .mergeMap(({ addresses }) => {
                 addresses.forEach(add => {
@@ -171,9 +167,7 @@ export class Monitoring implements T.Monitoring {
                 return this._saveState(s)
               })
           )
-          .retryWhen(errs => errs
-            .do(e => console.warn('ERR', e))
-            .delay(1000))
+          .retryWhen(errs => errs.delay(1000))
       )
 
   private _monitorTransactions = () =>
@@ -184,8 +178,8 @@ export class Monitoring implements T.Monitoring {
             // todo
             // Observable.defer(() => this._cfg.rpc.getTransactionReceipt(t))
             Observable.empty()
-              .catch((err) => {
-                console.log('TRANSACTION_MONITORING_ERROR', err)
+              .catch(() => {
+                //    console.log('TRANSACTION_MONITORING_ERROR', err)
                 return Observable.empty()
               })
           )

@@ -2,6 +2,7 @@ import * as Tx from 'ethereumjs-tx'
 import * as E from 'eth-types'
 
 import * as T from '../types'
+import { Observable } from 'rxjs/Observable'
 
 export type SignatureCb = (cb: (pk: E.PrivateKey) => void) => void
 
@@ -12,6 +13,7 @@ export interface MonitoringConfig {
   rpc: RPC
 }
 export interface Monitoring {
+  blockNumbers: () => Observable<E.BlockNumber>
 
   subscribeAddress: (ch: E.Address) => Promise<Boolean>
   unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
@@ -63,20 +65,26 @@ export interface TxInfo {
 }
 
 export interface ContractTxConfig {
-  signatureCb: SignatureCb
   request: (rpcBody: any, tx: Tx) => Promise<E.TxResult> // todo: add proper type
   info: (from: E.Address, value?: E.Wei) => Promise<TxInfo> // probably better to just pass this info when calling a method
   chainId: E.ChainId
-
-  channelManager: E.Address
+  signatureCb: SignatureCb
+  channelManager: E.Address // fixme
   nettingChannel: E.Address
   token: E.Address
 }
 
 export interface ServiceConfig {
-  signatureCb: SignatureCb
+  providerUrl: string
+  manager: E.Address
+  token: E.Address
+  hsToken: E.Address
+
+  chainId: E.ChainId
 }
 
-export interface Service {
+export interface Service extends Monitoring, RPC {
 
 }
+
+export type ServiceCreate = (cfg: ServiceConfig) => Service
