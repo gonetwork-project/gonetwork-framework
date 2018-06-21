@@ -46,10 +46,6 @@ export class Monitoring implements T.Monitoring {
         transactions: []
       }))
 
-    // FIXME: this is pretty ugly
-    this.on = this.on.bind(this)
-    this.off = this.off.bind(this)
-
     this._sub =
       this._monitorAddresses()
         .merge(
@@ -103,11 +99,11 @@ export class Monitoring implements T.Monitoring {
   //   .take(1)
   //   .toPromise()
 
-  on (event: C.BlockchainEventType, listener: (...args: any[]) => void) {
+  on = (event: C.BlockchainEventType, listener: (...args: any[]) => void) => {
     this._em.on(event, listener)
   }
 
-  off (event: C.BlockchainEventType, listener: (...args: any[]) => void) {
+  off = (event: C.BlockchainEventType, listener: (...args: any[]) => void) => {
     this._em.removeListener(event, listener)
   }
 
