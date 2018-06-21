@@ -80,7 +80,7 @@ export class Channel {
     this.peerState = peerState // channelState.ChannelStateSync
     this.myState = myState// channelState.ChannelStateSync
     this.channelAddress = channelAddress || message.EMPTY_20BYTE_BUFFER
-    this.openedBlock = message.TO_BN(currentBlock)
+    this.openedBlock = currentBlock
   }
 
   /**

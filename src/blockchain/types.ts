@@ -10,7 +10,7 @@ export interface TxInfo {
 export interface ContractTxConfig {
   signatureCb: (cb: (pk: E.PrivateKey) => void) => void
   request: (rpcBody: any, tx: Tx) => Promise<E.TxResult> // todo: add proper type
-  info: (from: E.Address, value?: E.Wei) => Promise<TxInfo> // probably better to ask for them
+  info: (from: E.Address, value?: E.Wei) => Promise<TxInfo> // probably better to just pass this info when calling a method
   chainId: E.ChainId
 
   channelManager: E.Address

@@ -2,7 +2,9 @@ import * as util from 'ethereumjs-util'
 import * as sjcl from 'sjcl'
 import * as abi from 'ethereumjs-abi'
 import { BN } from 'bn.js'
-import { Address, PrivateKey, Nonce, BlockNumber } from 'eth-types'
+import { Address, Nonce, BlockNumber } from 'eth-types'
+
+import { as } from '../utils'
 
 /**
  * @namespace message
@@ -214,7 +216,7 @@ export class Proof extends SignedMessage {
 
   constructor (options) {
     super(options)
-    this.nonce = TO_BN(options.nonce) || new util.BN(0)
+    this.nonce = as.Nonce(options.nonce || new util.BN(0))
     this.transferredAmount = TO_BN(options.transferredAmount) || new util.BN(0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
@@ -266,7 +268,7 @@ export class ProofMessage extends SignedMessage {
   constructor (options: Partial<ProofMessageOptions>) {
     super(options)
 
-    this.nonce = TO_BN(options.nonce) || new util.BN(0)
+    this.nonce = as.Nonce(options.nonce || new util.BN(0))
     this.transferredAmount = TO_BN(options.transferredAmount) || new util.BN(0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
@@ -331,7 +333,7 @@ export class Lock extends Hashable {
     super()
 
     this.amount = TO_BN(options.amount) || new util.BN(0)
-    this.expiration = TO_BN(options.expiration) || new util.BN(0)
+    this.expiration = as.BlockNumber(options.expiration || new util.BN(0))
     this.hashLock = options.hashLock || EMPTY_32BYTE_BUFFER
   }
 

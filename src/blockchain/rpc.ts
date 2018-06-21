@@ -2,18 +2,20 @@ import * as E from 'eth-types'
 import { BN } from 'bn.js'
 import { as, serializeRpcParam } from '../utils'
 
-export type CallSpec<Params extends {}, Out> = [Params, Out]
+export type CallSpec<Params extends ({} | null), Out> = [Params, Out]
 export type SupportedCalls = {
   getTransactionCount: CallSpec<{ address: E.Address }, BN>
+  getBlockNumber: CallSpec<null, E.BlockNumber>
 }
 
 // name, params, order
-export type ImplementationSpec<Params extends {}, Out> = [string, (keyof Params)[], (r: string) => Out]
+export type ImplementationSpec<Params extends ({} | null), Out> = [string, null | (keyof Params)[], ((r: string) => Out)]
 export type ImplementationSpecs = {
   [K in keyof SupportedCalls]: ImplementationSpec<SupportedCalls[K][0], SupportedCalls[K][1]>
 }
 
-export type Implementation<Params extends {}, Out> = (p: Params) => Promise<Out>
+export type Implementation<Params extends ({} | null), Out> =
+  Params extends {} ? (p: Params) => Promise<Out> : () => Promise<Out>
 export type Implementations = {
   [K in keyof SupportedCalls]: Implementation<SupportedCalls[K][0], SupportedCalls[K][1]>
 }
@@ -28,7 +30,8 @@ const nextId = () => {
 }
 
 export const partialImplementation: ImplementationSpecs = {
-  getTransactionCount: ['eth_getTransactionCount', ['address'], as.Nonce]
+  getTransactionCount: ['eth_getTransactionCount', ['address'], as.Nonce],
+  getBlockNumber: ['eth_blockNumber', null, as.BlockNumber]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Implementation<any, any>) =>
@@ -42,7 +45,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
         jsonrpc: '2.0',
         id: nextId(),
         method: spec[0],
-        params: spec[1]
+        params: (spec[1] || [])
           .map(a => serializeRpcParam(params[a]))
       })
     })
