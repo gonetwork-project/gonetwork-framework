@@ -5,7 +5,7 @@ import { EventEmitter } from 'events'
 
 import * as util from 'ethereumjs-util'
 
-import { decode } from './log-decoder'
+import { decode } from './blockchain-utils'
 
 import { as, add } from '../utils'
 
@@ -146,8 +146,7 @@ export class Monitoring implements T.EthMonitoring {
                       return Observable.of([] as T.BlockchainEvent[])
                     }
                   })
-                    // .do(x => console.log('LOGS', x))
-                    .map(logs => logs.map(decode))
+                    .map(decode)
                     .reduce((acc, logs) => ({
                       logs: acc.logs.concat(logs),
                       addresses: acc.addresses.concat(gs)

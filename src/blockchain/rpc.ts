@@ -30,10 +30,10 @@ export type ImplementationSpecs = {
 
 export type Implementation<Params extends ({} | null), Out> =
   Params extends {} ? (p: Params) => Promise<Out> : () => Promise<Out>
-export type Implementations = {
+export type EthRPC = {
   [K in keyof SupportedCalls]: Implementation<SupportedCalls[K][0], SupportedCalls[K][1]>
 }
-export type ImplementationsFn = (p: string) => Implementations
+export type ImplementationsFn = (p: string) => EthRPC
 
 // IMPLEMENTATION
 
@@ -60,10 +60,8 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
     })
       .then(res => res.status === 200 ?
         res.json().then((r: any) => {
-          // console.log(r)
           return spec[2](r.result)
-        })
-        : Promise.reject(res))
+        }) : Promise.reject(res))
   }
 
 const implementation: ImplementationsFn = (providerUrl: string, requestFn: typeof fetch = fetch) =>
@@ -71,6 +69,6 @@ const implementation: ImplementationsFn = (providerUrl: string, requestFn: typeo
     .reduce((acc, k) => {
       acc[k] = formRequestFn(providerUrl, requestFn, partialImplementation[k])
       return acc
-    }, {} as Implementations)
+    }, {} as EthRPC)
 
 export default implementation

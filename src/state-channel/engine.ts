@@ -7,7 +7,7 @@ import * as channelLib from './channel'
 import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
-import { BlockchainService } from '..'
+import { BlockchainServiceOld } from '..'
 import { BlockNumber } from 'eth-types'
 
 /**
@@ -45,15 +45,15 @@ export class Engine extends events.EventEmitter {
 
   address: Buffer
   signature: any
-  blockchain: BlockchainService
+  blockchain: BlockchainServiceOld
 
   /**
    * @constructror.
    * @param {Buffer} address - your ethereum address; ETH Address is merely the last 20 bytes of the keccak256 hash of the public key given the public private key pair.
    * @param {Function} signatureService - the callback that requests the privatekey for signing of messages.  This allows the user to store the private key in a secure store or other means
-   * @param {BlockchainService} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
+   * @param {BlockchainServiceOld} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
    */
-  constructor (address: Buffer, signatureService: Function, blockchainService: BlockchainService) {
+  constructor (address: Buffer, signatureService: Function, blockchainService: BlockchainServiceOld) {
     super()
 
     this.address = address

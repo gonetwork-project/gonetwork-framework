@@ -40,7 +40,7 @@ const HumanStandardTokenAbi = HumanStandardTokenContract.abi.reduce(function (r,
 }, {})
 
 /*** Class that provides a lightweight minimalist approach means to interact with the blockchain using promises over the contract ABI's*/
-export class BlockchainService implements T.BlockchainService {
+export class BlockchainServiceOld implements T.BlockchainService {
 
   chainId: E.ChainId
   signatureCallback: any
