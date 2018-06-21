@@ -1,15 +1,15 @@
 import * as E from 'eth-types'
 import { BN } from 'bn.js'
-import { as, serializeRpcParam } from '../utils'
+import { as, serializeRpcParam, serializeRpcParams } from '../utils'
 
 export type CallSpec<Params extends ({} | null), Out> = [Params, Out]
 export type SupportedCalls = {
-  getTransactionCount: CallSpec<{ address: E.Address }, BN>
+  getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, BN>
   getBlockNumber: CallSpec<null, E.BlockNumber>
 }
 
-// name, params, order
-export type ImplementationSpec<Params extends ({} | null), Out> = [string, null | (keyof Params)[], ((r: string) => Out)]
+// name, order, parse-result, defaults
+export type ImplementationSpec<Params extends ({} | null), Out> = [string, null | (keyof Params)[], ((r: string) => Out), null | Partial<Params>]
 export type ImplementationSpecs = {
   [K in keyof SupportedCalls]: ImplementationSpec<SupportedCalls[K][0], SupportedCalls[K][1]>
 }
@@ -30,13 +30,13 @@ const nextId = () => {
 }
 
 export const partialImplementation: ImplementationSpecs = {
-  getTransactionCount: ['eth_getTransactionCount', ['address'], as.Nonce],
-  getBlockNumber: ['eth_blockNumber', null, as.BlockNumber]
+  getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
+  getBlockNumber: ['eth_blockNumber', null, as.BlockNumber, null]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Implementation<any, any>) =>
-  (params: object) =>
-    requestFn(providerUrl, {
+  (params: object) => {
+    return requestFn(providerUrl, {
       method: 'POST',
       headers: {
         contentType: 'application/json'
@@ -46,7 +46,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
         id: nextId(),
         method: spec[0],
         params: (spec[1] || [])
-          .map(a => serializeRpcParam(params[a]))
+          .map(a => (params[a] && serializeRpcParam(params[a]) || spec[3][a]))
       })
     })
       .then(res => res.status === 200 ?
@@ -55,6 +55,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
           return spec[2](r.result)
         })
         : Promise.reject(res))
+  }
 
 const implementation: ImplementationsFn = (providerUrl: string, requestFn: typeof fetch = fetch) =>
   Object.keys(partialImplementation)

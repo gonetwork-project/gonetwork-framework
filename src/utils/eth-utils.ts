@@ -82,11 +82,10 @@ export const serializeRpcParam = (p: E.TxDataType): string | string[] => {
   } else if (BN.isBN(p)) {
     return `0x${p.toString(16)}`
   } else if (typeof p === 'string') {
-    console.log('WHAT', p)
-    // todo: string and boolean are not needed now
-    throw new Error('NOT_SUPPORTED')
+    // not used much - but we need it for DefaultBlock
+    return p
   } else {
-    console.log('WHAT?', p)
+    // todo: boolean are not needed now
     throw new Error('NOT_SUPPORTED')
     // todo: make sure proper according to spec
     // return p ? '0x1' : '0x0'

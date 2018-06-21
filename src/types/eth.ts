@@ -38,7 +38,7 @@ declare module 'eth-types' {
   export type GasLimit = BN & { __GasLimit__: true }
   export type GasPrice = Gwei & { __GasPrice__: true }
 
-  // we group them in one place to easily add all required functionalieties
+  // we group them in one place to easily add all required functionalities
 
   export interface BasicRaw {
     Address: Buffer
@@ -71,6 +71,10 @@ declare module 'eth-types' {
     GasLimit: GasLimit
     GasPrice: GasPrice
   }
+
+  // https://github.com/ethereum/wiki/wiki/JSON-RPC#the-default-block-parameter
+  // conversion to hex ath boundary of the system
+  export type DefaultBlock = BlockNumber | 'earliest' | 'latest' | 'pending'
 
   // Tx
   export type TxDataType = Buffer | BN | Buffer[] | string | boolean
