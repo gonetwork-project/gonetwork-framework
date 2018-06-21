@@ -1,4 +1,6 @@
+import { Service, ServiceConfig } from './types'
 
-export class BlockchainService {
+export const createService = (cfg: ServiceConfig): Service => {
 
+  return {} as Service
 }

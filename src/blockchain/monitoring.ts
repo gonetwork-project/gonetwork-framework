@@ -9,7 +9,8 @@ import { decode } from './blockchain-utils'
 
 import { as, add } from '../utils'
 
-import * as T from '../types'
+import * as C from '../types/contracts'
+import * as T from './types'
 import * as E from 'eth-types'
 
 // todo: make it configurable
@@ -24,8 +25,8 @@ export interface State {
   transactions: E.Address[]
 }
 
-export class Monitoring implements T.EthMonitoring {
-  private _cfg: T.EthMonitoringConfig
+export class Monitoring implements T.Monitoring {
+  private _cfg: T.MonitoringConfig
   private _em = new EventEmitter()
   private _state: Promise<State>
   private _sub: any
@@ -34,7 +35,7 @@ export class Monitoring implements T.EthMonitoring {
   private _forceMonitoring = new Subject<boolean>()
   private _toSubscribe: E.Address[] = []
 
-  constructor (cfg: T.EthMonitoringConfig) {
+  constructor (cfg: T.MonitoringConfig) {
     this._cfg = cfg
     this._state = cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress)
       .then(s => s ? JSON.parse(s) : ({
@@ -87,22 +88,23 @@ export class Monitoring implements T.EthMonitoring {
   }
 
   transactionReceipt = (tx) =>
-    Observable.timer(0, TRANSACTION_INTERVAL)
-      .switchMap(() =>
-        Observable.defer(() => this._cfg.getTransactionReceipt(tx))
-          .catch((err) => {
-            console.log('TRANSACTION_MONITORING_ERROR', err)
-            return Observable.empty()
-          })
-      )
-      .take(1)
-      .toPromise()
+    Promise.reject('NOT_SUPPORTED')
+    // Observable.timer(0, TRANSACTION_INTERVAL)
+    //   .switchMap(() =>
+    //     Observable.defer(() => this._cfg.rpc.getTransactionReceipt(tx))
+    //       .catch((err) => {
+    //         console.log('TRANSACTION_MONITORING_ERROR', err)
+    //         return Observable.empty()
+    //       })
+    //   )
+    //   .take(1)
+    //   .toPromise()
 
-  on (event: T.BlockchainEventType, listener: (...args: any[]) => void) {
+  on (event: C.BlockchainEventType, listener: (...args: any[]) => void) {
     this._em.on(event, listener)
   }
 
-  off (event: T.BlockchainEventType, listener: (...args: any[]) => void) {
+  off (event: C.BlockchainEventType, listener: (...args: any[]) => void) {
     this._em.removeListener(event, listener)
   }
 
@@ -113,7 +115,7 @@ export class Monitoring implements T.EthMonitoring {
   private _monitorBlockNumber = () =>
     Observable.timer(0, LOGS_INTERVAL)
       .switchMap(() =>
-        Observable.defer(() => this._cfg.blockNumber())
+        Observable.defer(() => this._cfg.rpc.blockNumber())
           .retryWhen(errs => errs.delay(1000))
       )
       .do(x => x !== this._blockNumber() && this._blockNumberSub.next(x))
@@ -141,9 +143,15 @@ export class Monitoring implements T.EthMonitoring {
                    // const bn = new util.BN(xs.key)
                     const bn = as.BlockNumber(xs.key)
                     if (bn.lt(blockNumber)) {
-                      return this._cfg.getLogs(add(bn, as.BlockNumber(1)), blockNumber, gs)
+                      return this._cfg.rpc.getLogs({
+                        config: {
+                          fromBlock: add(bn, as.BlockNumber(1)),
+                          toBlock: blockNumber,
+                          address: gs
+                        }
+                      })
                     } else {
-                      return Observable.of([] as T.BlockchainEvent[])
+                      return Observable.of([] as C.BlockchainEvent[])
                     }
                   })
                     .map(decode)
@@ -175,7 +183,9 @@ export class Monitoring implements T.EthMonitoring {
       .mergeMap(t =>
         Observable.timer(0, TRANSACTION_INTERVAL)
           .switchMap(() =>
-            Observable.defer(() => this._cfg.getTransactionReceipt(t))
+            // todo
+            // Observable.defer(() => this._cfg.rpc.getTransactionReceipt(t))
+            Observable.empty()
               .catch((err) => {
                 console.log('TRANSACTION_MONITORING_ERROR', err)
                 return Observable.empty()

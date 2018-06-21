@@ -7,8 +7,6 @@ import { BN } from 'bn.js'
 export { BN }
 export * from './contracts'
 
-import * as E from 'eth-types'
-
 // broken means irrecoverable error
 export type Status = 'initializing' // loading persistent state
   | 'connecting' | 'connected' | 'broken' | 'disposed'
@@ -80,37 +78,4 @@ export interface SendQueueConfig {
 export interface SendQueue {
   // true indicates that message has been persisted
   send: (i: SendQueueItem) => Promise<Boolean>
-}
-
-export interface EthMonitoringInfo {
-  blockNumber: () => Promise<E.BlockNumber>
-  getLogs: (fromBlock: E.BlockNumber,
-    toBlock: E.BlockNumber,
-    address: E.Address[])
-    => Promise<C.BlockchainEvent[]>
-  getTransactionReceipt: (tx: E.TxHash) =>
-    Promise<any>
-}
-
-export interface EthMonitoringConfig extends EthMonitoringInfo {
-  channelManagerAddress: E.Address
-  tokenAddresses: E.Address[]
-  storage: Storage
-}
-export interface EthMonitoring {
-
-  subscribeAddress: (ch: E.Address) => Promise<Boolean>
-  unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
-
-  transactionReceipt: (tx: E.TxHash) => Promise<Boolean>
-
-  // split per Event type and enforce callback types
-  on: (e: C.BlockchainEventType, listener: (...args: any[]) => void) => void
-  off: (e: C.BlockchainEventType, listener: (...args: any[]) => void) => void
-
-  dispose: () => void
-}
-
-export interface BlockchainService {
-
 }
