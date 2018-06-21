@@ -38,6 +38,8 @@ declare module 'eth-types' {
   export type GasLimit = BN & { __GasLimit__: true }
   export type GasPrice = Gwei & { __GasPrice__: true }
 
+  export type Topic = Buffer
+
   // we group them in one place to easily add all required functionalities
 
   export interface BasicRaw {

@@ -84,17 +84,24 @@ export const serializeRpcParam = (p: E.TxDataType): string | string[] => {
   } else if (typeof p === 'string') {
     // not used much - but we need it for DefaultBlock
     return p
-  } else {
+  } else if (typeof p === 'boolean') {
+    console.log(p)
     // todo: boolean are not needed now
-    throw new Error('NOT_SUPPORTED')
+    throw new Error('NOT_SUPPORTED_BOOL')
     // todo: make sure proper according to spec
     // return p ? '0x1' : '0x0'
+  } else if (typeof p === 'object') {
+    // if none of the basic than richer object - for example eth_getLogs
+    return serializeRpcParams(p) as any
+  } else {
+    throw new Error('NOT_SUPPORTED')
   }
 }
 
 export const serializeRpcParams = (ps: object) =>
   Object.keys(ps)
-    .reduce((acc, p) => {
-      acc[p] = serializeRpcParam(ps[p])
+    .reduce((acc, k) => {
+      // const p = ps[k]
+      acc[k] = serializeRpcParam(ps[k])
       return acc
     }, {} as { [K: string]: string | string[]})

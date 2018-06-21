@@ -3,8 +3,6 @@ import * as E from 'eth-types'
 
 import { as } from '../utils/eth-utils'
 
-// todo will break in a browser environment
-(global as any).fetch = require('node-fetch')
 export interface Account {
   addressStr: string, privateKeyStr: string,
   address: E.Address, privateKey: E.PrivateKey

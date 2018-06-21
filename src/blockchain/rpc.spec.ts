@@ -1,27 +1,52 @@
-// this is not ideal for unit tests as it requires running ganache-cli and/or contacts infura
-// these tests should be only used when working on eth node and RPC
-
 import rpcCreate from './rpc'
-import * as base from './spec.base'
 import { as } from '../utils'
 
-const [acc] = base.getAccounts()
+// todo will break in a browser environment
+(global as any).fetch = require('node-fetch')
 
+// const [acc] = base.getAccounts()
 // const rpc = rpcCreate('http://localhost:8545')
+
 const rpc = rpcCreate('https://ropsten.infura.io')
-const inuraRegistry = as.Address(new Buffer('9b50007fa72caf06012daf4029b5f518087555d6', 'hex'))
+const managerAdd = as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex'))
 
 test('block-number', () =>
-  rpc.getBlockNumber()
+  rpc.blockNumber()
     .then(x => {
+      console.log(x.toString())
       expect(x.gte(1)).toBe(true)
     })
 )
 
 test('transactions-count', () =>
-  rpc.getTransactionCount({ address: inuraRegistry })
+  rpc.getTransactionCount({ address: managerAdd })
     .then(x => {
-      console.log(x.toString())
-      expect(x.gt(0)).toBe(true)
+      expect(x.gte(28)).toBe(true)
+    })
+)
+
+test('logs -- all', () =>
+  rpc.getLogs({
+    config: {
+      address: managerAdd,
+      fromBlock: as.BlockNumber(0),
+      toBlock: as.BlockNumber('latest')
+    }
+  })
+    .then(x => {
+      expect(x.length).toBeGreaterThanOrEqual(75)
+    })
+)
+
+test('logs -- few', () =>
+  rpc.getLogs({
+    config: {
+      address: managerAdd,
+      fromBlock: as.BlockNumber('0x2f06c0'),
+      toBlock: as.BlockNumber('0x2f074b') // a block number the code was written
+    }
+  })
+    .then(x => {
+      expect(x.length).toBe(4) // logs are immutable
     })
 )

@@ -2,14 +2,25 @@ import * as E from 'eth-types'
 import { BN } from 'bn.js'
 import { as, serializeRpcParam, serializeRpcParams } from '../utils'
 
+// very light implementation of: https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getlogs
+
+export interface LogsParams {
+  fromBlock: E.DefaultBlock,
+  toBlock: E.DefaultBlock,
+  address?: E.Address | E.Address[]
+  topics?: E.Topic[]
+  // blockhash?: never // future
+}
+
 export type CallSpec<Params extends ({} | null), Out> = [Params, Out]
 export type SupportedCalls = {
   getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, BN>
-  getBlockNumber: CallSpec<null, E.BlockNumber>
+  blockNumber: CallSpec<null, E.BlockNumber>
+  getLogs: CallSpec<{ config: LogsParams }, any[]>
 }
 
 // name, order, parse-result, defaults
-export type ImplementationSpec<Params extends ({} | null), Out> = [string, null | (keyof Params)[], ((r: string) => Out), null | Partial<Params>]
+export type ImplementationSpec<Params extends ({} | null), Out> = [string, null | (keyof Params)[], ((r: any) => Out), null | Partial<Params>]
 export type ImplementationSpecs = {
   [K in keyof SupportedCalls]: ImplementationSpec<SupportedCalls[K][0], SupportedCalls[K][1]>
 }
@@ -31,7 +42,8 @@ const nextId = () => {
 
 export const partialImplementation: ImplementationSpecs = {
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
-  getBlockNumber: ['eth_blockNumber', null, as.BlockNumber, null]
+  blockNumber: ['eth_blockNumber', null, as.BlockNumber, null],
+  getLogs: ['eth_getLogs', ['config'], x => x, null]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Implementation<any, any>) =>
@@ -51,7 +63,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
     })
       .then(res => res.status === 200 ?
         res.json().then((r: any) => {
-          console.log(r)
+          // console.log(r)
           return spec[2](r.result)
         })
         : Promise.reject(res))
