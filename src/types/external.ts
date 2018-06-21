@@ -9,7 +9,7 @@ declare module 'bn.js' {
 
   export class BN {
     constructor (n: number | string | number[] | Buffer, base?: number, endian?: Endianness)
-    static isBN (b: any): boolean
+    static isBN (b: any): b is BN
     clone (): BN
     toString (base?: number, length?: number): string
     toNumber (): number
@@ -29,7 +29,7 @@ declare module 'bn.js' {
     gt (b: any): boolean
     gte (b: any): boolean
     eq (b: any): boolean
-    isBN (b: any): boolean
+    isBN (b: any): b is BN
 
     neg (): BN
     abs (): BN

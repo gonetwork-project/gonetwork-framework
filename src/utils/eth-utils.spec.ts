@@ -1,4 +1,4 @@
-import { addressToHex, as, util, BN } from './eth-utils'
+import { addressToHex, as, castNum, BN } from './eth-utils'
 
 // this is a bit crazy ideally it would not be needed
 test('Address conversions', () => {
@@ -17,4 +17,12 @@ test('Address conversions throws', () => {
 
   expect(() => as.AddressHex(addressStr)).toThrow()
   expect(() => addressToHex(address)).toThrow()
+})
+
+test('castNum', () => {
+  const n = new BN(42)
+  expect(castNum(n).eq(n)).toBe(true)
+  expect(castNum(42).eq(n)).toBe(true)
+  expect(castNum('0x2a').eq(n)).toBe(true)
+  // expect(castNum(42).eq(n)).toBe(true)
 })

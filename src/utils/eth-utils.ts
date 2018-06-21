@@ -24,8 +24,14 @@ export const add = <T extends BN> (a: T, b: T) => a.add(b) as T
 export const add1 = <T extends BN> (n: T) => n.add(new BN(1)) as T
 
 const cast = <O, N extends O> (v: O) => v as N
-const castNum = <O extends (BN | number | string), N extends O> (v: O) =>
-  (BN.isBN(v) ? v : new BN(v as number)) as N
+export const castNum = <O extends BN, N extends BN> (v: O | number | string) => {
+  if (BN.isBN(v)) return (v as any) as N
+  else if (typeof v === 'number') {
+    return new BN(v) as N
+  } else {
+    return new BN(util.stripHexPrefix(v as string), 16) as N
+  }
+}
 
 export const castToHex = <O extends (Buffer | string), N extends O> (
   isValid: (x: string) => boolean,
@@ -66,3 +72,5 @@ export const as: {
   Gwei: castNum,
   Wei: castNum
 }
+
+// export const isBN = (n: any): n is BN => BN.isBN(n)

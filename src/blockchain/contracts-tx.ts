@@ -7,6 +7,7 @@ import * as util from 'ethereumjs-util'
 import { as } from '../utils'
 
 import * as C from '../types/contracts'
+import { ContractTxConfig } from './types'
 
 let id = 0
 const txToRPC = (tx: Tx) => ({
@@ -15,23 +16,6 @@ const txToRPC = (tx: Tx) => ({
   'params': [util.addHexPrefix(tx.serialize().toString('hex'))],
   id: ++id // todo: improve (maybe uuid? or some tx hash)
 })
-
-export interface TxInfo {
-  nonce: E.Nonce
-  gasLimit: E.GasLimit
-  gasPrice: E.GasPrice
-}
-
-export interface ContractTxConfig {
-  signatureCb: (cb: (pk: E.PrivateKey) => void) => void
-  request: (rpcBody: any, tx: Tx) => Promise<E.TxResult> // todo: add proper type
-  info: (from: E.Address, value?: E.Wei) => Promise<TxInfo>
-  chainId: E.ChainId
-
-  channelManager: E.Address
-  nettingChannel: E.Address
-  token: E.Address
-}
 
 export default (cfg: ContractTxConfig) => {
 

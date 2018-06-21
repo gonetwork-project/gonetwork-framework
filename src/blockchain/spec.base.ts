@@ -3,6 +3,7 @@ import * as E from 'eth-types'
 
 import { as } from '../utils/eth-utils'
 
+(global as any).fetch = require('node-fetch')
 export interface Account {
   addressStr: string, privateKeyStr: string,
   address: E.Address, privateKey: E.PrivateKey
