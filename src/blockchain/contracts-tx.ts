@@ -1,4 +1,4 @@
-import * as txUtils from './tx-utils'
+import * as blUtils from './blockchain-utils'
 import * as Tx from 'ethereumjs-tx'
 import * as E from 'eth-types'
 
@@ -7,14 +7,13 @@ import * as util from 'ethereumjs-util'
 import { as } from '../utils'
 
 import * as C from '../types/contracts'
-import { ContractTxConfig, TxInfo } from './types'
+import { ContractTxConfig } from './types'
 
-let id = 0
 const txToRPC = (tx: Tx) => ({
   'jsonrpc': '2.0',
   'method': 'eth_sendRawTransaction',
   'params': [util.addHexPrefix(tx.serialize().toString('hex'))],
-  id: ++id // todo: improve (maybe uuid? or some tx hash)
+  id: blUtils.nextId()
 })
 
 export default (cfg: ContractTxConfig) => {
@@ -40,8 +39,8 @@ export default (cfg: ContractTxConfig) => {
   }
 
   return {
-    token: paramsToRequest(C.TokenOrdIO, txUtils.paramsToTx.token, cfg.token) as C.TxRequest<C.TokenIO>,
-    manager: paramsToRequest(C.ManagerOrdIO, txUtils.paramsToTx.manager, cfg.channelManager) as C.TxRequest<C.ManagerIO>,
-    channel: paramsToRequest(C.ChannelOrdIO, txUtils.paramsToTx.channel, cfg.nettingChannel) as C.TxRequest<C.ChannelIO>
+    token: paramsToRequest(C.TokenOrdIO, blUtils.paramsToTx.token, cfg.token) as C.TxRequest<C.TokenIO>,
+    manager: paramsToRequest(C.ManagerOrdIO, blUtils.paramsToTx.manager, cfg.channelManager) as C.TxRequest<C.ManagerIO>,
+    channel: paramsToRequest(C.ChannelOrdIO, blUtils.paramsToTx.channel, cfg.nettingChannel) as C.TxRequest<C.ChannelIO>
   }
 }

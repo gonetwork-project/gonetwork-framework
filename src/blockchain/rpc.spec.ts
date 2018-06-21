@@ -25,7 +25,7 @@ test('transactions-count', () =>
     })
 )
 
-test('logs -- all', () =>
+test.skip('logs -- all', () =>
   rpc.getLogs({
     config: {
       address: managerAdd,
@@ -43,10 +43,12 @@ test('logs -- few', () =>
     config: {
       address: managerAdd,
       fromBlock: as.BlockNumber('0x2f06c0'),
-      toBlock: as.BlockNumber('0x2f074b') // a block number the code was written
+      toBlock: as.BlockNumber('0x2f074b')
     }
   })
     .then(x => {
       expect(x.length).toBe(4) // logs are immutable
+      expect(x[0]._type).toBe('ChannelDeleted')
+      expect(x[1]._type).toBe('ChannelNew')
     })
 )

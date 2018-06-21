@@ -1,7 +1,4 @@
-
-import { EventEmitter } from 'events'
-
-// import { BlockchainEventType, BlockchainEvent } from './contracts'
+// todo - trim this file to minimum
 
 import * as C from './contracts'
 

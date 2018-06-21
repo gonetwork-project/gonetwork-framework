@@ -1,9 +1,11 @@
 import * as E from 'eth-types'
 import { BN } from 'bn.js'
-import { as, serializeRpcParam, serializeRpcParams } from '../utils'
+import { as, serializeRpcParam } from '../utils'
+import { decode, nextId } from './blockchain-utils'
+
+import * as T from '../types'
 
 // very light implementation of: https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getlogs
-
 export interface LogsParams {
   fromBlock: E.DefaultBlock,
   toBlock: E.DefaultBlock,
@@ -16,7 +18,8 @@ export type CallSpec<Params extends ({} | null), Out> = [Params, Out]
 export type SupportedCalls = {
   getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, BN>
   blockNumber: CallSpec<null, E.BlockNumber>
-  getLogs: CallSpec<{ config: LogsParams }, any[]>
+  // please mind only events of our interest / if needed we can make generic
+  getLogs: CallSpec<{ config: LogsParams }, T.BlockchainEvent[]>
 }
 
 // name, order, parse-result, defaults
@@ -32,18 +35,12 @@ export type Implementations = {
 }
 export type ImplementationsFn = (p: string) => Implementations
 
-let id = 0
-const nextId = () => {
-  if (id === Number.MAX_SAFE_INTEGER) {
-    id = 0
-  }
-  return ++id
-}
+// IMPLEMENTATION
 
 export const partialImplementation: ImplementationSpecs = {
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
   blockNumber: ['eth_blockNumber', null, as.BlockNumber, null],
-  getLogs: ['eth_getLogs', ['config'], x => x, null]
+  getLogs: ['eth_getLogs', ['config'], decode, null]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Implementation<any, any>) =>

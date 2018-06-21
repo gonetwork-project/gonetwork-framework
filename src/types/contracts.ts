@@ -7,9 +7,9 @@ export * from './__GEN__/ChannelManagerContract'
 // #endregion GENERATED
 
 import { TxParamsRequired, TxParamsWithGas, TxResult, Address, Wei } from 'eth-types'
-import { ChannelEvents } from './__GEN__/NettingChannelContract'
-import { ManagerEvents } from './__GEN__/ChannelManagerContract'
-import { TokenEvents } from './__GEN__/HumanStandardToken'
+import { ChannelEvents, ChannelEventsToArgs } from './__GEN__/NettingChannelContract'
+import { ManagerEvents, ManagerEventsToArgs } from './__GEN__/ChannelManagerContract'
+import { TokenEvents, TokenEventsToArgs } from './__GEN__/HumanStandardToken'
 
 export type Method<In, Out> = [In, Out]
 
@@ -42,5 +42,8 @@ export type TxRequest<T extends { [K: string]: [any, any] }> = {
 }
 
 export type BlockchainEventType = ChannelEvents | ManagerEvents | TokenEvents
-// TODO: FIXME
-export type BlockchainEvent = any
+
+export type ExtractEvents<E, K extends keyof E> = E[K]
+
+export type BlockchainEvent = ExtractEvents<ChannelEventsToArgs, ChannelEvents>
+  | ExtractEvents<ManagerEventsToArgs, ManagerEvents> | ExtractEvents<TokenEventsToArgs, TokenEvents>

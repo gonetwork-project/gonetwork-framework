@@ -1,4 +1,4 @@
-import * as Tx from './tx-utils'
+import * as Tx from './blockchain-utils'
 import { as } from '../utils/eth-utils'
 
 import * as base from './spec.base'
