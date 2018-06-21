@@ -4,15 +4,15 @@ import * as base from './spec.base'
 import { as, util } from '../utils'
 
 const [acc1, acc2] = base.getAccounts()
+const [limit, price] = [as.GasLimit(20000), as.GasPrice(2000000)]
 
 const contractsTx = createContracts({
   chainId: 1337,
   signatureCb: (fn) => fn(acc1.privateKey),
   info: () => Promise.resolve({
     nonce: as.Nonce(3),
-    // todo: this is pretty weird - probably needs to be hidden in implementation
-    gasLimit: '0x' + as.GasLimit(20000).toString(16) as any,
-    gasPrice: '0x' + as.GasPrice(2000000).toString(16) as any
+    gasLimit: limit,
+    gasPrice: price
   }),
 
   // mock request
@@ -29,12 +29,9 @@ test('contracts-tx example', (done) => {
     _value: as.Wei(20000)
   }, acc1.address)
     .then(r => {
-      console.log(r.result)
       expect(r.result[0].id).toBe(1)
-      expect(as.GasLimit('0x' + r.result[1].gasLimit.toString('hex')).toString())
-        .toBe(as.GasLimit(20000).toString())
-      expect(as.GasPrice('0x' + r.result[1].gasPrice.toString('hex')).toString())
-        .toBe(as.GasLimit(2000000).toString())
+      expect(as.GasLimit(r.result[1].gasLimit).eq(limit)).toBe(true)
+      expect(as.GasLimit(r.result[1].gasPrice).eq(price)).toBe(true)
       done()
     })
 })

@@ -1,6 +1,6 @@
 import * as E from 'eth-types'
 import { BN } from 'bn.js'
-import { as } from '../utils'
+import { as, serializeRpcParam } from '../utils'
 
 export type CallSpec<Params extends {}, Out> = [Params, Out]
 export type SupportedCalls = {
@@ -27,16 +27,6 @@ const nextId = () => {
   return ++id
 }
 
-const serializeParam = (p: Buffer | BN | string) => {
-  if (p instanceof Buffer) {
-    return `0x${p.toString('hex')}`
-  } else if (BN.isBN(p)) {
-    return `0x${BN.toString()}`
-  } else {
-    return p
-  }
-}
-
 export const partialImplementation: ImplementationSpecs = {
   getTransactionCount: ['eth_getTransactionCount', ['address'], as.Nonce]
 }
@@ -53,7 +43,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
         id: nextId(),
         method: spec[0],
         params: spec[1]
-          .map(a => serializeParam(params[a]))
+          .map(a => serializeRpcParam(params[a]))
       })
     })
       .then(res => res.status === 200 ?

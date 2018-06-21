@@ -73,4 +73,29 @@ export const as: {
   Wei: castNum
 }
 
-// export const isBN = (n: any): n is BN => BN.isBN(n)
+// todo: add test https://github.com/ethereum/wiki/wiki/JSON-RPC#hex-value-encoding
+export const serializeRpcParam = (p: E.TxDataType): string | string[] => {
+  if (Array.isArray(p)) {
+    return p.map(b => `0x${b.toString('hex')}`)
+  } else if (p instanceof Buffer) {
+    return `0x${p.toString('hex')}`
+  } else if (BN.isBN(p)) {
+    return `0x${p.toString(16)}`
+  } else if (typeof p === 'string') {
+    console.log('WHAT', p)
+    // todo: string and boolean are not needed now
+    throw new Error('NOT_SUPPORTED')
+  } else {
+    console.log('WHAT?', p)
+    throw new Error('NOT_SUPPORTED')
+    // todo: make sure proper according to spec
+    // return p ? '0x1' : '0x0'
+  }
+}
+
+export const serializeRpcParams = (ps: object) =>
+  Object.keys(ps)
+    .reduce((acc, p) => {
+      acc[p] = serializeRpcParam(ps[p])
+      return acc
+    }, {} as { [K: string]: string | string[]})

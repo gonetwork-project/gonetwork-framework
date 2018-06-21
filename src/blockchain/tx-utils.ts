@@ -3,22 +3,16 @@ import * as Tx from 'ethereumjs-tx'
 import * as util from 'ethereumjs-util'
 import * as abi from 'ethereumjs-abi'
 
-import { CHAIN_ID, addressToHex } from '../utils'
+import { CHAIN_ID, serializeRpcParam, serializeRpcParams } from '../utils'
 
 import * as C from '../types/contracts'
 import * as E from 'eth-types'
-
-export const castAddressOrMany = (v) => {
-  if (Array.isArray(v)) return v.map(a => addressToHex(a))
-  return addressToHex(v)
-}
 
 const encodeData = (name: string, types: string[], order: string[], data: E.TxParams[]) => {
   return util.toBuffer([
     '0x',
     abi.methodID(name, types).toString('hex'),
-    abi.rawEncode(types, order.map((o, idx) => types[idx].startsWith('addr') ?
-      castAddressOrMany(data[o]) : data[o]))
+    abi.rawEncode(types, order.map(o => serializeRpcParam(data[o])))
   ].join(''))
 }
 
@@ -35,7 +29,7 @@ const expandParamsToTx = (order: any, types: any, defaultFn: typeof txParamsWith
       acc[k] = pr => data => {
         // console.log(pr, data)
         const d = data ? encodeData(k, types[k], order[k], data) : null
-        const tx = (defaultFn as any)(d, pr)
+        const tx = (defaultFn as any)(d, serializeRpcParams(pr))
         return new Tx(tx)
       }
       return acc

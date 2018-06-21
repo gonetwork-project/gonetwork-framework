@@ -7,7 +7,7 @@ import * as util from 'ethereumjs-util'
 import { as } from '../utils'
 
 import * as C from '../types/contracts'
-import { ContractTxConfig } from './types'
+import { ContractTxConfig, TxInfo } from './types'
 
 let id = 0
 const txToRPC = (tx: Tx) => ({
@@ -35,7 +35,6 @@ export default (cfg: ContractTxConfig) => {
               cfg.signatureCb(pk => tx.sign(pk))
               return cfg.request(txToRPC(tx), tx)
             })
-            .then()
         return acc
       }, {} as { [k: string]: C.TxRequest<any> }) as any // todo: ideally no any cast
   }
