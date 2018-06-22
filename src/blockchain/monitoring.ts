@@ -136,7 +136,6 @@ export class Monitoring implements T.Monitoring {
                       addresses: acc.addresses.concat(gs)
                     }), { logs: [] as any, addresses: [] as E.Address[] })
                 ))
-              .do(x => console.log('LOGS'))
               .do(({ logs, addresses }) => {
                 // everything here is done synchronously so top most switchMap will not terminate it
                 logs.forEach(l => this._em.emit(l._type, l))

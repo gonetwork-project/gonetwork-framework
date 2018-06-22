@@ -45,11 +45,11 @@ export type SupportedCalls = {
   // please mind only events of our interest and stripped from any add / if needed please make generic
   getLogs: EthIOSpec<LogsParams, T.BlockchainEvent[]>
   // Tx
-  getTransactionCount: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
+  getTransactionCount: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, E.Nonce>
   getTransactionReceipt: EthIOSpec<E.TxHash, E.TxReceipt | null>
   sendRawTransaction: EthIOSpec<E.TxRaw, E.TxHash>
   call: EthIOSpec<{
-    params: E.TxConstParams, blockNumber: E.DefaultBlock
+    params: E.TxConstParams, defaultBlock?: E.DefaultBlock
   }, Buffer>,
   estimateGas: EthIOSpec<E.TxParams, E.Gas>
   gasPrice: EthIOSpec<null, E.GasPrice>
@@ -76,7 +76,7 @@ export interface TxInfo {
 }
 
 export interface ContractTxConfig {
-  rpc: Pick<RPC, 'sendRawTransaction' | 'estimateGas' | 'gasPrice'>
+  rpc: Pick<RPC, 'sendRawTransaction' | 'estimateGas' | 'gasPrice' | 'call'>
   chainId: E.ChainId
   signatureCb: SignatureCb
 }

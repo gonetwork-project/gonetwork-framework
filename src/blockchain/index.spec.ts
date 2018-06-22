@@ -2,7 +2,6 @@ import { Observable } from 'rxjs'
 
 import { serviceCreate } from './index'
 import { config } from './spec.base'
-import { CHAIN_ID } from '../utils'
 import { Service } from './types'
 
 const cfg = config()

@@ -15,7 +15,7 @@ export const partialImplementation: B.ImplementationSpecs = {
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
   getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null],
   sendRawTransaction: ['eth_sendRawTransaction', [], x => x, null],
-  call: ['eth_call', ['params', 'blockNumber'], x => x, null],
+  call: ['eth_call', ['params', 'defaultBlock'], x => x, { defaultBlock: 'latest' }],
   estimateGas: ['eth_estimateGas', [], as.Gas, null],
   gasPrice: ['eth_gasPrice', null, as.GasPrice, null]
 }
