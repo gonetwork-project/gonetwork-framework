@@ -16,7 +16,8 @@ export const partialImplementation: B.ImplementationSpecs = {
   getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null],
   sendRawTransaction: ['eth_sendRawTransaction', [], x => x, null],
   call: ['eth_call', ['params', 'blockNumber'], x => x, null],
-  estimateGas: ['eth_estimateGas', ['params', 'blockNumber'], x => x, null]
+  estimateGas: ['eth_estimateGas', [], as.Gas, null],
+  gasPrice: ['eth_gasPrice', null, as.GasPrice, null]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPCCall<any, any>) =>
@@ -39,6 +40,10 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPC
     })
       .then(res => res.status === 200 ?
         res.json().then((r: any) => {
+          if (r.error) {
+            return Promise.reject(r)
+          }
+          console.log(spec[0], r)
           return spec[2](r.result)
         }) : Promise.reject(res))
   }

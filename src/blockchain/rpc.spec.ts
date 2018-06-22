@@ -2,9 +2,6 @@ import rpcCreate from './rpc'
 import { as } from '../utils'
 import { config } from './spec.base'
 
-// todo will break in a browser environment
-(global as any).fetch = require('node-fetch')
-
 const cfg = config()
 
 const rpc = rpcCreate(cfg.providerUrl)
@@ -56,4 +53,9 @@ test('tx-receipt -- real tx', () =>
 test('tx-receipt -- not real tx', () =>
   rpc.getTransactionReceipt(cfg.txHashFake)
     .then(x => expect(x).toBe(null))
+)
+
+test('gas-price', () =>
+  rpc.gasPrice()
+    .then(x => expect(x.gt(0)).toBe(true))
 )

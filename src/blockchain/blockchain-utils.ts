@@ -42,7 +42,8 @@ const expandParamsToTx = (order: any, types: any, defaultFn: typeof txParamsWith
         // console.log(pr, data)
         const d = data ? encodeData(k, types[k], order[k], data) : null
         const tx = (defaultFn as any)(d, serializeRpcParams(pr))
-        return new Tx(tx)
+        return tx
+        // return new Tx(tx)
       }
       return acc
     }, {} as { [k: string]: C.CreateTxParams<any, any> })

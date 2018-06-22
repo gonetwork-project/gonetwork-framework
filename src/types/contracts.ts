@@ -38,7 +38,7 @@ export type FunctionConstCall<T extends { [K: string]: [any, any] }, Out> = {
 }
 
 export type TxRequest<T extends { [K: string]: [any, any] }> = {
-  [K in keyof T]: (data: T[K][0], from: Address, value?: Wei) => Promise<TxResult<T[K][1]>>
+  [K in keyof T]: (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<TxResult<T[K][1]>>
 }
 
 export type ExtractEvents<E, K extends keyof E> = E[K]

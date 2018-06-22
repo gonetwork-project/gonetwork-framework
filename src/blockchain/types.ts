@@ -14,6 +14,7 @@ export interface MonitoringConfig {
 }
 export interface Monitoring {
   blockNumbers: () => Observable<E.BlockNumber>
+  gasPrice: () => Promise<E.GasPrice>
 
   subscribeAddress: (ch: E.Address) => Promise<Boolean>
   unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
@@ -39,9 +40,6 @@ export interface LogsParams {
 }
 
 export type EthIOSpec<Params extends ({} | null), Out> = [Params, Out]
-export type CallSpec<T> = EthIOSpec<{
-  params: E.TxConstParams, blockNumber: E.DefaultBlock
-}, T>
 export type SupportedCalls = {
   blockNumber: EthIOSpec<null, E.BlockNumber>
   // please mind only events of our interest and stripped from any add / if needed please make generic
@@ -50,8 +48,11 @@ export type SupportedCalls = {
   getTransactionCount: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
   getTransactionReceipt: EthIOSpec<E.TxHash, E.TxReceipt | null>
   sendRawTransaction: EthIOSpec<E.TxParams, E.TxHash>
-  call: CallSpec<Buffer>,
-  estimateGas: CallSpec<E.Gas>
+  call: EthIOSpec<{
+    params: E.TxConstParams, blockNumber: E.DefaultBlock
+  }, Buffer>,
+  estimateGas: EthIOSpec<string, E.Gas>
+  gasPrice: EthIOSpec<null, E.GasPrice>
 }
 
 // name, order, parse-result, defaults
@@ -75,13 +76,9 @@ export interface TxInfo {
 }
 
 export interface ContractTxConfig {
-  request: (rpcBody: any, tx: Tx) => Promise<E.TxResult> // todo: add proper type
-  info: (from: E.Address, value?: E.Wei) => Promise<TxInfo> // probably better to just pass this info when calling a method
+  rpc: Pick<RPC, 'sendRawTransaction' | 'estimateGas'>
   chainId: E.ChainId
   signatureCb: SignatureCb
-  channelManager: E.Address // fixme
-  nettingChannel: E.Address
-  token: E.Address
 }
 
 export interface ServiceConfig {

@@ -22,7 +22,7 @@ declare module 'eth-types' {
   export type BN_Num_Str = BN | number | string
   // https://etherconverter.online/
   export type Wei = BN & { __Wei__: true }
-  export type Gwei = BN & { __Gwei__: true }
+  // export type Gwei = BN & { __Gwei__: true }
   export type Ether = BN & { __Ether__: true }
 
   export type Address = Buffer & { __Address__: true }
@@ -33,7 +33,7 @@ declare module 'eth-types' {
   export type BlockNumber = BN & { __BlockNumber__: true }
 
   export type Gas = BN & { __GasLimit__: true }
-  export type GasPrice = Gwei & { __GasPrice__: true }
+  export type GasPrice = Wei & { __GasPrice__: true }
 
   // we group them in one place to easily add all required functionalities
 
@@ -46,10 +46,10 @@ declare module 'eth-types' {
     BlockNumber: BN_Num_Str
 
     Wei: BN_Num_Str
-    Gwei: BN_Num_Str
+    // Gwei: BN_Num_Str
     Ether: BN_Num_Str
 
-    GasLimit: BN_Num_Str
+    Gas: BN_Num_Str
     GasPrice: BN_Num_Str
   }
 
@@ -62,10 +62,10 @@ declare module 'eth-types' {
     BlockNumber: BlockNumber
 
     Wei: Wei
-    Gwei: Gwei
+    // Gwei: Gwei
     Ether: Ether
 
-    GasLimit: Gas
+    Gas: Gas
     GasPrice: GasPrice
   }
 
@@ -107,12 +107,12 @@ declare module 'eth-types' {
 
   export interface TxParamsWithGas {
     value: Wei // defaults to 0
-    gasLimit: Gas
-    gasPrice: GasPrice
+    gasLimit: Gas // will be estimated automatically
+    gasPrice: GasPrice // will be estimaged automatically
   }
 
   // todo: discuss defaults
-  export interface TxParams extends TxConstParams, TxParamsWithGas { }
+  export interface TxParams extends TxConstParams, TxParamsWithGas {}
 
   export interface TxResult<T = any> {
     result: T

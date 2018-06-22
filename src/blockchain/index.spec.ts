@@ -4,9 +4,6 @@ import { serviceCreate } from './index'
 import { config } from './spec.base'
 import { CHAIN_ID } from '../utils'
 
-// todo will break in a browser environment
-(global as any).fetch = require('node-fetch')
-
 const cfg = config()
 
 const srv = serviceCreate(Object.assign({

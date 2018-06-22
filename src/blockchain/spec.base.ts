@@ -3,7 +3,10 @@ import '../observable-add'
 
 import * as E from 'eth-types'
 
-import { as } from '../utils/eth-utils'
+import { as, CHAIN_ID } from '../utils/eth-utils'
+
+// todo will break in a browser environment
+(global as any).fetch = require('node-fetch')
 
 export interface Account {
   addressStr: string, privateKeyStr: string,
@@ -23,6 +26,8 @@ export const getAccounts = () => ([
 
 const infura = {
   providerUrl: 'https://ropsten.infura.io',
+  chainId: CHAIN_ID.ROPSTEN,
+
   manager: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
   token: as.Address(new Buffer('a28a7a43bc389064ab5d16c0338968482b4e02bd', 'hex')),
   hsToken: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
@@ -31,4 +36,18 @@ const infura = {
   txHashFake: '0x57f8edeca8ca78d8d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'
 }
 
-export const config = () => infura
+type Config = typeof infura
+
+const local: Config = {
+  providerUrl: 'https://ropsten.infura.io',
+  chainId: CHAIN_ID.ROPSTEN,
+
+  manager: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
+  token: as.Address(new Buffer('a28a7a43bc389064ab5d16c0338968482b4e02bd', 'hex')),
+  hsToken: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
+
+  txHash: '0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12',
+  txHashFake: '0x57f8edeca8ca78d8d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'
+}
+
+export const config = () => local

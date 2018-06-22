@@ -27,10 +27,9 @@ export class Monitoring implements T.Monitoring {
   private _em = new EventEmitter()
   private _state: Promise<State>
   private _sub: any
-  private _transactions: Subject<E.TxHash> = new Subject()
+
   private _blockNumberSub = new BehaviorSubject<E.BlockNumber | undefined>(undefined)
   private _forceMonitoring = new Subject<boolean>()
-  private _toSubscribe: E.Address[] = []
 
   constructor (cfg: T.MonitoringConfig) {
     this._cfg = cfg
@@ -53,6 +52,7 @@ export class Monitoring implements T.Monitoring {
   }
 
   blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
+  gasPrice = () => this._cfg.rpc.gasPrice()
 
   subscribeAddress = (a: E.Address) =>
     this._state.then(s => {

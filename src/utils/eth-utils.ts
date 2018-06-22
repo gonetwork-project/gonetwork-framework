@@ -66,10 +66,10 @@ export const as: {
   Nonce: castNum,
 
   // BN - value
-  GasLimit: castNum,
+  Gas: castNum,
   GasPrice: castNum,
   Ether: castNum,
-  Gwei: castNum,
+  // Gwei: castNum,
   Wei: castNum
 }
 
@@ -93,6 +93,8 @@ export const serializeRpcParam = (p: E.TxDataType): string | string[] => {
   } else if (typeof p === 'object') {
     // if none of the basic than richer object - for example eth_getLogs
     return serializeRpcParams(p) as any
+  } else if (typeof p === 'number') {
+    return `0x${new BN(p).toString(16)}`
   } else {
     throw new Error('NOT_SUPPORTED')
   }
@@ -104,4 +106,4 @@ export const serializeRpcParams = (ps: object) =>
       // const p = ps[k]
       acc[k] = serializeRpcParam(ps[k])
       return acc
-    }, {} as { [K: string]: string | string[]})
+    }, {} as { [K: string]: string | string[] })
