@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration",
-    "start": "node dist/app.js",
+    "start": "node dist/index.js",
     "test": "jest",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch"
   },
