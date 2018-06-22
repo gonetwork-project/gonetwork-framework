@@ -40,10 +40,12 @@ export interface LogsParams {
 
 export type CallSpec<Params extends ({} | null), Out> = [Params, Out]
 export type SupportedCalls = {
-  getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
   blockNumber: CallSpec<null, E.BlockNumber>
-  // please mind only events of our interest / if needed we can make generic
+  // please mind only events of our interest and stripped from any add / if needed please make generic
   getLogs: CallSpec<LogsParams, T.BlockchainEvent[]>
+  // Tx
+  getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
+  getTransactionReceipt: CallSpec<string, E.TxReceipt | null>
 }
 
 // name, order, parse-result, defaults
@@ -62,7 +64,7 @@ export type RPCCreate = (p: string) => RPC
 
 export interface TxInfo {
   nonce: E.Nonce
-  gasLimit: E.GasLimit
+  gasLimit: E.Gas
   gasPrice: E.GasPrice
 }
 

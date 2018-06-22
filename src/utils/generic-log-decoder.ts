@@ -18,7 +18,6 @@ export default class GenericLogDecoder {
   }
 
   static generateEventMap (contracts: any[]) {
-    // console.log(contracts.map(y => { return y.abi }))
     let definitions = ([].concat(...contracts.map(y => y.abi)))
       .filter((y: any) => y.type === 'event')
       .reduce((r, x) => {
@@ -34,15 +33,13 @@ export default class GenericLogDecoder {
 	 * @returns {Object} - parsed event object
 	 */
   decode (log) {
-    // console.log('EV', this.eventMap)
-    let result = {}
+    // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getfilterchanges
+
     if (this.eventMap.hasOwnProperty(log.topics[0])) {
+      const eventDef = this.eventMap[log.topics[0]]
+      const data = Buffer.concat(log.topics.slice(1).concat(log.data).map(y => util.toBuffer(y)))
 
-      let eventDef = this.eventMap[log.topics[0]]
-
-      let data = Buffer.concat(log.topics.slice(1).concat(log.data).map(y => util.toBuffer(y)))
-
-      result = abi.rawDecode(eventDef.inputs.map(x => x.type), data)
+      const result = abi.rawDecode(eventDef.inputs.map(x => x.type), data)
         .reduce((r, y, i) => {
           let t = eventDef.inputs[i]
           if (t.type === 'address') {
@@ -50,9 +47,12 @@ export default class GenericLogDecoder {
           }
           r[GenericLogDecoder.normalizeName(eventDef.inputs[i].name)] = y
           return r
-        }, {});
-      (result as any)._type = eventDef.name
+        }, {})
+      result._type = eventDef.name
+
+      return result
     }
-    return result as any
+    // Throwing since we only want to decode known logs
+    throw new Error('UNKNOWN_LOG')
   }
 }

@@ -29,16 +29,11 @@ declare module 'eth-types' {
   export type AddressHex = string & { __AddressHex__: true }
   export type PrivateKey = Buffer & { __PrivKey__: true }
 
-  // todo: finish
-  export type TxHash = string & { __TransactionHash__: true }
-
   export type Nonce = BN & { __Nonce__: true }
   export type BlockNumber = BN & { __BlockNumber__: true }
 
-  export type GasLimit = BN & { __GasLimit__: true }
+  export type Gas = BN & { __GasLimit__: true }
   export type GasPrice = Gwei & { __GasPrice__: true }
-
-  export type Topic = Buffer
 
   // we group them in one place to easily add all required functionalities
 
@@ -70,8 +65,18 @@ declare module 'eth-types' {
     Gwei: Gwei
     Ether: Ether
 
-    GasLimit: GasLimit
+    GasLimit: Gas
     GasPrice: GasPrice
+  }
+
+  export type TxHash = string & { __TxHash__: true }
+  export type Topic = Buffer
+  // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getfilterchanges
+  export type Log = {
+    blockNumber: BlockNumber | null // null == pending
+    address: Address
+    data: Buffer[]
+    topics: Topic[] // technically 0 - 4
   }
 
   // https://github.com/ethereum/wiki/wiki/JSON-RPC#the-default-block-parameter
@@ -101,7 +106,7 @@ declare module 'eth-types' {
 
   export interface TxParamsWithGas {
     value: Wei // defaults to 0
-    gasLimit: GasLimit
+    gasLimit: Gas
     gasPrice: GasPrice
   }
 
@@ -111,6 +116,16 @@ declare module 'eth-types' {
   export interface TxResult<T = any> {
     result: T
     // todo: fill
+  }
+
+  export interface TxReceipt {
+    blockNumber: BlockNumber
+    from: Address
+    to: Address
+    gasUsed: Gas
+    contractAddress: Address | null
+    logs: Log[]
+    transactionHash: TxHash
   }
 
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md

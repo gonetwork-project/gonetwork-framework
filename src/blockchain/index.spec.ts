@@ -3,7 +3,6 @@ import { Observable } from 'rxjs'
 import { serviceCreate } from './index'
 import { infura } from './spec.base'
 import { CHAIN_ID } from '../utils'
-import * as T from '../types'
 
 // todo will break in a browser environment
 (global as any).fetch = require('node-fetch')

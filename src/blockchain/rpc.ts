@@ -6,10 +6,14 @@ import * as T from '../types'
 
 // very light implementation of: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
+// name, order of params, decode, defaults
+// in case of order: pass `null` if no params, `[]` if just one, proper order if 2 or more
 export const partialImplementation: B.ImplementationSpecs = {
-  getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
   blockNumber: ['eth_blockNumber', null, as.BlockNumber, null],
-  getLogs: ['eth_getLogs', ['fromBlock'], decode, null]
+  getLogs: ['eth_getLogs', [], decode, null],
+
+  getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
+  getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPCCall<any, any>) =>
@@ -24,7 +28,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPC
         id: nextId(),
         method: spec[0],
         // this is bit of hack - in case of single parameter we do not want to wrap it in an object
-        params: (spec[1] && spec[1].length === 1) ?
+        params: (spec[1] && spec[1].length === 0) ?
           [serializeRpcParam(params as any)] :
           (spec[1] || [])
             .map(a => (params[a] && serializeRpcParam(params[a]) || spec[3][a]))

@@ -47,3 +47,14 @@ test('logs -- few', () =>
       expect(x[1]._type).toBe('ChannelNew')
     })
 )
+
+test('tx-receipt -- real tx', () =>
+  rpc.getTransactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
+    .then(x => expect(x!.transactionHash).toBe('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'))
+)
+
+// there is close to zero probability it will fail one day :)
+test('tx-receipt -- not real tx', () =>
+  rpc.getTransactionReceipt('0x57f8edeca8ca78d7d2a1be8a8a37614e024e14120a03d4ec86088e651c7b7a12')
+    .then(x => expect(x).toBe(null))
+)
