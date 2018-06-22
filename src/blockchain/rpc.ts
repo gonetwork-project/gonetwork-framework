@@ -43,7 +43,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPC
           if (r.error) {
             return Promise.reject(r)
           }
-          console.log(spec[0], r)
+        //  console.log(spec[0], r)
           return spec[2](r.result)
         }) : Promise.reject(res))
   }

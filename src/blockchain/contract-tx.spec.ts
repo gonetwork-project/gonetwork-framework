@@ -19,16 +19,14 @@ const contractsTx = createContracts({
 test('contracts-tx example', (done) => {
   contractsTx.token.approve({
     to: acc1.address,
-    nonce: as.Nonce(3),
-    gasLimit: limit,
-    gasPrice: price
+    nonce: as.Nonce(3)
   },
     {
       _spender: acc2.address,
       _value: as.Wei(20000)
     })
     .then(r => {
-      console.log('HMM', r)
+
       // expect(r.result[0].id).toBe(1)
       // expect(as.Gas(r.result[1].gasLimit).eq(limit)).toBe(true)
       // expect(as.Gas(r.result[1].gasPrice).eq(price)).toBe(true)

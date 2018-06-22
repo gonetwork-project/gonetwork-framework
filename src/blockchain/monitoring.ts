@@ -52,21 +52,22 @@ export class Monitoring implements T.Monitoring {
   }
 
   blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
-  gasPrice = () => this._cfg.rpc.gasPrice()
+  gasPrice = () => this._cfg.rpc.gasPrice() // todo: improve monitor of gas price it in very long intervals
 
   subscribeAddress = (a: E.Address) =>
     this._state.then(s => {
-      if (s.addresses.find(_a => _a[0] === a)) return Promise.resolve(false)
+      if (s.addresses.find(_a => _a[0].equals(a))) return Promise.resolve(false)
       s.addresses.push([a, '-1'])
-      this._forceMonitoring.next(true)
       return this._saveState(s)
+        .then(() => this._forceMonitoring.next(true) || true)
     })
 
   unsubscribeAddress = (a: E.Address) => {
     if (a === this._cfg.channelManagerAddress) return Promise.resolve(false)
     return this._state.then(s => {
-      s.addresses = s.addresses.filter(_a => _a[0] === a)
+      s.addresses = s.addresses.filter(_a => !_a[0].equals(a))
       return this._saveState(s)
+        .then(() => this._forceMonitoring.next(true) || true)
     })
   }
 
@@ -109,7 +110,7 @@ export class Monitoring implements T.Monitoring {
       n => n
     )
       .filter(x => x !== undefined) as Observable<E.BlockNumber>)
-      .exhaustMap(blockNumber =>
+      .switchMap(blockNumber =>
         Observable.defer(() => this._state)
           .mergeMap((s: State) =>
             Observable.from(s.addresses)
@@ -135,15 +136,17 @@ export class Monitoring implements T.Monitoring {
                       addresses: acc.addresses.concat(gs)
                     }), { logs: [] as any, addresses: [] as E.Address[] })
                 ))
-              .do(({ logs }) => logs.forEach(l => this._em.emit(l._type, l)))
-              .mergeMap(({ addresses }) => {
+              .do(x => console.log('LOGS'))
+              .do(({ logs, addresses }) => {
+                // everything here is done synchronously so top most switchMap will not terminate it
+                logs.forEach(l => this._em.emit(l._type, l))
                 addresses.forEach(add => {
                   const a = s.addresses.find(_a => _a[0] === add)
                   if (a) {
                     a[1] = blockNumber.toString()
                   }
                 })
-                return this._saveState(s)
+                this._saveState(s)
               })
           )
           .retryWhen(errs => errs.delay(1000))
