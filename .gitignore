@@ -70,3 +70,5 @@ demo/infura.dat
 demo/v3_wallet.json
 
 test-manual/temp
+
+server/dist
