@@ -10,9 +10,7 @@ const cfg = config()
 let srv: Service
 
 beforeEach(() => {
-  srv = serviceCreate(Object.assign({
-    chainId: CHAIN_ID.ROPSTEN
-  }, cfg))
+  srv = serviceCreate(cfg)
 })
 
 test('service - rpc - blockNumber', () =>

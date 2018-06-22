@@ -6,7 +6,7 @@ export * from './__GEN__/ChannelManagerContract'
 
 // #endregion GENERATED
 
-import { TxParamsRequired, TxParamsWithGas, TxResult, Address, Wei } from 'eth-types'
+import { TxParamsRequired, TxParamsWithGas, TxResult, GasPrice, TxRaw, TxParams } from 'eth-types'
 import { ChannelEvents, ChannelEventsToArgs } from './__GEN__/NettingChannelContract'
 import { ManagerEvents, ManagerEventsToArgs } from './__GEN__/ChannelManagerContract'
 import { TokenEvents, TokenEventsToArgs } from './__GEN__/HumanStandardToken'
@@ -39,6 +39,14 @@ export type FunctionConstCall<T extends { [K: string]: [any, any] }, Out> = {
 
 export type TxRequest<T extends { [K: string]: [any, any] }> = {
   [K in keyof T]: (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<TxResult<T[K][1]>>
+}
+
+export type TxEstimation<T extends { [K: string]: [any, any] }> = {
+  [K in keyof T]: (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) =>
+    Promise<{
+      estimatedGas: GasPrice
+      txParams: TxParams
+    }>
 }
 
 export type ExtractEvents<E, K extends keyof E> = E[K]

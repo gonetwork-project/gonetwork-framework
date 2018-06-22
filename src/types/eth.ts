@@ -80,6 +80,8 @@ declare module 'eth-types' {
     topics: Topic[] // technically 0 - 4
   }
 
+  export type TxRaw = string
+
   // https://github.com/ethereum/wiki/wiki/JSON-RPC#the-default-block-parameter
   // conversion to hex ath boundary of the system
   export type DefaultBlock = BlockNumber | 'earliest' | 'latest' | 'pending'
@@ -108,7 +110,7 @@ declare module 'eth-types' {
   export interface TxParamsWithGas {
     value: Wei // defaults to 0
     gasLimit: Gas // will be estimated automatically
-    gasPrice: GasPrice // will be estimaged automatically
+    gasPrice: GasPrice // will be estimated automatically
   }
 
   // todo: discuss defaults

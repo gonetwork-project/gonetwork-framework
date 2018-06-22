@@ -47,11 +47,11 @@ export type SupportedCalls = {
   // Tx
   getTransactionCount: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
   getTransactionReceipt: EthIOSpec<E.TxHash, E.TxReceipt | null>
-  sendRawTransaction: EthIOSpec<E.TxParams, E.TxHash>
+  sendRawTransaction: EthIOSpec<E.TxRaw, E.TxHash>
   call: EthIOSpec<{
     params: E.TxConstParams, blockNumber: E.DefaultBlock
   }, Buffer>,
-  estimateGas: EthIOSpec<string, E.Gas>
+  estimateGas: EthIOSpec<E.TxParams, E.Gas>
   gasPrice: EthIOSpec<null, E.GasPrice>
 }
 
@@ -76,7 +76,7 @@ export interface TxInfo {
 }
 
 export interface ContractTxConfig {
-  rpc: Pick<RPC, 'sendRawTransaction' | 'estimateGas'>
+  rpc: Pick<RPC, 'sendRawTransaction' | 'estimateGas' | 'gasPrice'>
   chainId: E.ChainId
   signatureCb: SignatureCb
 }

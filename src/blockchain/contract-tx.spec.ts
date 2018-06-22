@@ -5,19 +5,18 @@ import createContracts from './contracts-tx'
 import * as base from './spec.base'
 
 const [acc1, acc2] = base.getAccounts()
-const [limit, price] = [as.Gas(20000), as.GasPrice(2000000)]
 
 const cfg = base.config()
 const rpc = rpcCreate(cfg.providerUrl)
 
-const contractsTx = createContracts({
+const cTx = createContracts({
   rpc,
   chainId: cfg.chainId,
   signatureCb: (fn) => fn(acc1.privateKey)
 })
 
-test('contracts-tx example', (done) => {
-  contractsTx.token.approve({
+test('estimate', () =>
+  cTx.estimateRawTx.token.approve({
     to: acc1.address,
     nonce: as.Nonce(3)
   },
@@ -26,10 +25,19 @@ test('contracts-tx example', (done) => {
       _value: as.Wei(20000)
     })
     .then(r => {
-
-      // expect(r.result[0].id).toBe(1)
-      // expect(as.Gas(r.result[1].gasLimit).eq(limit)).toBe(true)
-      // expect(as.Gas(r.result[1].gasPrice).eq(price)).toBe(true)
-      done()
+      // gasLimit is ~20% more than the estimated
+      expect(r.estimatedGas.lt(r.txParams.gasLimit)).toBe(true)
+      console.log(r.txParams)
+      expect(r.txParams.nonce.eq(as.Nonce(3))).toBe(true)
+      expect(r.txParams.to).toBe(acc1.address)
     })
-})
+)
+
+test('call', () =>
+  cTx.call.manager.getChannelsParticipants({
+    nonce: as.Nonce(3),
+    to: cfg.nettingChannel
+  }, null)
+    .then(x => console.log(x))
+
+)
