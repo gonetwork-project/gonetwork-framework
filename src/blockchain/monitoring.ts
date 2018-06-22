@@ -3,10 +3,6 @@ import { Subject } from 'rxjs/Subject'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { EventEmitter } from 'events'
 
-import * as util from 'ethereumjs-util'
-
-import { decode } from './blockchain-utils'
-
 import { as, add } from '../utils'
 
 import * as C from '../types/contracts'
@@ -50,8 +46,7 @@ export class Monitoring implements T.Monitoring {
     this._sub =
       this._monitorAddresses()
         .merge(
-          this._monitorBlockNumber(),
-          this._monitorTransactions()
+          this._monitorBlockNumber()
         )
         .subscribe()
 
@@ -75,34 +70,17 @@ export class Monitoring implements T.Monitoring {
     })
   }
 
-  transactionReceiptWithPersistance = (tx) => {
-    return this._state.then(s => {
-      if (s.transactions.find(tx)) {
-        return false
-      }
-      s.transactions.push(tx)
-      return this._saveState(s)
-        .then(() => this._transactions.next(tx))
-        .then(() => true)
-    })
-  }
-
   asStream = (ev: BlockchainEventType | BlockchainEventType[]) =>
     Observable.from(Array.isArray(ev) ? ev : [ev])
       .mergeMap(e => Observable.fromEvent(this, e)) as Observable<any>
 
-  transactionReceipt = (tx) =>
-    Promise.reject('NOT_SUPPORTED')
-  // Observable.timer(0, TRANSACTION_INTERVAL)
-  //   .switchMap(() =>
-  //     Observable.defer(() => this._cfg.rpc.getTransactionReceipt(tx))
-  //       .catch((err) => {
-  //         console.log('TRANSACTION_MONITORING_ERROR', err)
-  //         return Observable.empty()
-  //       })
-  //   )
-  //   .take(1)
-  //   .toPromise()
+  waitForTransactionReceipt = (tx: E.TxHash, timeout: number = 90 * 100) =>
+    Observable.timer(0, TRANSACTION_INTERVAL)
+      .switchMap(() => this._cfg.rpc.getTransactionReceipt(tx))
+      .filter(Boolean)
+      .take(1)
+      .timeout(timeout)
+      .toPromise() as Promise<E.TxReceipt>
 
   on = (event: C.BlockchainEventType, listener: (...args: any[]) => void) => {
     this._em.on(event, listener)
@@ -169,22 +147,6 @@ export class Monitoring implements T.Monitoring {
               })
           )
           .retryWhen(errs => errs.delay(1000))
-      )
-
-  private _monitorTransactions = () =>
-    this._transactions
-      .mergeMap(t =>
-        Observable.timer(0, TRANSACTION_INTERVAL)
-          .switchMap(() =>
-            // todo
-            // Observable.defer(() => this._cfg.rpc.getTransactionReceipt(t))
-            Observable.empty()
-              .catch(() => {
-                //    console.log('TRANSACTION_MONITORING_ERROR', err)
-                return Observable.empty()
-              })
-          )
-          .take(1)
       )
 
   private _saveState = (s: State) =>

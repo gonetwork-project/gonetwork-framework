@@ -18,7 +18,7 @@ export interface Monitoring {
   subscribeAddress: (ch: E.Address) => Promise<Boolean>
   unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
 
-  transactionReceipt: (tx: E.TxHash) => Promise<Boolean>
+  waitForTransactionReceipt: (tx: E.TxHash, timeout?: number) => Promise<E.TxReceipt>
 
   on: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
   off: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
@@ -45,7 +45,7 @@ export type SupportedCalls = {
   getLogs: CallSpec<LogsParams, T.BlockchainEvent[]>
   // Tx
   getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
-  getTransactionReceipt: CallSpec<string, E.TxReceipt | null>
+  getTransactionReceipt: CallSpec<E.TxHash, E.TxReceipt | null>
 }
 
 // name, order, parse-result, defaults

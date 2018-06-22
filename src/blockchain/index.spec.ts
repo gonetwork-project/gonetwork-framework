@@ -34,11 +34,16 @@ test('service - monitoring - logs', () =>
     .toArray()
     .zip(
       srv.asStream('ChannelNew') // preferred than .fromEvent as support ts
-      .take(3)
-      .toArray())
+        .take(3)
+        .toArray())
     .toPromise()
     .then(([xs, ys]) => {
       expect(xs[1]).toBe(ys[1])
       expect(ys.length).toBe(3)
       expect(xs.filter(x => (x as any)._type === 'ChannelNew').length).toBe(3)
     }))
+
+test('service - monitoring - tx-receipt', () =>
+  srv.waitForTransactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
+    .then(x => expect(x!.transactionHash).toBe('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'))
+)

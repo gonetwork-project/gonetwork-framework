@@ -69,7 +69,8 @@ declare module 'eth-types' {
     GasPrice: GasPrice
   }
 
-  export type TxHash = string & { __TxHash__: true }
+  // non-critical types - not much need with making them opaque
+  export type TxHash = string
   export type Topic = Buffer
   // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getfilterchanges
   export type Log = {
