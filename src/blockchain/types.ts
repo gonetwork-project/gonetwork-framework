@@ -38,14 +38,20 @@ export interface LogsParams {
   // blockhash?: never // future
 }
 
-export type CallSpec<Params extends ({} | null), Out> = [Params, Out]
+export type EthIOSpec<Params extends ({} | null), Out> = [Params, Out]
+export type CallSpec<T> = EthIOSpec<{
+  params: E.TxConstParams, blockNumber: E.DefaultBlock
+}, T>
 export type SupportedCalls = {
-  blockNumber: CallSpec<null, E.BlockNumber>
+  blockNumber: EthIOSpec<null, E.BlockNumber>
   // please mind only events of our interest and stripped from any add / if needed please make generic
-  getLogs: CallSpec<LogsParams, T.BlockchainEvent[]>
+  getLogs: EthIOSpec<LogsParams, T.BlockchainEvent[]>
   // Tx
-  getTransactionCount: CallSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
-  getTransactionReceipt: CallSpec<E.TxHash, E.TxReceipt | null>
+  getTransactionCount: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, T.BN>
+  getTransactionReceipt: EthIOSpec<E.TxHash, E.TxReceipt | null>
+  sendRawTransaction: EthIOSpec<E.TxParams, E.TxHash>
+  call: CallSpec<Buffer>,
+  estimateGas: CallSpec<E.Gas>
 }
 
 // name, order, parse-result, defaults

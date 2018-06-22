@@ -13,7 +13,10 @@ export const partialImplementation: B.ImplementationSpecs = {
   getLogs: ['eth_getLogs', [], decode, null],
 
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
-  getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null]
+  getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null],
+  sendRawTransaction: ['eth_sendRawTransaction', [], x => x, null],
+  call: ['eth_call', ['params', 'blockNumber'], x => x, null],
+  estimateGas: ['eth_estimateGas', ['params', 'blockNumber'], x => x, null]
 }
 
 const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPCCall<any, any>) =>

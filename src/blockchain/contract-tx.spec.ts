@@ -1,7 +1,7 @@
-import createContracts from './contracts-tx'
+import { as } from '../utils'
 
+import createContracts from './contracts-tx'
 import * as base from './spec.base'
-import { as, util } from '../utils'
 
 const [acc1, acc2] = base.getAccounts()
 const [limit, price] = [as.GasLimit(20000), as.GasPrice(2000000)]

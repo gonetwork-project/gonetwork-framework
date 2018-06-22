@@ -1,14 +1,13 @@
 import rpcCreate from './rpc'
 import { as } from '../utils'
+import { config } from './spec.base'
 
 // todo will break in a browser environment
 (global as any).fetch = require('node-fetch')
 
-// const [acc] = base.getAccounts()
-// const rpc = rpcCreate('http://localhost:8545')
+const cfg = config()
 
-const rpc = rpcCreate('https://ropsten.infura.io')
-const managerAdd = as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex'))
+const rpc = rpcCreate(cfg.providerUrl)
 
 test('block-number', () =>
   rpc.blockNumber()
@@ -18,7 +17,7 @@ test('block-number', () =>
 )
 
 test('transactions-count', () =>
-  rpc.getTransactionCount({ address: managerAdd })
+  rpc.getTransactionCount({ address: cfg.manager })
     .then(x => {
       expect(x.gte(28)).toBe(true)
     })
@@ -26,7 +25,7 @@ test('transactions-count', () =>
 
 test.skip('logs -- all', () =>
   rpc.getLogs({
-    address: managerAdd,
+    address: cfg.manager,
     fromBlock: as.BlockNumber(0),
     toBlock: as.BlockNumber('latest')
   })
@@ -37,7 +36,7 @@ test.skip('logs -- all', () =>
 
 test('logs -- few', () =>
   rpc.getLogs({
-    address: managerAdd,
+    address: cfg.manager,
     fromBlock: as.BlockNumber('0x2f06c0'),
     toBlock: as.BlockNumber('0x2f074b')
   })
@@ -49,12 +48,12 @@ test('logs -- few', () =>
 )
 
 test('tx-receipt -- real tx', () =>
-  rpc.getTransactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
-    .then(x => expect(x!.transactionHash).toBe('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'))
+  rpc.getTransactionReceipt(cfg.txHash)
+    .then(x => expect(x!.transactionHash).toBe(cfg.txHash))
 )
 
 // there is close to zero probability it will fail one day :)
 test('tx-receipt -- not real tx', () =>
-  rpc.getTransactionReceipt('0x57f8edeca8ca78d7d2a1be8a8a37614e024e14120a03d4ec86088e651c7b7a12')
+  rpc.getTransactionReceipt(cfg.txHashFake)
     .then(x => expect(x).toBe(null))
 )

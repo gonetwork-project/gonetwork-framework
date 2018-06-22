@@ -1,15 +1,17 @@
 import { Observable } from 'rxjs'
 
 import { serviceCreate } from './index'
-import { infura } from './spec.base'
+import { config } from './spec.base'
 import { CHAIN_ID } from '../utils'
 
 // todo will break in a browser environment
 (global as any).fetch = require('node-fetch')
 
+const cfg = config()
+
 const srv = serviceCreate(Object.assign({
   chainId: CHAIN_ID.ROPSTEN
-}, infura))
+}, cfg))
 
 test('service - rpc - blockNumber', () =>
   // todo: this right now uses rpc, but would be way better to use subject from monitoring
@@ -44,6 +46,6 @@ test('service - monitoring - logs', () =>
     }))
 
 test('service - monitoring - tx-receipt', () =>
-  srv.waitForTransactionReceipt('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12')
-    .then(x => expect(x!.transactionHash).toBe('0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'))
+  srv.waitForTransactionReceipt(cfg.txHash)
+    .then(x => expect(x!.transactionHash).toBe(cfg.txHash))
 )
