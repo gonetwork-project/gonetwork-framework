@@ -30,11 +30,16 @@ test('service - monitoring - blockNumbers', () =>
 )
 
 test('service - monitoring - logs', () =>
-  Observable.fromEvent(srv, 'ChannelNew')
+  Observable.fromEvent(srv, 'ChannelNew') // implicitly it will test .on and .off
     .take(3)
-    // .map((e: any) => e.netting_channel.toString('hex'))
     .toArray()
+    .zip(
+      srv.asStream('ChannelNew') // preferred than .fromEvent as support ts
+      .take(3)
+      .toArray())
     .toPromise()
-    .then(xs => {
+    .then(([xs, ys]) => {
+      expect(xs[1]).toBe(ys[1])
+      expect(ys.length).toBe(3)
       expect(xs.filter(x => (x as any)._type === 'ChannelNew').length).toBe(3)
     }))

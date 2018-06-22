@@ -20,9 +20,11 @@ export interface Monitoring {
 
   transactionReceipt: (tx: E.TxHash) => Promise<Boolean>
 
-  // split per Event type and enforce callback types
-  on: (e: T.BlockchainEventType, listener: (...args: any[]) => void) => void
-  off: (e: T.BlockchainEventType, listener: (...args: any[]) => void) => void
+  on: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
+  off: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
+
+  asStream: <Ev extends T.BlockchainEventType>(e: Ev | Ev[]) =>
+    Observable<T.EventTypeToEvent<Ev>>
 
   dispose: () => void
 }

@@ -41,9 +41,14 @@ export type TxRequest<T extends { [K: string]: [any, any] }> = {
   [K in keyof T]: (data: T[K][0], from: Address, value?: Wei) => Promise<TxResult<T[K][1]>>
 }
 
-export type BlockchainEventType = ChannelEvents | ManagerEvents | TokenEvents
-
 export type ExtractEvents<E, K extends keyof E> = E[K]
+
+export type EventTypeToEvent<Ev extends BlockchainEventType> =
+  Ev extends ChannelEvents ? ChannelEventsToArgs[Ev] :
+  Ev extends ManagerEvents ? ManagerEventsToArgs[Ev] :
+  Ev extends TokenEvents ? TokenEventsToArgs[Ev] : never
+
+export type BlockchainEventType = ChannelEvents | ManagerEvents | TokenEvents
 
 export type BlockchainEvent = ExtractEvents<ChannelEventsToArgs, ChannelEvents>
   | ExtractEvents<ManagerEventsToArgs, ManagerEvents> | ExtractEvents<TokenEventsToArgs, TokenEvents>

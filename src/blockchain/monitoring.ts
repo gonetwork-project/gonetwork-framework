@@ -10,6 +10,7 @@ import { decode } from './blockchain-utils'
 import { as, add } from '../utils'
 
 import * as C from '../types/contracts'
+import { BlockchainEventType } from '../types'
 import * as T from './types'
 import * as E from 'eth-types'
 
@@ -85,6 +86,10 @@ export class Monitoring implements T.Monitoring {
         .then(() => true)
     })
   }
+
+  asStream = (ev: BlockchainEventType | BlockchainEventType[]) =>
+    Observable.from(Array.isArray(ev) ? ev : [ev])
+      .mergeMap(e => Observable.fromEvent(this, e)) as Observable<any>
 
   transactionReceipt = (tx) =>
     Promise.reject('NOT_SUPPORTED')
