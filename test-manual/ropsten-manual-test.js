@@ -26,6 +26,7 @@ if (rostpen) {
   urlPost = 'https://ropsten.infura.io/QxoWjkfgF4aVMUV4rbTG'
   // urlPost = 'https://api.infura.io/v1/jsonrpc/ropsten';//"http://localhost:8545";
 }
+
 var pk1 = util.toBuffer('0xb507928218b7b1e48f82270011149c56b6191cd1f2846e01c419f0a1a57acc42')
 var pk2 = util.toBuffer('0x4c65754b227fb8467715d2949555abf6fe8bcba11c6773433c8a7a05a2a1fc78')
 // var pk3 = util.toBuffer('0xa8344e81509696058a3c14e520693f94ce9c99c26f03310b2308a4c59b35bb3d')

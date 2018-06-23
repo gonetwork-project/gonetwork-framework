@@ -13,7 +13,18 @@ const cTx = createContracts({
   signatureCb: (fn) => fn(cfg.acc1.privateKey)
 })
 
-test('estimate', () =>
+test('call - token.balanceOf', () =>
+  cTx.call.token.balanceOf({
+    to: cfg.hsToken,
+    nonce: as.Nonce(0) // ?
+  }, {
+    _owner: cfg.acc1.address
+  })
+    .then(x => console.log(x))
+)
+
+test('estimate - token.approve (wrong addresses)', () =>
+  // this estimation passes if though addresses are not contract addresses weird
   cTx.estimateRawTx.token.approve({
     to: cfg.acc1.address,
     nonce: as.Nonce(3)
@@ -41,8 +52,33 @@ test('call', () =>
     )
 )
 
-// invalid sender
-test.only('sendRawTx', () => {
+test('sendRawTx - token.approve', () => {
+  const cData = {
+    _spender: cfg.manager,
+    _value: as.Wei(20000000)
+  }
+  return Promise.all([rpc.getTransactionCount({ address: cfg.acc1.address }), rpc.gasPrice()])
+    .then(([n, p]) => {
+      console.log('NONCE,PRICE', n, p)
+      return cTx.estimateRawTx.token.approve({
+        nonce: as.Nonce(n.add(new BN(1))),
+        to: cfg.token,
+        gasPrice: p
+      }, cData)
+        .catch(err => {
+          console.log('CANNOT_ESTIMATE', err)
+          return Promise.reject(err)
+        })
+    }
+    )
+    .then(r => {
+      console.log('BEFORE-SEND', r)
+      return cTx.sendRawTx.token.approve(r.txParams, cData)
+    })
+    .then(x => console.log('NEW_TX', x))
+})
+
+test.skip('sendRawTx - manager.newChannel', () => {
   const cData = {
     partner: cfg.acc2.address,
     settle_timeout: new BN(500)
@@ -51,16 +87,16 @@ test.only('sendRawTx', () => {
     .then(([n, p]) => {
       console.log('NONCE,PRICE', n, p)
       return cTx.estimateRawTx.manager.newChannel({
-        nonce: n,
+        nonce: as.Nonce(n.add(new BN(1))),
         to: cfg.manager,
-        value: as.Wei(100000)
-        // gasPrice: p,
+        // value: as.Wei(100000)
+        gasPrice: p
         // gasLimit: as.Gas(20000000000)
       }, cData)
-      .catch(err => {
-        console.log('CANNOT_ESTIMATE', err)
-        return Promise.reject(err)
-      })
+        .catch(err => {
+          console.log('CANNOT_ESTIMATE', err)
+          return Promise.reject(err)
+        })
     }
     )
     .then(r => {
@@ -68,5 +104,4 @@ test.only('sendRawTx', () => {
       return cTx.sendRawTx.manager.newChannel(r.txParams, cData)
     })
     .then(x => console.log('NEW_TX', x))
-}
-)
+})
