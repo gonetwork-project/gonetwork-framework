@@ -32,7 +32,7 @@ module.exports = function(deployer,network) {
     
   }else{
       console.log("DEPLOYING ON NETWORK:" + network);
-     var acct1 = "0xf0c3043550e5259dc1c838d0ea600364d999ea15";
+     var acct1 = "0x7582C707b9990a5BB3Ca23f8F7b61B6209829A6e";
      
     deployer.then(async () => {
       await deployer.deploy(StandardToken)

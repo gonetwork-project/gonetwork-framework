@@ -11,10 +11,11 @@ import * as C from '../types/contracts'
 import { ContractTxConfig, RPC } from './types'
 
 const encodeData = (name: string, types: string[], order: string[], data: E.TxParams[]) => {
+  // console.log(name, types, order, data)
   return util.toBuffer([
     '0x',
     abi.methodID(name, types).toString('hex'),
-    abi.rawEncode(types, order.map(o => serializeRpcParam(data[o])))
+    types.length === 0 ? '' : abi.rawEncode(types, order.map(o => serializeRpcParam(data[o])))
   ].join(''))
 }
 
@@ -28,7 +29,7 @@ const serializeParams = (order: any, types: any, defaultFn: typeof txParamsWithD
   Object.keys(order)
     .reduce((acc, k) => {
       acc[k] = pr => data => {
-        const d = data ? encodeData(k, types[k], order[k], data) : null
+        const d = encodeData(k, types[k], order[k], data)
         const tx = (defaultFn as any)(serializeRpcParams(pr), d)
         return tx
         // return new Tx(tx)
@@ -90,6 +91,7 @@ const paramsToCall = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, c
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxDataType | null) => {
         const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
         const txParams = paramsToTx[k](txRaw)(data)
+        console.log('TxParams', txParams)
         // todo: figure out gas
         return cfg.rpc.call({
           params: txParams
