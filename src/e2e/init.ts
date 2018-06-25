@@ -51,6 +51,15 @@ const gen = () => {
 
   try {
     console.log('CONTRACTS DEPLOYED')
+
+    // todo: figure out what would be the best
+    const cmd = `git co "${cfg.migrationBuildDir}"`
+    try {
+      pr.execSync(cmd)
+    } catch (err) {
+      console.log(`${cmd} FAILED. Contract deployment modified ${cfg.migrationBuildDir}. Please do not commit it to repo.`)
+    }
+
     const res = c.toString().split('\n').filter(l => l.indexOf('__GONETWORK_RESULT__') >= 0)
 
     if (res.length !== 1) {
@@ -58,6 +67,7 @@ const gen = () => {
     }
 
     const r = JSON.parse(res[0])
+    // r.privateKeys = cfg.pks
     delete r['__GONETWORK_RESULT__']
     fs.writeFileSync(cfg.contractAddressesPath, JSON.stringify(r, null, 4), 'utf8')
     return r

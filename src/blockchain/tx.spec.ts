@@ -13,15 +13,32 @@ const cTx = createContracts({
   signatureCb: (fn) => fn(cfg.acc1.privateKey)
 })
 
-test('call - token.balanceOf', () =>
-  cTx.call.token.balanceOf({
-    to: cfg.hsToken,
-    nonce: as.Nonce(0) // ?
-  }, {
-    _owner: cfg.acc1.address
-  })
+test('call - token.balanceOf', () => {
+  // console.log(cfg.hsToken, cfg.acc1.addressStr, cfg.acc2.addressStr)
+  return rpc.getTransactionCount({ address: cfg.acc1.address })
+    .then(n =>
+      cTx.call.token.balanceOf({
+        to: cfg.hsToken,
+        nonce: n // ?
+      },
+        {
+          _owner: cfg.acc1.address
+        })
+    )
     .then(x => console.log(x))
-)
+})
+
+test.only('call - token.totalSupply', () => {
+  // console.log(cfg.hsToken, cfg.acc1.addressStr, cfg.acc2.addressStr)
+  return rpc.getTransactionCount({ address: cfg.acc1.address })
+    .then(n =>
+      cTx.call.token.totalSupply({
+        to: cfg.token,
+        from: cfg.acc1.address
+      } as any)
+    )
+    .then(x => console.log(x))
+})
 
 test('estimate - token.approve (wrong addresses)', () =>
   // this estimation passes if though addresses are not contract addresses weird
@@ -61,7 +78,7 @@ test('sendRawTx - token.approve', () => {
     .then(([n, p]) => {
       console.log('NONCE,PRICE', n, p)
       return cTx.estimateRawTx.token.approve({
-        nonce: as.Nonce(n.add(new BN(1))),
+        nonce: n,
         to: cfg.token,
         gasPrice: p
       }, cData)
@@ -87,7 +104,7 @@ test.skip('sendRawTx - manager.newChannel', () => {
     .then(([n, p]) => {
       console.log('NONCE,PRICE', n, p)
       return cTx.estimateRawTx.manager.newChannel({
-        nonce: as.Nonce(n.add(new BN(1))),
+        nonce: as.Nonce(n),
         to: cfg.manager,
         // value: as.Wei(100000)
         gasPrice: p
