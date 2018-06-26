@@ -113,9 +113,9 @@ export default (cfg: ContractTxConfig) => {
   }
 
   const call = {
-    token: paramsToCall(C.TokenConstOrdIO, txConstParams.token, cfg) as C.TxRequest<C.TokenConstIO>,
-    manager: paramsToCall(C.ManagerConstOrdIO, txConstParams.manager, cfg) as C.TxRequest<C.ManagerConstIO>,
-    channel: paramsToCall(C.ChannelConstOrdIO, txConstParams.channel, cfg) as C.TxRequest<C.ChannelConstIO>
+    token: paramsToCall(C.TokenConstOrdIO, txConstParams.token, cfg) as C.TxCall<C.TokenConstIO>,
+    manager: paramsToCall(C.ManagerConstOrdIO, txConstParams.manager, cfg) as C.TxCall<C.ManagerConstIO>,
+    channel: paramsToCall(C.ChannelConstOrdIO, txConstParams.channel, cfg) as C.TxCall<C.ChannelConstIO>
   }
 
   return {

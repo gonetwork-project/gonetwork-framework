@@ -84,7 +84,7 @@ export interface ContractTxConfig {
 export interface ServiceConfig {
   providerUrl: string
   manager: E.Address
-  token: E.Address
+  gotToken: E.Address
   hsToken: E.Address
 
   chainId: E.ChainId

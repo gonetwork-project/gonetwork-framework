@@ -9,7 +9,7 @@ export const serviceCreate: ServiceCreate = cfg => {
   const monitoring = new Monitoring({
     rpc,
     channelManagerAddress: cfg.manager,
-    tokenAddresses: [cfg.token, cfg.hsToken],
+    tokenAddresses: [cfg.gotToken, cfg.hsToken],
     storage: fakeStorage()
   })
 
