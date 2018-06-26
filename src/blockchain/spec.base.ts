@@ -9,6 +9,7 @@ import * as e2e from '../e2e/config'
 import * as E from 'eth-types'
 
 import { as, CHAIN_ID, util } from '../utils/eth-utils'
+import { Observable } from 'rxjs/Observable'
 
 // todo will break in a browser environment
 (global as any).fetch = require('node-fetch')
@@ -47,6 +48,8 @@ const infura = {
 type Config = typeof infura
 
 const toAdd = (s: string) => as.Address(new Buffer(s.substring(2), 'hex'))
+
+export const waitFor = (n: number) => Observable.timer(n).toPromise()
 
 export const config = <E extends Env> (env) => {
   if (!testEnvironments.find(e => env === e)) {

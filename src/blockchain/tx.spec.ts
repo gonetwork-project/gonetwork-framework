@@ -61,7 +61,7 @@ if (!cfg) {
     }
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
       .then(([n, p]) => {
-        // console.log('NONCE,PRICE', n, p)
+        console.log('NONCE,PRICE', n, p)
         return cTx.estimateRawTx.token.approve({
           nonce: n,
           to: cfg.gotToken,
@@ -88,8 +88,10 @@ if (!cfg) {
       partner,
       settle_timeout: new BN(500)
     }
-    return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
+    return base.waitFor(1000) // seems that old Nonce is being reported for some time
+      .then(() => Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()]))
       .then(([n, p]) => {
+        console.log('NONCE', n)
         return cTx.estimateRawTx.manager.newChannel({
           nonce: as.Nonce(n),
           to: cfg.manager,

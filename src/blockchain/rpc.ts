@@ -10,7 +10,7 @@ export const partialImplementation: B.ImplementationSpecs = {
   blockNumber: ['eth_blockNumber', null, as.BlockNumber, null],
   getLogs: ['eth_getLogs', [], decodeLogs, null], // warn decodeLogs is tailored to our needs
 
-  getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
+  getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'latest' }],
   getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null],
   sendRawTransaction: ['eth_sendRawTransaction', [], x => x, null],
   call: ['eth_call', ['params', 'defaultBlock'], x => x, { defaultBlock: 'latest' }],
