@@ -10,7 +10,8 @@ const defaultEther = '10000000000000000000000000'
 const ganacheCli = [
   'ganache-cli',
   `-b 1`, // blockTime in seconds for automatic mining. Default is 0 and no auto-mining.
-  cfg.accounts.map((a, i) => `--unlock ${i} --account="${a.privateKeyStr},${defaultEther}"`).join(' ')
+  // cfg.accounts.map((a, i) => `--unlock ${i} --account="${a.privateKeyStr},${defaultEther}"`).join(' ')
+  `-m "${cfg.mnemonic}"`
 ].join(' ')
 
 const noEthNode = (msg, err) => {

@@ -1,15 +1,15 @@
 // #region GENERATED
 
-export * from './__GEN__/NettingChannelContract'
-export * from './__GEN__/HumanStandardToken'
-export * from './__GEN__/ChannelManagerContract'
+export * from '../__GEN__/NettingChannelContract'
+export * from '../__GEN__/HumanStandardToken'
+export * from '../__GEN__/ChannelManagerContract'
 
 // #endregion GENERATED
 
 import { TxParamsRequired, TxParamsWithGas, TxResult, GasPrice, TxRaw, TxParams } from 'eth-types'
-import { ChannelEvents, ChannelEventsToArgs } from './__GEN__/NettingChannelContract'
-import { ManagerEvents, ManagerEventsToArgs } from './__GEN__/ChannelManagerContract'
-import { TokenEvents, TokenEventsToArgs } from './__GEN__/HumanStandardToken'
+import { ChannelEvents, ChannelEventsToArgs } from '../__GEN__/NettingChannelContract'
+import { ManagerEvents, ManagerEventsToArgs } from '../__GEN__/ChannelManagerContract'
+import { TokenEvents, TokenEventsToArgs } from '../__GEN__/HumanStandardToken'
 
 export type Method<In, Out> = [In, Out]
 

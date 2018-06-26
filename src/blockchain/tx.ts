@@ -89,9 +89,7 @@ const paramsToCall = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, c
     .reduce((acc, k) => {
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxDataType | null) => {
         const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
-        console.log('TxRaw', txRaw)
         const txParams = paramsToTx[k](txRaw)(data)
-        console.log('TxParams', txParams)
         // todo: figure out gas
         return cfg.rpc.call({
           params: txParams

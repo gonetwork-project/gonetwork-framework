@@ -28,7 +28,7 @@ const $ = Observable
 
 const DEFAULT_ROOT = path.join(__dirname, '..')
 const contractsDir = path.join(DEFAULT_ROOT, 'smart-contracts', 'build', 'contracts')
-const outDir = path.join(DEFAULT_ROOT, 'src', 'types', '__GEN__')
+const outDir = path.join(DEFAULT_ROOT, 'src', '__GEN__')
 
 const log = console.log.bind(console)
 

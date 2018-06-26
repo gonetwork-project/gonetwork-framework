@@ -7,7 +7,7 @@ Run two processes from `./scripts`:
  `tsc --watch --strict abi-to-ts.ts`
  `nodemon abi-to-ts.js`
 
-The output will be present under `./smart-contracts/build/types`.
+The output will be present under `./src/__GEN__`.
 
 ## Just run
 
