@@ -1,12 +1,4 @@
-// #region GENERATED
-
-export * from '../__GEN__/NettingChannelContract'
-export * from '../__GEN__/HumanStandardToken'
-export * from '../__GEN__/ChannelManagerContract'
-
-// #endregion GENERATED
-
-import { TxParamsRequired, TxParamsWithGas, TxResult, GasPrice, Address, TxParams } from 'eth-types'
+import { TxParamsRequired, TxParamsWithGas, GasPrice, Address, TxParams } from 'eth-types'
 import { ChannelEvents, ChannelEventsToArgs } from '../__GEN__/NettingChannelContract'
 import { ManagerEvents, ManagerEventsToArgs } from '../__GEN__/ChannelManagerContract'
 import { TokenEvents, TokenEventsToArgs } from '../__GEN__/HumanStandardToken'
@@ -37,16 +29,16 @@ export type FunctionConstCall<T extends { [K: string]: [any, any] }, Out> = {
   [K in keyof T]: CreateTxConstParams<T[K][0], Out>
 }
 
-export type TxRequest<T extends { [K: string]: [any, any] }> = {
+export type TxSendRaw<T extends { [K: string]: [any, any] }> = {
   [K in keyof T]: T[K][0] extends null ?
-    (params: TxParamsRequired & Partial<TxParamsWithGas>) => Promise<T[K][1]> :
-    (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<T[K][1]>
+  (params: TxParamsRequired & Partial<TxParamsWithGas>) => Promise<T[K][1]> :
+  (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<T[K][1]>
 }
 
 export type TxCall<T extends { [K: string]: [any, any] }> = {
   [K in keyof T]: T[K][0] extends null ?
-    (params: { to: Address, from?: Address } & Partial<TxParamsWithGas>) => Promise<T[K][1]> :
-    (params: { to: Address, from?: Address } & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<T[K][1]>
+  (params: { to: Address, from?: Address } & Partial<TxParamsWithGas>) => Promise<T[K][1]> :
+  (params: { to: Address, from?: Address } & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<T[K][1]>
 }
 
 export type TxEstimation<T extends { [K: string]: [any, any] }> = {
@@ -55,6 +47,15 @@ export type TxEstimation<T extends { [K: string]: [any, any] }> = {
       estimatedGas: GasPrice
       txParams: TxParams
     }>
+}
+
+export type GenOrder = [
+  Array<[string, string]>, // [input-name, input-type][]
+  Array<[string, string]>  // [output-name, output-type][]
+]
+
+export type GenOrders = {
+  [k: string]: GenOrder
 }
 
 export type ExtractEvents<E, K extends keyof E> = E[K]

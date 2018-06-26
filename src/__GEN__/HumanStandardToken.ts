@@ -47,81 +47,82 @@ export type TokenIO = {
 export const TokenOrdIO = {
   approve: [
     [
-      '_spender',
-      '_value'
+      [
+        '_spender',
+        'address'
+      ],
+      [
+        '_value',
+        'uint256'
+      ]
     ],
     [
-      'success'
+      [
+        'success',
+        'bool'
+      ]
     ]
   ],
   transferFrom: [
     [
-      '_from',
-      '_to',
-      '_value'
+      [
+        '_from',
+        'address'
+      ],
+      [
+        '_to',
+        'address'
+      ],
+      [
+        '_value',
+        'uint256'
+      ]
     ],
     [
-      'success'
+      [
+        'success',
+        'bool'
+      ]
     ]
   ],
   transfer: [
     [
-      '_to',
-      '_value'
+      [
+        '_to',
+        'address'
+      ],
+      [
+        '_value',
+        'uint256'
+      ]
     ],
     [
-      'success'
+      [
+        'success',
+        'bool'
+      ]
     ]
   ],
   approveAndCall: [
     [
-      '_spender',
-      '_value',
-      '_extraData'
+      [
+        '_spender',
+        'address'
+      ],
+      [
+        '_value',
+        'uint256'
+      ],
+      [
+        '_extraData',
+        'bytes'
+      ]
     ],
     [
-      'success'
-    ]
-  ]
-}
-
-export const TokenTypesIO = {
-  approve: [
-    [
-      'address',
-      'uint256'
-    ],
-    [
-      'bool'
-    ]
-  ],
-  transferFrom: [
-    [
-      'address',
-      'address',
-      'uint256'
-    ],
-    [
-      'bool'
-    ]
-  ],
-  transfer: [
-    [
-      'address',
-      'uint256'
-    ],
-    [
-      'bool'
-    ]
-  ],
-  approveAndCall: [
-    [
-      'address',
-      'uint256',
-      'bytes'
-    ],
-    [
-      'bool'
+      [
+        'success',
+        'bool'
+      ]
     ]
   ]
 }
@@ -178,98 +179,78 @@ export const TokenConstOrdIO = {
   name: [
     [],
     [
-      ''
+      [
+        '',
+        'string'
+      ]
     ]
   ],
   totalSupply: [
     [],
     [
-      'supply'
+      [
+        'supply',
+        'uint256'
+      ]
     ]
   ],
   decimals: [
     [],
     [
-      ''
+      [
+        '',
+        'uint8'
+      ]
     ]
   ],
   version: [
     [],
     [
-      ''
+      [
+        '',
+        'string'
+      ]
     ]
   ],
   balanceOf: [
     [
-      '_owner'
+      [
+        '_owner',
+        'address'
+      ]
     ],
     [
-      'balance'
+      [
+        'balance',
+        'uint256'
+      ]
     ]
   ],
   symbol: [
     [],
     [
-      ''
+      [
+        '',
+        'string'
+      ]
     ]
   ],
   allowance: [
     [
-      '_owner',
-      '_spender'
+      [
+        '_owner',
+        'address'
+      ],
+      [
+        '_spender',
+        'address'
+      ]
     ],
     [
-      'remaining'
-    ]
-  ]
-}
-
-export const TokenConstTypesIO = {
-  name: [
-    [],
-    [
-      'string'
-    ]
-  ],
-  totalSupply: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  decimals: [
-    [],
-    [
-      'uint8'
-    ]
-  ],
-  version: [
-    [],
-    [
-      'string'
-    ]
-  ],
-  balanceOf: [
-    [
-      'address'
-    ],
-    [
-      'uint256'
-    ]
-  ],
-  symbol: [
-    [],
-    [
-      'string'
-    ]
-  ],
-  allowance: [
-    [
-      'address',
-      'address'
-    ],
-    [
-      'uint256'
+      [
+        'remaining',
+        'uint256'
+      ]
     ]
   ]
 }

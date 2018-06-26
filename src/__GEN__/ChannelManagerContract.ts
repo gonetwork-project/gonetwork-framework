@@ -28,7 +28,10 @@ export type ManagerIO = {
 export const ManagerOrdIO = {
   transferOwnership: [
     [
-      'newOwner'
+      [
+        'newOwner',
+        'address'
+      ]
     ],
     []
   ],
@@ -38,33 +41,20 @@ export const ManagerOrdIO = {
   ],
   newChannel: [
     [
-      'partner',
-      'settle_timeout'
+      [
+        'partner',
+        'address'
+      ],
+      [
+        'settle_timeout',
+        'uint256'
+      ]
     ],
     [
-      ''
-    ]
-  ]
-}
-
-export const ManagerTypesIO = {
-  transferOwnership: [
-    [
-      'address'
-    ],
-    []
-  ],
-  collectFees: [
-    [],
-    []
-  ],
-  newChannel: [
-    [
-      'address',
-      'uint256'
-    ],
-    [
-      'address'
+      [
+        '',
+        'address'
+      ]
     ]
   ]
 }
@@ -135,125 +125,98 @@ export type ManagerConstIO = {
 export const ManagerConstOrdIO = {
   contractExists: [
     [
-      'channel'
+      [
+        'channel',
+        'address'
+      ]
     ],
     [
-      ''
+      [
+        '',
+        'bool'
+      ]
     ]
   ],
   owner: [
     [],
     [
-      ''
+      [
+        '',
+        'address'
+      ]
     ]
   ],
   contract_version: [
     [],
     [
-      ''
+      [
+        '',
+        'string'
+      ]
     ]
   ],
   fee: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   getChannelsAddresses: [
     [],
     [
-      ''
+      [
+        '',
+        'address[]'
+      ]
     ]
   ],
   tokenAddress: [
     [],
     [
-      ''
+      [
+        '',
+        'address'
+      ]
     ]
   ],
   getChannelWith: [
     [
-      'partner'
+      [
+        'partner',
+        'address'
+      ]
     ],
     [
-      ''
+      [
+        '',
+        'address'
+      ]
     ]
   ],
   nettingContractsByAddress: [
     [
-      'node_address'
+      [
+        'node_address',
+        'address'
+      ]
     ],
     [
-      ''
+      [
+        '',
+        'address[]'
+      ]
     ]
   ],
   getChannelsParticipants: [
     [],
     [
-      ''
-    ]
-  ]
-}
-
-export const ManagerConstTypesIO = {
-  contractExists: [
-    [
-      'address'
-    ],
-    [
-      'bool'
-    ]
-  ],
-  owner: [
-    [],
-    [
-      'address'
-    ]
-  ],
-  contract_version: [
-    [],
-    [
-      'string'
-    ]
-  ],
-  fee: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  getChannelsAddresses: [
-    [],
-    [
-      'address[]'
-    ]
-  ],
-  tokenAddress: [
-    [],
-    [
-      'address'
-    ]
-  ],
-  getChannelWith: [
-    [
-      'address'
-    ],
-    [
-      'address'
-    ]
-  ],
-  nettingContractsByAddress: [
-    [
-      'address'
-    ],
-    [
-      'address[]'
-    ]
-  ],
-  getChannelsParticipants: [
-    [],
-    [
-      'address[]'
+      [
+        '',
+        'address[]'
+      ]
     ]
   ]
 }

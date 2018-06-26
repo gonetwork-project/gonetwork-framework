@@ -128,14 +128,3 @@ export const nextId = () => {
   }
   return ++id
 }
-
-type getIO = [string[], string[]]
-
-export const encodeTxData = (name: string, types: getIO, order: getIO, data: E.TxData) => {
-  // console.log(name, types, order, data)
-  return util.toBuffer([
-    '0x',
-    abi.methodID(name, types[0]).toString('hex'),
-    types[0].length === 0 ? '' : abi.rawEncode(types[0], order[0].map(o => serializeRpcParam(data[o]))).toString('hex')
-  ].join(''))
-}

@@ -49,80 +49,82 @@ export type ChannelIO = {
 export const ChannelOrdIO = {
   deposit: [
     [
-      'amount'
+      [
+        'amount',
+        'uint256'
+      ]
     ],
     [
-      ''
+      [
+        '',
+        'bool'
+      ]
     ]
   ],
   close: [
     [
-      'nonce',
-      'transferred_amount',
-      'locksroot',
-      'extra_hash',
-      'signature'
+      [
+        'nonce',
+        'uint256'
+      ],
+      [
+        'transferred_amount',
+        'uint256'
+      ],
+      [
+        'locksroot',
+        'bytes32'
+      ],
+      [
+        'extra_hash',
+        'bytes32'
+      ],
+      [
+        'signature',
+        'bytes'
+      ]
     ],
     []
   ],
   updateTransfer: [
     [
-      'nonce',
-      'transferred_amount',
-      'locksroot',
-      'extra_hash',
-      'signature'
+      [
+        'nonce',
+        'uint256'
+      ],
+      [
+        'transferred_amount',
+        'uint256'
+      ],
+      [
+        'locksroot',
+        'bytes32'
+      ],
+      [
+        'extra_hash',
+        'bytes32'
+      ],
+      [
+        'signature',
+        'bytes'
+      ]
     ],
     []
   ],
   withdraw: [
     [
-      'locked_encoded',
-      'merkle_proof',
-      'secret'
-    ],
-    []
-  ],
-  settle: [
-    [],
-    []
-  ]
-}
-
-export const ChannelTypesIO = {
-  deposit: [
-    [
-      'uint256'
-    ],
-    [
-      'bool'
-    ]
-  ],
-  close: [
-    [
-      'uint256',
-      'uint256',
-      'bytes32',
-      'bytes32',
-      'bytes'
-    ],
-    []
-  ],
-  updateTransfer: [
-    [
-      'uint256',
-      'uint256',
-      'bytes32',
-      'bytes32',
-      'bytes'
-    ],
-    []
-  ],
-  withdraw: [
-    [
-      'bytes',
-      'bytes',
-      'bytes32'
+      [
+        'locked_encoded',
+        'bytes'
+      ],
+      [
+        'merkle_proof',
+        'bytes'
+      ],
+      [
+        'secret',
+        'bytes32'
+      ]
     ],
     []
   ],
@@ -250,226 +252,211 @@ export const ChannelConstOrdIO = {
   refund: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   data: [
     [],
     [
-      'settle_timeout',
-      'opened',
-      'closed',
-      'closing_address',
-      'token',
-      'updated',
-      'goToken',
-      'channel_manager'
+      [
+        'settle_timeout',
+        'uint256'
+      ],
+      [
+        'opened',
+        'uint256'
+      ],
+      [
+        'closed',
+        'uint256'
+      ],
+      [
+        'closing_address',
+        'address'
+      ],
+      [
+        'token',
+        'address'
+      ],
+      [
+        'updated',
+        'bool'
+      ],
+      [
+        'goToken',
+        'address'
+      ],
+      [
+        'channel_manager',
+        'address'
+      ]
     ]
   ],
   refund_interval: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   contract_version: [
     [],
     [
-      ''
+      [
+        '',
+        'string'
+      ]
     ]
   ],
   fee: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   addressAndBalance: [
     [],
     [
-      'participant1',
-      'balance1',
-      'participant2',
-      'balance2'
+      [
+        'participant1',
+        'address'
+      ],
+      [
+        'balance1',
+        'uint256'
+      ],
+      [
+        'participant2',
+        'address'
+      ],
+      [
+        'balance2',
+        'uint256'
+      ]
     ]
   ],
   settleTimeout: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   tokenAddress: [
     [],
     [
-      ''
+      [
+        '',
+        'address'
+      ]
     ]
   ],
   opened: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   closed: [
     [],
     [
-      ''
+      [
+        '',
+        'uint256'
+      ]
     ]
   ],
   closingAddress: [
     [],
     [
-      ''
+      [
+        '',
+        'address'
+      ]
     ]
   ],
   participantData: [
     [],
     [
-      '',
-      '',
-      ''
+      [
+        '',
+        'address'
+      ],
+      [
+        '',
+        'uint256'
+      ],
+      [
+        '',
+        'bytes32'
+      ]
     ]
   ],
   decodeLock: [
     [
-      'lock'
+      [
+        'lock',
+        'bytes'
+      ]
     ],
     [
-      '',
-      '',
-      ''
+      [
+        '',
+        'uint256'
+      ],
+      [
+        '',
+        'uint256'
+      ],
+      [
+        '',
+        'bytes32'
+      ]
     ]
   ],
   computeMerkleRoot: [
     [
-      'lock',
-      'merkle_proof'
+      [
+        'lock',
+        'bytes'
+      ],
+      [
+        'merkle_proof',
+        'bytes'
+      ]
     ],
     [
-      ''
+      [
+        '',
+        'bytes32'
+      ]
     ]
   ],
   computeLockHash: [
     [
-      'lock'
+      [
+        'lock',
+        'bytes'
+      ]
     ],
     [
-      ''
-    ]
-  ]
-}
-
-export const ChannelConstTypesIO = {
-  refund: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  data: [
-    [],
-    [
-      'uint256',
-      'uint256',
-      'uint256',
-      'address',
-      'address',
-      'bool',
-      'address',
-      'address'
-    ]
-  ],
-  refund_interval: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  contract_version: [
-    [],
-    [
-      'string'
-    ]
-  ],
-  fee: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  addressAndBalance: [
-    [],
-    [
-      'address',
-      'uint256',
-      'address',
-      'uint256'
-    ]
-  ],
-  settleTimeout: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  tokenAddress: [
-    [],
-    [
-      'address'
-    ]
-  ],
-  opened: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  closed: [
-    [],
-    [
-      'uint256'
-    ]
-  ],
-  closingAddress: [
-    [],
-    [
-      'address'
-    ]
-  ],
-  participantData: [
-    [],
-    [
-      'address',
-      'uint256',
-      'bytes32'
-    ]
-  ],
-  decodeLock: [
-    [
-      'bytes'
-    ],
-    [
-      'uint256',
-      'uint256',
-      'bytes32'
-    ]
-  ],
-  computeMerkleRoot: [
-    [
-      'bytes',
-      'bytes'
-    ],
-    [
-      'bytes32'
-    ]
-  ],
-  computeLockHash: [
-    [
-      'bytes'
-    ],
-    [
-      'bytes32'
+      [
+        '',
+        'bytes32'
+      ]
     ]
   ]
 }

@@ -1,112 +1,117 @@
-import * as abi from 'ethereumjs-abi'
+// #region GENERATED
+
+import { ChannelIO, ChannelConstIO, ChannelOrdIO, ChannelConstOrdIO } from '../__GEN__/NettingChannelContract'
+import { TokenIO, TokenConstIO, TokenOrdIO, TokenConstOrdIO } from '../__GEN__/HumanStandardToken'
+import { ManagerIO, ManagerConstIO, ManagerOrdIO, ManagerConstOrdIO } from '../__GEN__/ChannelManagerContract'
+
+// #endregion GENERATED
 
 import * as Tx from 'ethereumjs-tx'
 import * as E from 'eth-types'
 
 import * as util from 'ethereumjs-util'
 
-import { as, serializeRpcParam, serializeRpcParams, encodeTxData, CHAIN_ID } from '../utils'
+import { as, serializeRpcParams, abi, serializeRpcParam } from '../utils'
 
-import * as C from '../types/contracts'
+import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw } from '../types/contracts'
 import { ContractTxConfig } from './types'
 
-const txParamsWithDefaults = <T extends E.TxDataType[] | null> (provided: E.TxParamsRequired & E.TxParamsWithGas, data: T):
-  E.TxParams => Object.assign(data ? { data } : { data: '0x' as any }, {
-    ...provided,
-    chainId: CHAIN_ID.GETH_PRIVATE_CHAINS // default by spec
-  })
-
-const serializeParams = (order: any, types: any, defaultFn: typeof txParamsWithDefaults) =>
-  Object.keys(order)
-    .reduce((acc, k) => {
-      acc[k] = pr => data => {
-        const d = encodeTxData(k, types[k], order[k], data)
-        const tx = (defaultFn as any)(serializeRpcParams(pr), d)
-        return tx
-        // return new Tx(tx)
-      }
-      return acc
-    }, {} as { [k: string]: C.CreateTxParams<any, any> })
-
-// changes state do require gas
-export const txParams = {
-  token: serializeParams(C.TokenOrdIO, C.TokenTypesIO, txParamsWithDefaults) as C.FunctionCall<C.TokenIO, E.TxParams>,
-  manager: serializeParams(C.ManagerOrdIO, C.ManagerTypesIO, txParamsWithDefaults) as C.FunctionCall<C.ManagerIO, E.TxParams>,
-  channel: serializeParams(C.ChannelOrdIO, C.ChannelTypesIO, txParamsWithDefaults) as C.FunctionCall<C.ChannelIO, E.TxParams>
+export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
+  const names = abiInSpec.map(o => o[0])
+  const types = abiInSpec.map(o => o[1])
+  return (data: E.TxData) => {
+    return util.toBuffer([
+      '0x',
+      abi.methodID(name, types).toString('hex'),
+      types.length === 0 ? '' : abi.rawEncode(types, names.map(o => serializeRpcParam(data[o]))).toString('hex')
+    ].join(''))
+  }
 }
+type EncodeData = ReturnType<typeof encodeTxData>
 
-// read-only do not require gas
-export const txConstParams = {
-  token: serializeParams(C.TokenConstOrdIO, C.TokenConstTypesIO, txParamsWithDefaults) as C.FunctionConstCall<C.TokenConstIO, E.TxParams>,
-  manager: serializeParams(C.ManagerConstOrdIO, C.ManagerConstTypesIO, txParamsWithDefaults) as C.FunctionConstCall<C.ManagerConstIO, E.TxParams>,
-  channel: serializeParams(C.ChannelConstOrdIO, C.ChannelConstTypesIO, txParamsWithDefaults) as C.FunctionConstCall<C.ChannelConstIO, E.TxParams>
-}
+// export const decodeTxData = <T> (order: GenOrder, data: string): T => {
+//   if (types[1].length === 0) return null as any
+//   else if (types[1].length === 1) return abi.rawDecode(types[1], data)[0]
 
-const paramsToEstimation = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, cfg: ContractTxConfig) => {
+//   return abi.rawDecode(types[1], data)
+//     .reduce((acc, d, i) => {
+//       acc[order[1][i]] = d
+//       return acc
+//     }, {} as T)
+// }
+
+const toTxRaw = (chainId: E.ChainId, params: Partial<E.TxParams>, data: Buffer) => Object.assign({
+  data,
+  value: as.Wei(0),
+  chainId: new util.BN(chainId)
+}, params)
+
+const paramsToEstimation = (order: GenOrders, cfg: ContractTxConfig) => {
   return Object.keys(order)
     .reduce((acc, k) => {
-      (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxDataType | null) => {
-        const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
-        const tx = paramsToTx[k](txRaw)(data)
-        return cfg.rpc.estimateGas(tx)
-          .then(r => ({
-            estimatedGas: r,
-            txParams: Object.assign({
-              gasLimit: r.add(r.div(new util.BN(5))) // adds ~20%
-            } as Partial<E.TxParams>, txRaw)
-          }))
-      }
+      (acc[k] as any) = ((encodeData: EncodeData) =>
+        (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData) => {
+          const txRaw = toTxRaw(cfg.chainId, params, encodeData(data))
+          const txParams = serializeRpcParams(txRaw)
+          return cfg.rpc.estimateGas(txParams as any)
+            .then(r => ({
+              estimatedGas: r,
+              txParams: Object.assign({
+                gasLimit: r.add(r.div(new util.BN(5))) // adds ~20%
+              } as Partial<E.TxParams>, txRaw)
+            }))
+        })(encodeTxData(k, order[k][0]))
       return acc
-    }, {} as {} as C.TxEstimation<any>)
+    }, {} as {} as TxEstimation<any>)
 }
 
-const paramsToRawTx = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, cfg: ContractTxConfig) => {
+const paramsToRawTx = (order: GenOrders, cfg: ContractTxConfig) => {
   return Object.keys(order)
     .reduce((acc, k) => {
-      (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data?: E.TxDataType) => {
-        const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
-        const enc = paramsToTx[k](txRaw)(data)
-        const tx = new Tx(enc)
-        cfg.signatureCb(pk => tx.sign(pk))
-        // todo: make sure gasLimit and gasPrice are properly set
-        return cfg.rpc.sendRawTransaction(`0x${tx.serialize().toString('hex')}`)
-      }
+      (acc[k] as any) = ((encodeData: EncodeData) =>
+        (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData) => {
+          const txRaw = toTxRaw(cfg.chainId, params, encodeData(data))
+          const enc = serializeRpcParams(txRaw)
+          const tx = new Tx(enc as any)
+          cfg.signatureCb(pk => tx.sign(pk))
+          // todo: make sure gasLimit and gasPrice are properly set
+          return cfg.rpc.sendRawTransaction(`0x${tx.serialize().toString('hex')}`)
+        })(encodeTxData(k, order[k][0]))
       return acc
-    }, {} as {} as C.TxRequest<any>)
+    }, {} as {} as TxSendRaw<any>)
 }
 
-const paramsToCall = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, cfg: ContractTxConfig) => {
+const paramsToCall = (order: GenOrders, cfg: ContractTxConfig) => {
   return Object.keys(order)
     .reduce((acc, k) => {
-      (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxDataType | null) => {
-        const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
-        const txParams = paramsToTx[k](txRaw)(data)
-        // todo: figure out gas
+      (acc[k] as any) = ((encodeData: EncodeData) => (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData) => {
+        const txRaw = toTxRaw(cfg.chainId, params, encodeData(data))
+        const txParams = serializeRpcParams(txRaw)
         return cfg.rpc.call({
-          params: txParams
+          params: txParams as any
         })
-      }
+      })(encodeTxData(k, order[k][0]))
       return acc
-    }, {} as {} as C.TxRequest<any>)
+    }, {} as {} as TxCall<any>)
 }
 
 export default (cfg: ContractTxConfig) => {
   const estimateRawTx = {
-    token: paramsToEstimation(C.TokenOrdIO, txParams.token, cfg) as C.TxEstimation<C.TokenIO>,
-    manager: paramsToEstimation(C.ManagerOrdIO, txParams.manager, cfg) as C.TxEstimation<C.ManagerIO>,
-    channel: paramsToEstimation(C.ChannelOrdIO, txParams.channel, cfg) as C.TxEstimation<C.ChannelIO>
+    token: paramsToEstimation(TokenOrdIO as any, cfg) as TxEstimation<TokenIO>,
+    manager: paramsToEstimation(ManagerOrdIO as any, cfg) as TxEstimation<ManagerIO>,
+    channel: paramsToEstimation(ChannelOrdIO as any, cfg) as TxEstimation<ChannelIO>
   }
 
   const sendRawTx = {
-    token: paramsToRawTx(C.TokenOrdIO, txParams.token, cfg) as C.TxRequest<C.TokenIO>,
-    manager: paramsToRawTx(C.ManagerOrdIO, txParams.manager, cfg) as C.TxRequest<C.ManagerIO>,
-    channel: paramsToRawTx(C.ChannelOrdIO, txParams.channel, cfg) as C.TxRequest<C.ChannelIO>
+    token: paramsToRawTx(TokenOrdIO as any, cfg) as TxSendRaw<TokenIO>,
+    manager: paramsToRawTx(ManagerOrdIO as any, cfg) as TxSendRaw<ManagerIO>,
+    channel: paramsToRawTx(ChannelOrdIO as any, cfg) as TxSendRaw<ChannelIO>
   }
 
   const call = {
-    token: paramsToCall(C.TokenConstOrdIO, txConstParams.token, cfg) as C.TxCall<C.TokenConstIO>,
-    manager: paramsToCall(C.ManagerConstOrdIO, txConstParams.manager, cfg) as C.TxCall<C.ManagerConstIO>,
-    channel: paramsToCall(C.ChannelConstOrdIO, txConstParams.channel, cfg) as C.TxCall<C.ChannelConstIO>
+    token: paramsToCall(TokenConstOrdIO as any, cfg) as TxCall<TokenConstIO>,
+    manager: paramsToCall(ManagerConstOrdIO as any, cfg) as TxCall<ManagerConstIO>,
+    channel: paramsToCall(ChannelConstOrdIO as any, cfg) as TxCall<ChannelConstIO>
   }
 
   return {
