@@ -1,8 +1,6 @@
-import { as, serializeRpcParam, serializeRpcParams } from '../utils'
-import { decode, nextId } from './blockchain-utils'
+import { as, serializeRpcParam, decodeLogs, nextId } from '../utils'
 
 import * as B from './types'
-import * as T from '../types'
 
 // very light implementation of: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
@@ -10,7 +8,7 @@ import * as T from '../types'
 // in case of order: pass `null` if no params, `[]` if just one, proper order if 2 or more
 export const partialImplementation: B.ImplementationSpecs = {
   blockNumber: ['eth_blockNumber', null, as.BlockNumber, null],
-  getLogs: ['eth_getLogs', [], decode, null],
+  getLogs: ['eth_getLogs', [], decodeLogs, null], // warn decodeLogs is tailored to our needs
 
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'pending' }],
   getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null],

@@ -5,19 +5,10 @@ import * as E from 'eth-types'
 
 import * as util from 'ethereumjs-util'
 
-import { as, serializeRpcParam, serializeRpcParams, CHAIN_ID } from '../utils'
+import { as, serializeRpcParam, serializeRpcParams, encodeTxData, CHAIN_ID } from '../utils'
 
 import * as C from '../types/contracts'
 import { ContractTxConfig } from './types'
-
-const encodeData = (name: string, types: string[], order: string[], data: E.TxParams[]) => {
-  // console.log(name, types, order, data)
-  return util.toBuffer([
-    '0x',
-    abi.methodID(name, types).toString('hex'),
-    types.length === 0 ? '' : abi.rawEncode(types, order.map(o => serializeRpcParam(data[o]))).toString('hex')
-  ].join(''))
-}
 
 const txParamsWithDefaults = <T extends E.TxDataType[] | null> (provided: E.TxParamsRequired & E.TxParamsWithGas, data: T):
   E.TxParams => Object.assign(data ? { data } : { data: '0x' as any }, {
@@ -29,7 +20,7 @@ const serializeParams = (order: any, types: any, defaultFn: typeof txParamsWithD
   Object.keys(order)
     .reduce((acc, k) => {
       acc[k] = pr => data => {
-        const d = encodeData(k, types[k], order[k], data)
+        const d = encodeTxData(k, types[k], order[k], data)
         const tx = (defaultFn as any)(serializeRpcParams(pr), d)
         return tx
         // return new Tx(tx)

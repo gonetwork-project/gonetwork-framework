@@ -30,7 +30,7 @@ const DEFAULT_ROOT = path.join(__dirname, '..')
 const contractsDir = path.join(DEFAULT_ROOT, 'smart-contracts', 'build', 'contracts')
 const outDir = path.join(DEFAULT_ROOT, 'src', '__GEN__')
 
-const log = console.log.bind(console)
+// const log = console.log.bind(console)
 
 const CONTRACT_NAMES = [
   'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract'
@@ -86,8 +86,8 @@ const reduceFunctions = (fns: AbiFunction[]) =>
     const params = f.inputs.length > 0 && reduceIO(f.inputs)
     const out = f.outputs!.length > 0 && reduceIO(f.outputs)
     acc.inOut[f.name] = [params || 'null', out || 'void']
-    acc.order[f.name] = f.inputs.map(x => `'${x.name}'`)
-    acc.types[f.name] = f.inputs.map(x => `'${x.type}'`)
+    acc.order[f.name] = [f.inputs.map(x => `'${x.name}'`), (f.outputs || []).map(x => `'${x.name}'`)]
+    acc.types[f.name] = [f.inputs.map(x => `'${x.type}'`), (f.outputs || []).map(x => `'${x.type}'`) ]
     return acc
   }, { inOut: {}, order: {}, types: {} })
 

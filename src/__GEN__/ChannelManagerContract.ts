@@ -27,23 +27,45 @@ export type ManagerIO = {
 
 export const ManagerOrdIO = {
   transferOwnership: [
-    'newOwner'
+    [
+      'newOwner'
+    ],
+    []
   ],
-  collectFees: [],
+  collectFees: [
+    [],
+    []
+  ],
   newChannel: [
-    'partner',
-    'settle_timeout'
+    [
+      'partner',
+      'settle_timeout'
+    ],
+    [
+      ''
+    ]
   ]
 }
 
 export const ManagerTypesIO = {
   transferOwnership: [
-    'address'
+    [
+      'address'
+    ],
+    []
   ],
-  collectFees: [],
+  collectFees: [
+    [],
+    []
+  ],
   newChannel: [
-    'address',
-    'uint256'
+    [
+      'address',
+      'uint256'
+    ],
+    [
+      'address'
+    ]
   ]
 }
 
@@ -112,38 +134,128 @@ export type ManagerConstIO = {
 
 export const ManagerConstOrdIO = {
   contractExists: [
-    'channel'
+    [
+      'channel'
+    ],
+    [
+      ''
+    ]
   ],
-  owner: [],
-  contract_version: [],
-  fee: [],
-  getChannelsAddresses: [],
-  tokenAddress: [],
+  owner: [
+    [],
+    [
+      ''
+    ]
+  ],
+  contract_version: [
+    [],
+    [
+      ''
+    ]
+  ],
+  fee: [
+    [],
+    [
+      ''
+    ]
+  ],
+  getChannelsAddresses: [
+    [],
+    [
+      ''
+    ]
+  ],
+  tokenAddress: [
+    [],
+    [
+      ''
+    ]
+  ],
   getChannelWith: [
-    'partner'
+    [
+      'partner'
+    ],
+    [
+      ''
+    ]
   ],
   nettingContractsByAddress: [
-    'node_address'
+    [
+      'node_address'
+    ],
+    [
+      ''
+    ]
   ],
-  getChannelsParticipants: []
+  getChannelsParticipants: [
+    [],
+    [
+      ''
+    ]
+  ]
 }
 
 export const ManagerConstTypesIO = {
   contractExists: [
-    'address'
+    [
+      'address'
+    ],
+    [
+      'bool'
+    ]
   ],
-  owner: [],
-  contract_version: [],
-  fee: [],
-  getChannelsAddresses: [],
-  tokenAddress: [],
+  owner: [
+    [],
+    [
+      'address'
+    ]
+  ],
+  contract_version: [
+    [],
+    [
+      'string'
+    ]
+  ],
+  fee: [
+    [],
+    [
+      'uint256'
+    ]
+  ],
+  getChannelsAddresses: [
+    [],
+    [
+      'address[]'
+    ]
+  ],
+  tokenAddress: [
+    [],
+    [
+      'address'
+    ]
+  ],
   getChannelWith: [
-    'address'
+    [
+      'address'
+    ],
+    [
+      'address'
+    ]
   ],
   nettingContractsByAddress: [
-    'address'
+    [
+      'address'
+    ],
+    [
+      'address[]'
+    ]
   ],
-  getChannelsParticipants: []
+  getChannelsParticipants: [
+    [],
+    [
+      'address[]'
+    ]
+  ]
 }
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠

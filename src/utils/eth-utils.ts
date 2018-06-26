@@ -1,9 +1,14 @@
 import * as E from 'eth-types'
 import { BN } from 'bn.js'
 import * as util from 'ethereumjs-util'
+import * as abi from 'ethereumjs-abi'
+import * as Tx from 'ethereumjs-tx'
+
+import * as T from '../types'
+import GenericLogDecoder from './generic-log-decoder'
 
 export {
-  BN, util
+  BN, util, abi, Tx
 }
 
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
@@ -107,3 +112,30 @@ export const serializeRpcParams = (ps: object) =>
       acc[k] = serializeRpcParam(ps[k])
       return acc
     }, {} as { [K: string]: string | string[] })
+
+// todo: remove it and use generated stuff
+const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
+const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
+const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
+
+const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelContract, HumanStandardTokenContract])
+export const decodeLogs = (logs: any[]) => logs.map(decoder.decode.bind(decoder)) as T.BlockchainEvent[]
+
+let id = 0
+export const nextId = () => {
+  if (id === Number.MAX_SAFE_INTEGER) {
+    id = 0
+  }
+  return ++id
+}
+
+type getIO = [string[], string[]]
+
+export const encodeTxData = (name: string, types: getIO, order: getIO, data: E.TxData) => {
+  // console.log(name, types, order, data)
+  return util.toBuffer([
+    '0x',
+    abi.methodID(name, types[0]).toString('hex'),
+    types[0].length === 0 ? '' : abi.rawEncode(types[0], order[0].map(o => serializeRpcParam(data[o]))).toString('hex')
+  ].join(''))
+}

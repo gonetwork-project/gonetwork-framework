@@ -1,4 +1,4 @@
-import { fakeStorage } from './blockchain-utils'
+import { fakeStorage } from '../utils'
 import rpcCreate from './rpc'
 import { Monitoring } from './monitoring'
 

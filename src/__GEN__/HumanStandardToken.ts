@@ -46,43 +46,83 @@ export type TokenIO = {
 
 export const TokenOrdIO = {
   approve: [
-    '_spender',
-    '_value'
+    [
+      '_spender',
+      '_value'
+    ],
+    [
+      'success'
+    ]
   ],
   transferFrom: [
-    '_from',
-    '_to',
-    '_value'
+    [
+      '_from',
+      '_to',
+      '_value'
+    ],
+    [
+      'success'
+    ]
   ],
   transfer: [
-    '_to',
-    '_value'
+    [
+      '_to',
+      '_value'
+    ],
+    [
+      'success'
+    ]
   ],
   approveAndCall: [
-    '_spender',
-    '_value',
-    '_extraData'
+    [
+      '_spender',
+      '_value',
+      '_extraData'
+    ],
+    [
+      'success'
+    ]
   ]
 }
 
 export const TokenTypesIO = {
   approve: [
-    'address',
-    'uint256'
+    [
+      'address',
+      'uint256'
+    ],
+    [
+      'bool'
+    ]
   ],
   transferFrom: [
-    'address',
-    'address',
-    'uint256'
+    [
+      'address',
+      'address',
+      'uint256'
+    ],
+    [
+      'bool'
+    ]
   ],
   transfer: [
-    'address',
-    'uint256'
+    [
+      'address',
+      'uint256'
+    ],
+    [
+      'bool'
+    ]
   ],
   approveAndCall: [
-    'address',
-    'uint256',
-    'bytes'
+    [
+      'address',
+      'uint256',
+      'bytes'
+    ],
+    [
+      'bool'
+    ]
   ]
 }
 
@@ -135,32 +175,102 @@ export type TokenConstIO = {
 }
 
 export const TokenConstOrdIO = {
-  name: [],
-  totalSupply: [],
-  decimals: [],
-  version: [],
-  balanceOf: [
-    '_owner'
+  name: [
+    [],
+    [
+      ''
+    ]
   ],
-  symbol: [],
+  totalSupply: [
+    [],
+    [
+      'supply'
+    ]
+  ],
+  decimals: [
+    [],
+    [
+      ''
+    ]
+  ],
+  version: [
+    [],
+    [
+      ''
+    ]
+  ],
+  balanceOf: [
+    [
+      '_owner'
+    ],
+    [
+      'balance'
+    ]
+  ],
+  symbol: [
+    [],
+    [
+      ''
+    ]
+  ],
   allowance: [
-    '_owner',
-    '_spender'
+    [
+      '_owner',
+      '_spender'
+    ],
+    [
+      'remaining'
+    ]
   ]
 }
 
 export const TokenConstTypesIO = {
-  name: [],
-  totalSupply: [],
-  decimals: [],
-  version: [],
-  balanceOf: [
-    'address'
+  name: [
+    [],
+    [
+      'string'
+    ]
   ],
-  symbol: [],
+  totalSupply: [
+    [],
+    [
+      'uint256'
+    ]
+  ],
+  decimals: [
+    [],
+    [
+      'uint8'
+    ]
+  ],
+  version: [
+    [],
+    [
+      'string'
+    ]
+  ],
+  balanceOf: [
+    [
+      'address'
+    ],
+    [
+      'uint256'
+    ]
+  ],
+  symbol: [
+    [],
+    [
+      'string'
+    ]
+  ],
   allowance: [
-    'address',
-    'address'
+    [
+      'address',
+      'address'
+    ],
+    [
+      'uint256'
+    ]
   ]
 }
 
