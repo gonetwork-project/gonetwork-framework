@@ -8,14 +8,14 @@ import * as util from 'ethereumjs-util'
 import { as, serializeRpcParam, serializeRpcParams, CHAIN_ID } from '../utils'
 
 import * as C from '../types/contracts'
-import { ContractTxConfig, RPC } from './types'
+import { ContractTxConfig } from './types'
 
 const encodeData = (name: string, types: string[], order: string[], data: E.TxParams[]) => {
   // console.log(name, types, order, data)
   return util.toBuffer([
     '0x',
     abi.methodID(name, types).toString('hex'),
-    types.length === 0 ? '' : abi.rawEncode(types, order.map(o => serializeRpcParam(data[o])))
+    types.length === 0 ? '' : abi.rawEncode(types, order.map(o => serializeRpcParam(data[o]))).toString('hex')
   ].join(''))
 }
 
@@ -61,7 +61,6 @@ const paramsToEstimation = (order: any, paramsToTx: C.FunctionCall<any, E.TxPara
           .then(r => ({
             estimatedGas: r,
             txParams: Object.assign({
-              data,
               gasLimit: r.add(r.div(new util.BN(5))) // adds ~20%
             } as Partial<E.TxParams>, txRaw)
           }))
@@ -75,9 +74,9 @@ const paramsToRawTx = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, 
     .reduce((acc, k) => {
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data?: E.TxDataType) => {
         const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
-        const tx = new Tx(paramsToTx[k](txRaw)(data))
+        const enc = paramsToTx[k](txRaw)(data)
+        const tx = new Tx(enc)
         cfg.signatureCb(pk => tx.sign(pk))
-        console.log('TX', tx.from, txRaw)
         // todo: make sure gasLimit and gasPrice are properly set
         return cfg.rpc.sendRawTransaction(`0x${tx.serialize().toString('hex')}`)
       }
@@ -90,6 +89,7 @@ const paramsToCall = (order: any, paramsToTx: C.FunctionCall<any, E.TxParams>, c
     .reduce((acc, k) => {
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxDataType | null) => {
         const txRaw = { value: as.Wei(0), chainId: new util.BN(cfg.chainId), ...params }
+        console.log('TxRaw', txRaw)
         const txParams = paramsToTx[k](txRaw)(data)
         console.log('TxParams', txParams)
         // todo: figure out gas

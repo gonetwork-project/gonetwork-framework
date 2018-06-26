@@ -12,6 +12,13 @@ export type Account = {
   addressStr: string
 }
 
+const account = (privateKeyStr: string, addressStr: string = util.privateToAddress(new Buffer(privateKeyStr, 'hex')).toString('hex')): Account => ({
+  addressStr,
+  privateKeyStr,
+  address: as.Address(new Buffer(addressStr, 'hex')),
+  privateKey: as.PrivateKey(new Buffer(privateKeyStr, 'hex'))
+})
+
 export const pks: string[] = [
   '6c7cfe3c8c47dc2ea38e2634f8a99ecea87b9609e888be36a2d7ee076d28bdce',
   'd365947df31e3f828e7572bcdbd50554a9043c30b785a0f8e5811c6bf93f628c'
@@ -22,12 +29,7 @@ export const pks: string[] = [
   // '157258c195ede5fad2f054b45936dae4f3e1b1f0a18e0edc17786d441a207224'
 ]
 
-export const accounts: Account[] = pks.map(pk => ({
-  privateKeyStr: `0x${pk}`,
-  privateKey: as.PrivateKey(util.toBuffer(pk)),
-  address: as.Address(util.privateToAddress((Buffer as any).from(pk, 'hex')) as any),
-  addressStr: util.addHexPrefix(util.privateToAddress((Buffer as any).from(pk, 'hex')).toString('hex'))
-}))
+export const accounts: Account[] = pks.map(pk => account(pk))
 
 // console.log(accounts)
 

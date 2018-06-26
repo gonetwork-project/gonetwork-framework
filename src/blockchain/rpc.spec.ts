@@ -2,7 +2,7 @@ import rpcCreate from './rpc'
 import { as } from '../utils'
 import { config } from './spec.base'
 
-const cfg = config()
+const cfg = config('infura')
 
 const rpc = rpcCreate(cfg.providerUrl)
 

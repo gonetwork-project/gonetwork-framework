@@ -18,9 +18,9 @@ test('call - token.balanceOf', () => {
   return rpc.getTransactionCount({ address: cfg.acc1.address })
     .then(n =>
       cTx.call.token.balanceOf({
-        to: cfg.hsToken,
-        nonce: n // ?
-      },
+        to: cfg.hsToken
+        // nonce: n // ?
+      } as any,
         {
           _owner: cfg.acc1.address
         })
@@ -28,7 +28,7 @@ test('call - token.balanceOf', () => {
     .then(x => console.log(x))
 })
 
-test.only('call - token.totalSupply', () => {
+test('call - token.totalSupply', () => {
   // console.log(cfg.hsToken, cfg.acc1.addressStr, cfg.acc2.addressStr)
   return rpc.getTransactionCount({ address: cfg.acc1.address })
     .then(n =>
@@ -40,30 +40,11 @@ test.only('call - token.totalSupply', () => {
     .then(x => console.log(x))
 })
 
-test('estimate - token.approve (wrong addresses)', () =>
-  // this estimation passes if though addresses are not contract addresses weird
-  cTx.estimateRawTx.token.approve({
-    to: cfg.acc1.address,
-    nonce: as.Nonce(3)
-  },
-    {
-      _spender: cfg.acc2.address,
-      _value: as.Wei(20000)
-    })
-    .then(r => {
-      // gasLimit is ~20% more than the estimated
-      expect(r.estimatedGas.lt(r.txParams.gasLimit)).toBe(true)
-      expect(r.txParams.nonce.eq(as.Nonce(3))).toBe(true)
-      expect(r.txParams.to).toBe(cfg.acc1.address)
-    })
-)
-
 test('call', () =>
   rpc.getTransactionCount({ address: cfg.manager })
     .then(n => cTx.call.manager.fee({
-      nonce: n,
       to: cfg.manager
-    })
+    } as any) // TODO FIXME
       // todo unwrap params
       .then(x => expect('TODO').toBe('TODO'))
     )
@@ -76,23 +57,23 @@ test('sendRawTx - token.approve', () => {
   }
   return Promise.all([rpc.getTransactionCount({ address: cfg.acc1.address }), rpc.gasPrice()])
     .then(([n, p]) => {
-      console.log('NONCE,PRICE', n, p)
+      // console.log('NONCE,PRICE', n, p)
       return cTx.estimateRawTx.token.approve({
         nonce: n,
-        to: cfg.token,
+        to: cfg.hsToken,
         gasPrice: p
       }, cData)
         .catch(err => {
-          console.log('CANNOT_ESTIMATE', err)
+          // console.log('CANNOT_ESTIMATE', err)
           return Promise.reject(err)
         })
     }
     )
     .then(r => {
-      console.log('BEFORE-SEND', r)
+      // console.log('BEFORE-SEND', r)
       return cTx.sendRawTx.token.approve(r.txParams, cData)
     })
-    .then(x => console.log('NEW_TX', x))
+    // .then(x => console.log('NEW_TX', x))
 })
 
 test.skip('sendRawTx - manager.newChannel', () => {
