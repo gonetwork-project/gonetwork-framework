@@ -29,16 +29,17 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
 }
 type EncodeData = ReturnType<typeof encodeTxData>
 
-// export const decodeTxData = <T> (order: GenOrder, data: string): T => {
-//   if (types[1].length === 0) return null as any
-//   else if (types[1].length === 1) return abi.rawDecode(types[1], data)[0]
+export const decodeTxData = (order: GenOrder[1], data: Buffer): any => {
+  console.log(order, data)
+  if (order.length === 0) return null as any
+  else if (order.length === 1) return abi.rawDecode(order.map(o => o[1]), data)[0]
 
-//   return abi.rawDecode(types[1], data)
-//     .reduce((acc, d, i) => {
-//       acc[order[1][i]] = d
-//       return acc
-//     }, {} as T)
-// }
+  return abi.rawDecode(order.map(o => o[1]), data)
+    .reduce((acc, d, i) => {
+      acc[order[1][i]] = d
+      return acc
+    }, {})
+}
 
 const toTxRaw = (chainId: E.ChainId, params: Partial<E.TxParams>, data: Buffer) => Object.assign({
   data,
@@ -76,6 +77,7 @@ const paramsToRawTx = (order: GenOrders, cfg: ContractTxConfig) => {
           cfg.signatureCb(pk => tx.sign(pk))
           // todo: make sure gasLimit and gasPrice are properly set
           return cfg.rpc.sendRawTransaction(`0x${tx.serialize().toString('hex')}`)
+          // .then(r => decodeTxData(order[k][1], util.toBuffer(r)))
         })(encodeTxData(k, order[k][0]))
       return acc
     }, {} as {} as TxSendRaw<any>)
@@ -90,6 +92,7 @@ const paramsToCall = (order: GenOrders, cfg: ContractTxConfig) => {
         return cfg.rpc.call({
           params: txParams as any
         })
+          .then(r => decodeTxData(order[k][1], util.toBuffer(r)))
       })(encodeTxData(k, order[k][0]))
       return acc
     }, {} as {} as TxCall<any>)

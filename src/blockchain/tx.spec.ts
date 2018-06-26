@@ -1,10 +1,18 @@
 import rpcCreate from './rpc'
-import { as, BN, util } from '../utils'
+import { as, BN } from '../utils'
 
 import createContracts from './tx'
 import * as base from './spec.base'
+import { init } from '../e2e/init'
 
-const cfg = base.config('local')
+let _cfg = base.config('local')
+let cfg: NonNullable<typeof _cfg> = _cfg as any
+
+beforeAll(() => {
+  init(true)
+  cfg = base.config('local') as any
+})
+
 if (!cfg) {
   test.skip('skipped - local only', () => undefined)
 } else {
@@ -33,7 +41,7 @@ if (!cfg) {
       to: cfg.gotToken,
       from: acc1.address
     })
-    .then(x => console.log('SUPP', x))
+      .then(x => console.log('SUPP', x))
   })
 
   test('call - manager.fee', () =>
@@ -72,9 +80,9 @@ if (!cfg) {
     // .then(x => console.log('NEW_TX', x))
   })
 
-  test.skip('sendRawTx - manager.newChannel (if do not exists)', () => {
+  test('sendRawTx - manager.newChannel (if do not exists)', () => {
     const partner = acc2.address
-    cTx.call.manager.contractExists({ to: cfg.manager }, { channel: partner })
+    // cTx.call.manager.contractExists({ to: cfg.manager }, { channel: partner })
 
     const cData = {
       partner,

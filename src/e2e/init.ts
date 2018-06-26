@@ -79,10 +79,10 @@ const gen = () => {
   }
 }
 
-export const init: () => {
+export const init: (f?: boolean) => {
   testToken: string, gotToken: string, manager: string
-} = () => {
-  if (fs.existsSync(cfg.contractAddressesPath)) {
+} = (force) => {
+  if (!force && fs.existsSync(cfg.contractAddressesPath)) {
     const i = JSON.parse(fs.readFileSync(cfg.contractAddressesPath, 'utf8'))
     console.log(i)
     try {
