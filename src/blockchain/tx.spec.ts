@@ -25,33 +25,27 @@ if (!cfg) {
     signatureCb: (fn) => fn(acc1.privateKey)
   })
 
-  test('call - token.balanceOf', () => {
+  test('call - token.balanceOf', () =>
     cTx.call.token.balanceOf({
       to: cfg.hsToken
     },
       {
         _owner: acc1.address
       })
-      .then(x => console.log('WTF?', typeof x))
-  })
+      .then(x => expect(x.gte(new BN(2000))).toBe(true)))
 
-  test('call - token.totalSupply', () => {
-    // console.log(cfg.hsToken, acc1.addressStr, cfg.acc2.addressStr)
+  test('call - token.totalSupply', () =>
     cTx.call.token.totalSupply({
       to: cfg.gotToken,
       from: acc1.address
     })
-      .then(x => console.log('SUPP', x))
-  })
+      .then(x => expect(x.gte(new BN(2000))).toBe(true)))
 
   test('call - manager.fee', () =>
     cTx.call.manager.fee({
       to: cfg.manager
-    }) // TODO FIXME
-      .then(x => {
-        console.log('FEE', x)
-        expect('TODO').toBe('TODO')
-      })
+    })
+      .then(x => expect(x.gte(new BN(20))).toBe(true))
   )
 
   test('sendRawTx - gotToken.approve', () => {
@@ -61,52 +55,43 @@ if (!cfg) {
     }
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
       .then(([n, p]) => {
-        console.log('NONCE,PRICE', n, p)
         return cTx.estimateRawTx.token.approve({
           nonce: n,
           to: cfg.gotToken,
           gasPrice: p
         }, cData)
-          .catch(err => {
-            // console.log('CANNOT_ESTIMATE', err)
-            return Promise.reject(err)
-          })
-      }
-      )
-      .then(r => {
-        // console.log('BEFORE-SEND', r)
-        return cTx.sendRawTx.token.approve(r.txParams, cData)
+          .catch(err => Promise.reject(err))
       })
-    // .then(x => console.log('NEW_TX', x))
+      .then(r => cTx.sendRawTx.token.approve(r.txParams, cData))
   })
 
-  test('sendRawTx - manager.newChannel (if do not exists)', () => {
+  // TODO - finish
+  test('sendRawTx - manager.newChannel - approve - deposit', () => {
     const partner = acc2.address
-    // cTx.call.manager.contractExists({ to: cfg.manager }, { channel: partner })
-
     const cData = {
       partner,
       settle_timeout: new BN(500)
     }
-    return base.waitFor(1000) // seems that old Nonce is being reported for some time
+    return base.waitFor(1000) // todo: change waitFor for proper monitoring
       .then(() => Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()]))
       .then(([n, p]) => {
-        console.log('NONCE', n)
         return cTx.estimateRawTx.manager.newChannel({
           nonce: as.Nonce(n),
           to: cfg.manager,
           gasPrice: p
         }, cData)
-          .catch(err => {
-            console.log('CANNOT_ESTIMATE', err)
-            return Promise.reject(err)
-          })
+          .catch(err => Promise.reject(err))
       }
       )
-      .then(r => {
-        console.log('BEFORE-SEND', r)
-        return cTx.sendRawTx.manager.newChannel(r.txParams, cData)
-      })
-      .then(x => console.log('NEW_TX', x))
+      .then(r => cTx.sendRawTx.manager.newChannel(r.txParams, cData))
   })
+
+  test('call - token allowance', () =>
+    cTx.call.token.allowance({
+      to: cfg.gotToken
+    }, {
+        _owner: acc1.address, _spender: cfg.manager
+      })
+      .then(x => expect(x.eq(as.Wei(20000000))).toBe(true))
+  )
 }

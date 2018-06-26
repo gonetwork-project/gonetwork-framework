@@ -8,9 +8,7 @@ export type ChannelIO = {
     {
       amount: BN
     },
-    {
-      anon_0: boolean
-    }
+    boolean
   ],
   close: [
     {
@@ -137,9 +135,7 @@ export const ChannelOrdIO = {
 export type ChannelConstIO = {
   refund: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   data: [
     null,
@@ -156,21 +152,15 @@ export type ChannelConstIO = {
   ],
   refund_interval: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   contract_version: [
     null,
-    {
-      anon_0: string
-    }
+    string
   ],
   fee: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   addressAndBalance: [
     null,
@@ -183,33 +173,23 @@ export type ChannelConstIO = {
   ],
   settleTimeout: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   tokenAddress: [
     null,
-    {
-      anon_0: Address
-    }
+    Address
   ],
   opened: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   closed: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   closingAddress: [
     null,
-    {
-      anon_0: Address
-    }
+    Address
   ],
   participantData: [
     null,
@@ -229,22 +209,18 @@ export type ChannelConstIO = {
       anon_2: Buffer
     }
   ],
-  computeMerkleRoot: [
+  computeMerkleRootTest: [
     {
       lock: Buffer,
       merkle_proof: Buffer
     },
-    {
-      anon_0: Buffer
-    }
+    Buffer
   ],
-  computeLockHash: [
+  computeLockHashTest: [
     {
       lock: Buffer
     },
-    {
-      anon_0: Buffer
-    }
+    Buffer
   ]
 }
 
@@ -427,7 +403,7 @@ export const ChannelConstOrdIO = {
       ]
     ]
   ],
-  computeMerkleRoot: [
+  computeMerkleRootTest: [
     [
       [
         'lock',
@@ -445,7 +421,7 @@ export const ChannelConstOrdIO = {
       ]
     ]
   ],
-  computeLockHash: [
+  computeLockHashTest: [
     [
       [
         'lock',

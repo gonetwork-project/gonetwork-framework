@@ -9,9 +9,7 @@ export type TokenIO = {
       _spender: Address,
       _value: BN
     },
-    {
-      success: boolean
-    }
+    boolean
   ],
   transferFrom: [
     {
@@ -19,18 +17,14 @@ export type TokenIO = {
       _to: Address,
       _value: BN
     },
-    {
-      success: boolean
-    }
+    boolean
   ],
   transfer: [
     {
       _to: Address,
       _value: BN
     },
-    {
-      success: boolean
-    }
+    boolean
   ],
   approveAndCall: [
     {
@@ -38,9 +32,7 @@ export type TokenIO = {
       _value: BN,
       _extraData: Buffer
     },
-    {
-      success: boolean
-    }
+    boolean
   ]
 }
 
@@ -130,48 +122,36 @@ export const TokenOrdIO = {
 export type TokenConstIO = {
   name: [
     null,
-    {
-      anon_0: string
-    }
+    string
   ],
   totalSupply: [
     null,
-    {
-      supply: BN
-    }
+    BN
   ],
   decimals: [
     null,
-    {}
+    void
   ],
   version: [
     null,
-    {
-      anon_0: string
-    }
+    string
   ],
   balanceOf: [
     {
       _owner: Address
     },
-    {
-      balance: BN
-    }
+    BN
   ],
   symbol: [
     null,
-    {
-      anon_0: string
-    }
+    string
   ],
   allowance: [
     {
       _owner: Address,
       _spender: Address
     },
-    {
-      remaining: BN
-    }
+    BN
   ]
 }
 

@@ -19,9 +19,7 @@ export type ManagerIO = {
       partner: Address,
       settle_timeout: BN
     },
-    {
-      anon_0: Address
-    }
+    Address
   ]
 }
 
@@ -64,61 +62,43 @@ export type ManagerConstIO = {
     {
       channel: Address
     },
-    {
-      anon_0: boolean
-    }
+    boolean
   ],
   owner: [
     null,
-    {
-      anon_0: Address
-    }
+    Address
   ],
   contract_version: [
     null,
-    {
-      anon_0: string
-    }
+    string
   ],
   fee: [
     null,
-    {
-      anon_0: BN
-    }
+    BN
   ],
   getChannelsAddresses: [
     null,
-    {
-      anon_0: Address[]
-    }
+    Address[]
   ],
   tokenAddress: [
     null,
-    {
-      anon_0: Address
-    }
+    Address
   ],
   getChannelWith: [
     {
       partner: Address
     },
-    {
-      anon_0: Address
-    }
+    Address
   ],
   nettingContractsByAddress: [
     {
       node_address: Address
     },
-    {
-      anon_0: Address[]
-    }
+    Address[]
   ],
   getChannelsParticipants: [
     null,
-    {
-      anon_0: Address[]
-    }
+    Address[]
   ]
 }
 

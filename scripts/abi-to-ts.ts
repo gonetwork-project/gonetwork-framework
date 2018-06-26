@@ -30,8 +30,6 @@ const DEFAULT_ROOT = path.join(__dirname, '..')
 const contractsDir = path.join(DEFAULT_ROOT, 'smart-contracts', 'build', 'contracts')
 const outDir = path.join(DEFAULT_ROOT, 'src', '__GEN__')
 
-// const log = console.log.bind(console)
-
 const CONTRACT_NAMES = [
   'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract'
 ]
@@ -84,10 +82,15 @@ const handleEvents = (evs: AbiEvent[], shortName: string) => {
 const reduceFunctions = (fns: AbiFunction[]) =>
   fns.reduce((acc, f) => {
     const params = f.inputs.length > 0 && reduceIO(f.inputs)
-    const out = f.outputs!.length > 0 && reduceIO(f.outputs)
+
+    // this is matched with decoding transactions result (eth_call and eth_getTransactionReceipt)
+    let out: any = 'void'
+    if (f.outputs!.length === 1) out = abiTypesToTs[f.outputs[0].type]
+    else if (f.outputs!.length > 1) out = reduceIO(f.outputs)
+
     acc.inOut[f.name] = [params || 'null', out || 'void']
     acc.order[f.name] = [
-      f.inputs.map(x => [`'${x.name}'`, `'${x.type}'` ]),
+      f.inputs.map(x => [`'${x.name}'`, `'${x.type}'`]),
       (f.outputs || []).map(x => [`'${x.name}'`, `'${x.type}'`])
     ]
     return acc
@@ -99,14 +102,10 @@ const handleFunctions = (fns: AbiFunction[], shortName: string) => {
   const o = reduceFunctions(fns.filter(fn => !(fn.constant || fn.payable)))
 
   return [
-    // `export type ${shortName}PayIO = ${JSON.stringify(p.inOut, null, 2).replace(/[\"]/g, '')}`,
-    // `export const ${shortName}PayOrdIO = ${JSON.stringify(p.order, null, 2).replace(/[\"]/g, '')}`,
     `export type ${shortName}IO = ${JSON.stringify(o.inOut, null, 2).replace(/[\"]/g, '')}`,
     `export const ${shortName}OrdIO = ${JSON.stringify(o.order, null, 2).replace(/[\"]/g, '')}`,
-    // `export const ${shortName}TypesIO = ${JSON.stringify(o.types, null, 2).replace(/[\"]/g, '')}`,
     `export type ${shortName}ConstIO = ${JSON.stringify(c.inOut, null, 2).replace(/[\"]/g, '')}`,
     `export const ${shortName}ConstOrdIO = ${JSON.stringify(c.order, null, 2).replace(/[\"]/g, '')}`
-    // `export const ${shortName}ConstTypesIO = ${JSON.stringify(c.types, null, 2).replace(/[\"]/g, '')}`
   ].join('\n\n')
 }
 
@@ -115,7 +114,6 @@ const handleConstructor = (fns: AbiFunction[], shortName: string) => {
   const c = fns[0]
   const ins = JSON.stringify(reduceIO(c.inputs), null, 2).replace(/[\"\,]/g, '')
   return `export interface ${shortName}ConstructorParams ${ins}`
-
 }
 
 const handleFallback = () => ''
