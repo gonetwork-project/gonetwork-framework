@@ -4,7 +4,9 @@ import { EventEmitter } from 'events'
 import { Subject } from 'rxjs/Subject'
 import { Observable } from 'rxjs/Observable'
 
-import * as T from '../types'
+import * as T from './p2p-types'
+
+// broken means irrecoverable error
 
 const FIRST_RETRY_AFTER = 3 * 1000
 const MAX_RETRY_INTERVAL = 5 * 60 * 1000

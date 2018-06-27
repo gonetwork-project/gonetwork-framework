@@ -13,7 +13,7 @@ import * as E from 'eth-types'
 // todo: make it configurable
 const KEY_PREFIX = '___ETH_MONITORING___'
 const LOGS_INTERVAL = 5 * 1000
-const TRANSACTION_INTERVAL = 5 * 1000
+const waitForDefault: T.WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
 
 export type MonitorAddress = [E.Address, string]
 
@@ -75,13 +75,17 @@ export class Monitoring implements T.Monitoring {
     Observable.from(Array.isArray(ev) ? ev : [ev])
       .mergeMap(e => Observable.fromEvent(this, e)) as Observable<any>
 
-  waitForTransactionReceipt = (tx: E.TxHash, timeout: number = 90 * 100) =>
-    Observable.timer(0, TRANSACTION_INTERVAL)
-      .switchMap(() => this._cfg.rpc.getTransactionReceipt(tx))
+  waitForTransactionRaw = (tx: E.TxHash, cfg?: Partial<T.WaitForConfig>) =>
+    Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
+      .switchMap(() => this._cfg.rpc.getTransactionReceipt(tx) as Promise<E.TxReceipt>)
       .filter(Boolean)
       .take(1)
-      .timeout(timeout)
-      .toPromise() as Promise<E.TxReceipt>
+      .retryWhen(errs => errs.delay(3 * 1000)) // this should not happen
+      .timeout(cfg && cfg.timeout || waitForDefault.timeout)
+
+  waitForTransaction = (tx: E.TxHash, cfg?: Partial<T.WaitForConfig>) =>
+    this.waitForTransactionRaw(tx, cfg)
+      .toPromise()
 
   on = (event: C.BlockchainEventType, listener: (...args: any[]) => void) => {
     this._em.on(event, listener)

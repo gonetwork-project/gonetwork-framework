@@ -47,7 +47,7 @@ if (!cfg) {
       }))
 
   test('service - monitoring - tx-receipt', () =>
-    srv.waitForTransactionReceipt(cfg.txHash)
+    srv.waitForTransaction(cfg.txHash)
       .then(x => expect(x!.transactionHash).toBe(cfg.txHash))
   )
 

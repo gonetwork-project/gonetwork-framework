@@ -6,6 +6,11 @@ import { Observable } from 'rxjs/Observable'
 
 export type SignatureCb = (cb: (pk: E.PrivateKey) => void) => void
 
+export type WaitForConfig = {
+  interval: T.Milliseconds
+  timeout: T.Milliseconds
+}
+
 export interface MonitoringConfig {
   channelManagerAddress: E.Address
   tokenAddresses: E.Address[]
@@ -19,7 +24,9 @@ export interface Monitoring {
   subscribeAddress: (ch: E.Address) => Promise<Boolean>
   unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
 
-  waitForTransactionReceipt: (tx: E.TxHash, timeout?: number) => Promise<E.TxReceipt>
+  waitForTransactionRaw: (ch: E.TxHash, cfg?: Partial<WaitForConfig>) => Observable<E.TxReceipt>
+
+  waitForTransaction: (tx: E.TxHash, cfg?: Partial<WaitForConfig>) => Promise<E.TxReceipt>
 
   on: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
   off: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void

@@ -1,4 +1,4 @@
-import * as T from '../types'
+import { Storage } from '../types'
 
 export const fakeStorage = () => ({ // no persistent storage for now
   getItem: (id) => Promise.resolve(null),
@@ -7,4 +7,4 @@ export const fakeStorage = () => ({ // no persistent storage for now
 
   multiGet: (keys) => Promise.resolve([]),
   multiSet: (xs) => Promise.resolve(true)
-} as T.Storage)
+} as Storage)
