@@ -210,7 +210,7 @@ export interface ManagerConstructorParams {
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type ManagerEvents = 'ChannelNew' | 'ChannelDeleted' | 'FeesCollected' | 'OwnershipTransferred'
+export type ManagerEventTypes = 'ChannelNew' | 'ChannelDeleted' | 'FeesCollected' | 'OwnershipTransferred'
 
 export type ManagerEventsToArgs = {
   ChannelNew: {

@@ -245,7 +245,7 @@ export interface TokenConstructorParams {
 
 // ⚠ !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND ⚠
 
-export type TokenEvents = 'Transfer' | 'Approval'
+export type TokenEventTypes = 'Transfer' | 'Approval'
 
 export type TokenEventsToArgs = {
   Transfer: {

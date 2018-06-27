@@ -74,7 +74,7 @@ const handleEvents = (evs: AbiEvent[], shortName: string) => {
   }, { types: [], args: {} } as { types: string[], args: { [k: string]: object } })
 
   return [
-    `export type ${shortName}Events = ${i.types.map(t => `'${t}'`).join(' | ')}`,
+    `export type ${shortName}EventTypes = ${i.types.map(t => `'${t}'`).join(' | ')}`,
     `export type ${shortName}EventsToArgs = ${JSON.stringify(i.args, null, 2).replace(/[\"\,]/g, '')}`
   ].join('\n\n')
 }

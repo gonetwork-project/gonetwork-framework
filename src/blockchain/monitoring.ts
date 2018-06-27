@@ -13,7 +13,10 @@ import * as E from 'eth-types'
 // todo: make it configurable
 const KEY_PREFIX = '___ETH_MONITORING___'
 const LOGS_INTERVAL = 5 * 1000
-const waitForDefault: T.WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
+
+let waitForDefault: T.WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
+
+export const setWaitForDefault = (cfg: T.WaitForConfig) => waitForDefault = cfg
 
 export type MonitorAddress = [E.Address, string]
 

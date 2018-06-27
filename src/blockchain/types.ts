@@ -83,7 +83,7 @@ export interface TxInfo {
 }
 
 export interface ContractTxConfig {
-  rpc: Pick<RPC, 'sendRawTransaction' | 'estimateGas' | 'gasPrice' | 'call'>
+  rpc: RPC
   chainId: E.ChainId
   signatureCb: SignatureCb
 }

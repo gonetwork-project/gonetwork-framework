@@ -1,7 +1,7 @@
 import rpcCreate from './rpc'
 import { as, BN } from '../utils'
 
-import { waitFor } from './monitoring'
+import { waitFor, setWaitForDefault } from './monitoring'
 import createContracts from './tx'
 import * as base from './spec.base'
 import { init } from '../e2e/init'
@@ -9,8 +9,10 @@ import * as E from 'eth-types'
 
 let _cfg = base.config('local')
 let cfg: NonNullable<typeof _cfg> = _cfg as any
+setWaitForDefault({ timeout: 60 * 1000, interval: 200 })
 
-const AllowanceAmount = as.Wei(2000)
+const GOTAllow = as.Wei(200) // todo: make units for Got and other ERC20
+const HSAllow = as.Wei(200)
 
 beforeAll(() => {
   init(true)
@@ -56,60 +58,64 @@ if (!cfg) {
 
   // FOLLOWING TESTS NEED TO RUN IN THIS ORDER
   // 1. - approve got tokens
-  test('sendRawTx - gotToken.approve', () => {
+  test('txFull - approve GOT', () => {
     const cData = {
       _spender: cfg.manager,
-      _value: AllowanceAmount
+      _value: GOTAllow
     }
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
-      .then(([n, p]) => {
-        return cTx.estimateRawTx.token.approve({
-          nonce: n,
-          to: cfg.gotToken,
-          gasPrice: p
-        }, cData)
-          .catch(err => Promise.reject(err))
+      .then(([nonce, gasPrice]) => {
+        return cTx.txFull.token.approve({ nonce, gasPrice, to: cfg.gotToken }, cData)
+          .then(x => console.log('APPROVE-GOT', x))
       })
-      .then(r => cTx.sendRawTx.token.approve(r.txParams, cData))
-      .then(hash => {
-        expect(hash).toHaveLength(66)
-        return waitForTransaction(hash)
-      })
-      .then(x => console.log('RECEIPT', x))
   })
 
-  // 2. create new channel
-  test('sendRawTx - manager.newChannel - approve - deposit', () => {
+  // (optional)
+  test('call - token allowance', () =>
+    cTx.call.token.allowance(
+      { to: cfg.gotToken },
+      { _owner: acc1.address, _spender: cfg.manager }
+    )
+      .then(x => expect(x.eq(GOTAllow)).toBe(true))
+  )
+
+  // 2. - create new channel
+  let netChannel: E.Address
+  test('txFull - new channel', () => {
     const partner = acc2.address
     const cData = {
       partner,
       settle_timeout: new BN(500)
     }
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
-      .then(([n, p]) => {
-        return cTx.estimateRawTx.manager.newChannel({
-          nonce: as.Nonce(n),
-          to: cfg.manager,
-          gasPrice: p
-        }, cData)
-          .catch(err => Promise.reject(err))
-      }
-      )
-      .then(r => cTx.sendRawTx.manager.newChannel(r.txParams, cData))
-      .then(hash => {
-        expect(hash).toHaveLength(66)
-        return waitForTransaction(hash)
+      .then(([nonce, gasPrice]) => cTx.txFull.manager.newChannel({ nonce, gasPrice, to: cfg.manager }, cData))
+      .then((x) => {
+        console.log('NEW-CHANNEL', x)
+        // todo: fixme - ideally we matched what events to contract methods
+        netChannel = (x.filter(l => l._type === 'ChannelNew')[0] as any).netting_channel
       })
-      .then(x => console.log('RECEIPT', x))
-
   })
 
-  test('call - token allowance', () =>
-  cTx.call.token.allowance(
-    { to: cfg.gotToken },
-    { _owner: acc1.address, _spender: cfg.manager }
-  )
-    .then(x => expect(x.eq(AllowanceAmount)).toBe(true))
-)
+  // 3. - approve some money for the net-channel
+  test('txFull - approve HS', () => {
+    const cData = {
+      _spender: netChannel,
+      _value: HSAllow
+    }
+    return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
+      .then(([nonce, gasPrice]) => {
+        return cTx.txFull.token.approve({ nonce, gasPrice, to: cfg.hsToken }, cData)
+          .then(x => console.log('APPROVE-HS', x))
+      })
+  })
+
+  // 4. - deposit some money in the netting-channel
+  test('txFull - deposit', () => {
+    return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
+      .then(([nonce, gasPrice]) => {
+        return cTx.txFull.channel.deposit({ nonce, gasPrice, to: netChannel }, { amount: HSAllow })
+          .then(x => console.log('DEPOSIT-HS', x))
+      })
+  })
 
 }

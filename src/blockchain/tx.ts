@@ -11,10 +11,12 @@ import * as E from 'eth-types'
 
 import * as util from 'ethereumjs-util'
 
-import { as, serializeRpcParams, abi, serializeRpcParam } from '../utils'
+import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs } from '../utils'
+import { waitFor } from './monitoring'
 
-import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw } from '../types/contracts'
-import { ContractTxConfig } from './types'
+import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
+  ChannelEvents, ManagerEvents, TokenEvents } from '../types/contracts'
+import { ContractTxConfig, WaitForConfig } from './types'
 
 export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
   const names = abiInSpec.map(o => o[0])
@@ -96,6 +98,19 @@ const paramsToCall = (order: GenOrders, cfg: ContractTxConfig) => {
     }, {} as {} as TxCall<any>)
 }
 
+const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
+  (est: TxEstimation<IO>, raw: TxSendRaw<IO>, order: GenOrder, cfg: ContractTxConfig): TxFull<IO, any> => {
+  return Object.keys(order)
+    .reduce((acc, k) => {
+      (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData, waitCfg?: WaitForConfig) =>
+        est[k](params, data)
+          .then(x => (raw[k] as any)(x.txParams, data) as Promise<E.TxHash>)
+          .then(txHash => waitFor((t: E.TxHash) => cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
+          .then(txReceipt => decodeLogs(txReceipt.logs))
+      return acc
+    }, {} as {} as TxFull<IO, any>)
+}
+
 export default (cfg: ContractTxConfig) => {
   const estimateRawTx = {
     token: paramsToEstimation(TokenOrdIO as any, cfg) as TxEstimation<TokenIO>,
@@ -109,6 +124,13 @@ export default (cfg: ContractTxConfig) => {
     channel: paramsToRawTx(ChannelOrdIO as any, cfg) as TxSendRaw<ChannelIO>
   }
 
+  // todo - handle logs properly
+  const txFull = {
+    token: paramsToTxFull(estimateRawTx.token, sendRawTx.token, TokenOrdIO as any, cfg) as TxFull<TokenIO, TokenEvents>,
+    manager: paramsToTxFull(estimateRawTx.manager, sendRawTx.manager, ManagerOrdIO as any, cfg) as TxFull<ManagerIO, ManagerEvents>,
+    channel: paramsToTxFull(estimateRawTx.channel, sendRawTx.channel, ChannelOrdIO as any, cfg) as TxFull<ChannelIO, ChannelEvents>
+  }
+
   const call = {
     token: paramsToCall(TokenConstOrdIO as any, cfg) as TxCall<TokenConstIO>,
     manager: paramsToCall(ManagerConstOrdIO as any, cfg) as TxCall<ManagerConstIO>,
@@ -118,6 +140,7 @@ export default (cfg: ContractTxConfig) => {
   return {
     estimateRawTx,
     sendRawTx,
-    call
+    call,
+    txFull
   }
 }
