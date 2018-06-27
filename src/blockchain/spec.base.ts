@@ -8,7 +8,7 @@ import * as e2e from '../e2e/config'
 
 import * as E from 'eth-types'
 
-import { as, CHAIN_ID, util } from '../utils/eth-utils'
+import { as, CHAIN_ID } from '../utils/eth-utils'
 import { Observable } from 'rxjs/Observable'
 
 // todo will break in a browser environment

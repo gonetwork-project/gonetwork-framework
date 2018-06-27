@@ -3,8 +3,6 @@ import * as fs from 'fs'
 
 import * as cfg from './config'
 
-const defaultEther = '10000000000000000000000000'
-
 // https://github.com/trufflesuite/ganache-cli
 // for now running this command manually
 const ganacheCli = [
