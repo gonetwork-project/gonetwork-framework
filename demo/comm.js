@@ -3,9 +3,9 @@ const Rx = require('rxjs')
 const readline = require('readline')
 const persist = require('node-persist')
 
-const Communication = require('../lib/index').Communication
+const Communication = require('../lib').P2P
 
-const cfg = require('../config/demo')
+const cfg = require('../config/demo.default')
 
 const address = process.argv[2]
 

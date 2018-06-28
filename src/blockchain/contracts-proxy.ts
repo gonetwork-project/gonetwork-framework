@@ -111,7 +111,7 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
     }, {} as {} as TxFull<IO, any>)
 }
 
-export default (cfg: ContractTxConfig) => {
+export const createContractsProxy = (cfg: ContractTxConfig) => {
   const estimateRawTx = {
     token: paramsToEstimation(TokenOrdIO as any, cfg) as TxEstimation<TokenIO>,
     manager: paramsToEstimation(ManagerOrdIO as any, cfg) as TxEstimation<ManagerIO>,
@@ -144,3 +144,7 @@ export default (cfg: ContractTxConfig) => {
     txFull
   }
 }
+
+export default createContractsProxy
+
+export type ContractsProxy = ReturnType<typeof createContractsProxy>

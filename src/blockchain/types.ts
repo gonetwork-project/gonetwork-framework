@@ -1,8 +1,10 @@
-import * as Tx from 'ethereumjs-tx'
 import * as E from 'eth-types'
 
 import * as T from '../types'
 import { Observable } from 'rxjs/Observable'
+
+import { ContractsProxy } from './contracts-proxy'
+import { P2P } from '../p2p/p2p-types'
 
 export type SignatureCb = (cb: (pk: E.PrivateKey) => void) => void
 
@@ -90,15 +92,25 @@ export interface ContractTxConfig {
 
 export interface ServiceConfig {
   providerUrl: string
+  mqttUrl: string
+
   manager: E.Address
   gotToken: E.Address
   hsToken: E.Address
 
   chainId: E.ChainId
+
+  // todo: Important discuss
+  owner: E.Address
+  signatureCb: SignatureCb
 }
 
-export interface Service extends Monitoring, RPC {
-
+export interface Service {
+  config: Readonly<ServiceConfig>
+  monitoring: Readonly<Monitoring>
+  rpc: Readonly<RPC>
+  p2p: Readonly<P2P>
+  contractsProxy: Readonly<ContractsProxy>
 }
 
-export type ServiceCreate = (cfg: ServiceConfig) => Service
+export type ServiceCreate = (cfg: ServiceConfig) => Readonly<Service>

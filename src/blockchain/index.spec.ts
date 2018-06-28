@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-import { serviceCreate } from './index'
+import { serviceCreate } from '.'
 import { config } from './spec.base'
 import { Service } from './types'
 
@@ -16,14 +16,14 @@ if (!cfg) {
 
   test('service - rpc - blockNumber', () =>
     // todo: this right now uses rpc, but would be way better to use subject from monitoring
-    srv.blockNumber()
+    srv.rpc.blockNumber()
       .then(x => {
         expect(x.gte(1)).toBe(true)
       })
   )
 
   test('service - monitoring - blockNumbers', () =>
-    srv.blockNumbers()
+    srv.monitoring.blockNumbers()
       .take(1)
       .toPromise()
       .then(x => {
@@ -32,11 +32,11 @@ if (!cfg) {
   )
 
   test('service - monitoring - logs', () =>
-    Observable.fromEvent(srv, 'ChannelNew') // implicitly it will test .on and .off
+    Observable.fromEvent(srv.monitoring, 'ChannelNew') // implicitly it will test .on and .off
       .take(3)
       .toArray()
       .zip(
-        srv.asStream('ChannelNew') // preferred than .fromEvent as support ts
+        srv.monitoring.asStream('ChannelNew') // preferred than .fromEvent as support ts
           .take(3)
           .toArray())
       .toPromise()
@@ -47,13 +47,13 @@ if (!cfg) {
       }))
 
   test('service - monitoring - tx-receipt', () =>
-    srv.waitForTransaction(cfg.txHash)
+    srv.monitoring.waitForTransaction(cfg.txHash)
       .then(x => expect(x!.transactionHash).toBe(cfg.txHash))
   )
 
   test('service - monitoring - subscribe', () => {
-    srv.subscribeAddress(cfg.nettingChannel)
-    return srv.asStream(['ChannelClosed', 'ChannelSettled'])
+    srv.monitoring.subscribeAddress(cfg.nettingChannel)
+    return srv.monitoring.asStream(['ChannelClosed', 'ChannelSettled'])
       .take(2)
       .toArray()
       .toPromise()
@@ -72,10 +72,10 @@ if (!cfg) {
     // srv.unsubscribeAddress(cfg.nettingChannel)
     // expect('TO-DO').toBe('TO-DO')
 
-    return srv.subscribeAddress(cfg.nettingChannel)
+    return srv.monitoring.subscribeAddress(cfg.nettingChannel)
       .then(() => {
-        srv.unsubscribeAddress(cfg.nettingChannel)
-        return srv.asStream(['ChannelClosed', 'ChannelSettled'])
+        srv.monitoring.unsubscribeAddress(cfg.nettingChannel)
+        return srv.monitoring.asStream(['ChannelClosed', 'ChannelSettled'])
           .mergeMapTo(Observable.throw('NO_EVENTS_EXPECTED_AFTER_UNSUBSCRIBE'))
           .merge(Observable.timer(3333).mapTo('NO_EVENTS'))
           .take(1)

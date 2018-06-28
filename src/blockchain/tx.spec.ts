@@ -2,9 +2,9 @@ import rpcCreate from './rpc'
 import { as, BN } from '../utils'
 
 import { waitFor, setWaitForDefault } from './monitoring'
-import createContracts from './tx'
+import createContracts from './contracts-proxy'
 import * as base from './spec.base'
-import { init } from '../e2e/init'
+import { init } from '../tests/init'
 import * as E from 'eth-types'
 
 let _cfg = base.config('local')
@@ -24,8 +24,6 @@ if (!cfg) {
 } else {
   const rpc = rpcCreate(cfg.providerUrl)
   const [acc1, acc2] = cfg.accounts
-
-  const waitForTransaction = waitFor((t: E.TxHash) => rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, { interval: 100 })
 
   const cTx = createContracts({
     rpc,
