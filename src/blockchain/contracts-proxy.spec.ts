@@ -26,6 +26,7 @@ if (!cfg) {
   const [acc1, acc2] = cfg.accounts
 
   const cTx = createContracts({
+    owner: acc1.address,
     rpc,
     chainId: cfg.chainId,
     signatureCb: (fn) => fn(acc1.privateKey)
@@ -85,8 +86,8 @@ if (!cfg) {
       partner,
       settle_timeout: new BN(500)
     }
-    return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
-      .then(([nonce, gasPrice]) => cTx.txFull.manager.newChannel({ nonce, gasPrice, to: cfg.manager }, cData))
+    return rpc.gasPrice()
+      .then((gasPrice) => cTx.txFull.manager.newChannel({ gasPrice, to: cfg.manager }, cData))
       .then((x) => {
         console.log('NEW-CHANNEL', x.length, x)
         // todo: fixme - ideally we matched what events to contract methods
@@ -100,18 +101,18 @@ if (!cfg) {
       _spender: netChannel,
       _value: HSAllow
     }
-    return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
-      .then(([nonce, gasPrice]) => {
-        return cTx.txFull.token.approve({ nonce, gasPrice, to: cfg.hsToken }, cData)
+    return rpc.gasPrice()
+      .then(gasPrice => {
+        return cTx.txFull.token.approve({ gasPrice, to: cfg.hsToken }, cData)
           .then(x => console.log('APPROVE-HS', x))
       })
   })
 
   // 4. - deposit some money in the netting-channel
   test('txFull - deposit', () => {
-    return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
-      .then(([nonce, gasPrice]) => {
-        return cTx.txFull.channel.deposit({ nonce, gasPrice, to: netChannel }, { amount: HSAllow })
+    return rpc.gasPrice()
+      .then(gasPrice => {
+        return cTx.txFull.channel.deposit({ gasPrice, to: netChannel }, { amount: HSAllow })
           .then(x => console.log('DEPOSIT-HS', x))
       })
   })

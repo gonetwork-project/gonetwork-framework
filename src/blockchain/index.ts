@@ -5,12 +5,14 @@ import { createContractsProxy } from './contracts-proxy'
 
 import { P2P } from '../p2p/p2p'
 
-import { ServiceCreate } from './types'
+import { BlockchainServiceCreate } from './types'
 
-export const serviceCreate: ServiceCreate = config => {
+export * from './types'
+
+export const serviceCreate: BlockchainServiceCreate = config => {
   const rpc = rpcCreate(config.providerUrl)
   const p2p = new P2P({
-    address: 'abc', // fixme
+    address: config.owner.toString('hex'),
     mqttUrl: config.mqttUrl,
     storage: fakeStorage()
   })
@@ -29,7 +31,8 @@ export const serviceCreate: ServiceCreate = config => {
     contractsProxy: createContractsProxy({
       signatureCb: config.signatureCb,
       rpc: rpc,
-      chainId: config.chainId
+      chainId: config.chainId,
+      owner: config.owner
     })
   }
 }

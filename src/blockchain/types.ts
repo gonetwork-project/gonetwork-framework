@@ -87,10 +87,12 @@ export interface TxInfo {
 export interface ContractTxConfig {
   rpc: RPC
   chainId: E.ChainId
+
+  owner: E.Address
   signatureCb: SignatureCb
 }
 
-export interface ServiceConfig {
+export interface BlockchainServiceConfig {
   providerUrl: string
   mqttUrl: string
 
@@ -105,12 +107,12 @@ export interface ServiceConfig {
   signatureCb: SignatureCb
 }
 
-export interface Service {
-  config: Readonly<ServiceConfig>
+export interface BlockchainService {
+  config: Readonly<BlockchainServiceConfig>
   monitoring: Readonly<Monitoring>
   rpc: Readonly<RPC>
   p2p: Readonly<P2P>
   contractsProxy: Readonly<ContractsProxy>
 }
 
-export type ServiceCreate = (cfg: ServiceConfig) => Readonly<Service>
+export type BlockchainServiceCreate = (cfg: BlockchainServiceConfig) => Readonly<BlockchainService>

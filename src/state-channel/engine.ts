@@ -7,8 +7,9 @@ import * as channelLib from './channel'
 import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
-import { BlockchainServiceOld } from '..'
+import { BlockchainService } from '..'
 import { BlockNumber } from 'eth-types'
+import { as } from '../utils'
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -45,15 +46,15 @@ export class Engine extends events.EventEmitter {
 
   address: Buffer
   signature: any
-  blockchain: BlockchainServiceOld
+  blockchain: BlockchainService
 
   /**
    * @constructror.
    * @param {Buffer} address - your ethereum address; ETH Address is merely the last 20 bytes of the keccak256 hash of the public key given the public private key pair.
    * @param {Function} signatureService - the callback that requests the privatekey for signing of messages.  This allows the user to store the private key in a secure store or other means
-   * @param {BlockchainServiceOld} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
+   * @param {BlockchainService} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
    */
-  constructor (address: Buffer, signatureService: Function, blockchainService: BlockchainServiceOld) {
+  constructor (address: Buffer, signatureService: Function, blockchainService: BlockchainService) {
     super()
 
     this.address = address
@@ -432,18 +433,19 @@ export class Engine extends events.EventEmitter {
     this.pendingChannels[peerAddress.toString('hex')] = true
     let self = this
     let _peerAddress = peerAddress
-    // @ts-ignore FIXME
-    return this.blockchain.newChannel(peerAddress, channelLib.SETTLE_TIMEOUT).then(function (vals) {
-      // ChannelNew(address netting_channel,address participant1,address participant2,uint settle_timeout);
-      // var channelAddress = vals[0];
-      // var addressOne = vals[1];
-      // var addressTwo = vals[2];
-      // var timeout = vals[3];
-      // self.onChannelNew(channelAddress,addressOne,addressTwo,timeout);
-    }).catch(function (err) {
-      self.onChannelNewError(_peerAddress, err)
-      // todo: should re-throw (?)
-    })
+
+    return this.blockchain.contractsProxy.txFull.manager.newChannel({ to: this.blockchain.config.manager },
+      { partner: as.Address(peerAddress), settle_timeout: channelLib.SETTLE_TIMEOUT }).then(function (vals) {
+        // ChannelNew(address netting_channel,address participant1,address participant2,uint settle_timeout);
+        // var channelAddress = vals[0];
+        // var addressOne = vals[1];
+        // var addressTwo = vals[2];
+        // var timeout = vals[3];
+        // self.onChannelNew(channelAddress,addressOne,addressTwo,timeout);
+      }).catch(function (err) {
+        self.onChannelNewError(_peerAddress, err)
+        // todo: should re-throw (?)
+      })
   }
 
   /** close a channel given the peer ethereum address.  The close proof in the state is transferred during the call to close.
@@ -608,7 +610,7 @@ export class Engine extends events.EventEmitter {
     }
     let channel = this.channels[channelAddress.toString('hex')]
     let _channelAddress = channel.channelAddress
-     // @ts-ignore FIXME (blockchain was misspelled: blockChain)
+    // @ts-ignore FIXME (blockchain was misspelled: blockChain)
     return self.blockchain.approve(self.blockchain.tokenAddress, channel.channelAddress, amount)
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -629,7 +631,7 @@ export class Engine extends events.EventEmitter {
    */
   approveChannelManager (amount: BN) {
     const self = this
-      // @ts-ignore FIXME (blockchain was misspelled: blockChain)
+    // @ts-ignore FIXME (blockchain was misspelled: blockChain)
     return self.blockchain.approve(self.blockchain.gotokenAddress, self.blockchain.chanelManagerAddress, amount)
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -706,7 +708,7 @@ export class Engine extends events.EventEmitter {
     // TODO: emit UnableToCreate Channel with Peer
   }
 
-   // FIXME - investigate why strings were used in docs @Amit
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel has tokens deposited into it on-chain
    * @param {String} channelAddress - ethereum address hexString
    * @param {String} address - the particpants ethereum address in hexString who deposited the funds
@@ -721,7 +723,7 @@ export class Engine extends events.EventEmitter {
     return false // todo
   }
 
-   // FIXME - investigate why strings were used in docs @Amit
+  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a  channel is closed on chain identifying which of the partners initiated the close
    * @param {String} channelAddress - ethereum address hexString
    * @param {String} closingAddress - ethereum address hexString

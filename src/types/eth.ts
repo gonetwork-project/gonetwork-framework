@@ -92,7 +92,6 @@ declare module 'eth-types' {
   export type TxData = TxDataType[]
 
   export interface TxParamsRequired {
-    nonce: Nonce
     to: Address
   }
 
@@ -111,6 +110,7 @@ declare module 'eth-types' {
     value: Wei // defaults to 0
     gasLimit: Gas // will be estimated automatically
     gasPrice: GasPrice // will be estimated automatically
+    nonce: Nonce
   }
 
   // todo: discuss defaults
