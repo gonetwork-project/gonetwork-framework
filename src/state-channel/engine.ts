@@ -8,8 +8,7 @@ import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
 import { BlockchainService } from '..'
-import { BlockNumber } from 'eth-types'
-import { as } from '../utils'
+import { BlockNumber, Address } from 'eth-types'
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -423,7 +422,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel is mined.  If there is an error during any point of execution in the mining
    * the onChannelNewError(peerAddress) is called
    */
-  newChannel (peerAddress: Buffer) {
+  newChannel (peerAddress: Address) {
     // is this a blocking call?
     if (!this.pendingChannels.hasOwnProperty(peerAddress.toString('hex')) &&
       this.channelByPeer.hasOwnProperty(peerAddress.toString('hex')) &&
@@ -435,7 +434,7 @@ export class Engine extends events.EventEmitter {
     let _peerAddress = peerAddress
 
     return this.blockchain.contractsProxy.txFull.manager.newChannel({ to: this.blockchain.config.manager },
-      { partner: as.Address(peerAddress), settle_timeout: channelLib.SETTLE_TIMEOUT }).then(function (vals) {
+      { partner: peerAddress, settle_timeout: channelLib.SETTLE_TIMEOUT }).then(function (vals) {
         // ChannelNew(address netting_channel,address participant1,address participant2,uint settle_timeout);
         // var channelAddress = vals[0];
         // var addressOne = vals[1];
@@ -453,7 +452,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelCloseError(channelAddress) is called
    */
-  closeChannel (channelAddress: Buffer) {
+  closeChannel (channelAddress: Address) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Close: unknown channel')
     }
@@ -466,8 +465,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
-    // @ts-ignore FIXME
-    return this.blockchain.closeChannel(channelAddress, proof).then(function (closingAddress) {
+    return this.blockchain.contractsProxy.txFull.channel.close({ to: channelAddress }, proof).then(function (closingAddress) {
       // channelAddress,closingAddress,block
       // TODO: @Artur, only call this after the transaction is mined i.e. txMulitplexer
       // return self.onChannelClose(_channelAddress,closingAddress);
@@ -481,7 +479,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onTransferUpdatedError(channelAddress) is called
    */
-  transferUpdate (channelAddress: Buffer) {
+  transferUpdate (channelAddress: Address) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid TransferUpdate: unknown channel')
     }
@@ -493,8 +491,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
-    // @ts-ignore FIXME
-    return this.blockchain.updateTransfer(channelAddress, proof).then(function (nodeAddress) {
+    return this.blockchain.contractsProxy.txFull.channel.updateTransfer({ to: channelAddress }, proof).then(function (nodeAddress) {
       // self.onTransferUpdated(nodeAddress)
     }).catch(function (err) {
       self.onTransferUpdatedError(_channelAddress, err)
@@ -507,7 +504,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelSecretRevealedError(channelAddress) is called for each lock that was not successfully withdrawn on-chain and must be reissued
    */
-  withdrawPeerOpenLocks (channelAddress: Buffer) {
+  withdrawPeerOpenLocks (channelAddress: Address) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Withdraw: unknown channel')
     }
@@ -523,8 +520,10 @@ export class Engine extends events.EventEmitter {
       let _secret = p.openLock.secret
       let _channelAddress = channelAddress
       let self = this
-      // @ts-ignore FIXME
-      let promise = this.blockchain.withdrawLock(channelAddress, p.encodeLock(), p.merkleProof, _secret)
+
+      let promise = this.blockchain.contractsProxy.txFull.channel.withdraw(
+        { to: channelAddress },
+        { locked_encoded: p.encodeLock(), merkle_proof: p.merkle_proof, secret: _secret })
         .then(function (vals) {
           // var secret = vals[0];
           // var receiverAddress = vals[1];
@@ -545,7 +544,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelSettledError(channelAddress) is called
    */
-  settleChannel (channelAddress: Buffer) {
+  settleChannel (channelAddress: Address) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Settle: unknown channel')
     }
@@ -557,8 +556,8 @@ export class Engine extends events.EventEmitter {
     let _channelAddress = channelAddress
     let self = this
     channel.issueSettle(this.currentBlock)
-    // @ts-ignore FIXME (blockchain was misspelled: blockChain)
-    return self.blockchain.settle(_channelAddress).then(function () {
+
+    return self.blockchain.contractsProxy.txFull.channel.settle({ to: _channelAddress }).then(function () {
       // return self.onChannelSettled(_channelAddress);
     }).catch(function (err) {
       return self.onChannelSettledError(_channelAddress, err)
@@ -574,7 +573,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelNewBalanceError(channelAddress) is called
    */
-  depositChannel (channelAddress: Buffer, amount: BN) {
+  depositChannel (channelAddress: Address, amount: BN) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Settle: unknown channel')
     }
@@ -584,16 +583,17 @@ export class Engine extends events.EventEmitter {
     }
     let _channelAddress = channelAddress
     let self = this
-    // @ts-ignore FIXME (blockchain and deposit were misspelled: blockChain and depoist)
-    return self.blockchain.deposit(_channelAddress, amount).then(function (vals) {
-      // event ChannelNewBalance(address token_address, address participant, uint balance);
-      // var tokenAddress = vals[0];
-      // var nodeAddress = vals[1];
-      // var balance = vals[2];
-      // return self.onChannelNewBalance(_channelAddress,nodeAddress,balance);
-    }).catch(function (err) {
-      return self.onChannelNewBalanceError(_channelAddress, err)
-    })
+
+    return self.blockchain.contractsProxy.txFull.channel.deposit({ to: _channelAddress },
+      { amount }).then(function (vals) {
+        // event ChannelNewBalance(address token_address, address participant, uint balance);
+        // var tokenAddress = vals[0];
+        // var nodeAddress = vals[1];
+        // var balance = vals[2];
+        // return self.onChannelNewBalance(_channelAddress,nodeAddress,balance);
+      }).catch(function (err) {
+        return self.onChannelNewBalanceError(_channelAddress, err)
+      })
   }
 
   /** approve the channel to take ERC20 deposits.  This must be called before a deposit can be made successfully.  This utlimately creates and allowance
@@ -603,15 +603,16 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onApprovalError(channelAddress) is called
    */
-  approveChannel (channelAddress: Buffer, amount: BN) {
+  approveChannel (channelAddress: Address, amount: BN) {
     const self = this
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid approve Channel: unknown channel')
     }
     let channel = this.channels[channelAddress.toString('hex')]
     let _channelAddress = channel.channelAddress
-    // @ts-ignore FIXME (blockchain was misspelled: blockChain)
-    return self.blockchain.approve(self.blockchain.tokenAddress, channel.channelAddress, amount)
+
+    return this.blockchain.contractsProxy.txFull.token.approve({ to: this.blockchain.config.hsToken },
+      { _spender: channel.channelAddress, _value: amount })
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
         // var owner = vals[0];
@@ -631,8 +632,10 @@ export class Engine extends events.EventEmitter {
    */
   approveChannelManager (amount: BN) {
     const self = this
-    // @ts-ignore FIXME (blockchain was misspelled: blockChain)
-    return self.blockchain.approve(self.blockchain.gotokenAddress, self.blockchain.chanelManagerAddress, amount)
+
+    return self.blockchain.contractsProxy.txFull.token.approve(
+      { to: self.blockchain.config.gotToken },
+      { _spender: self.blockchain.config.manager, _value: amount })
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
         // var owner = vals[0];
@@ -723,12 +726,11 @@ export class Engine extends events.EventEmitter {
     return false // todo
   }
 
-  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a  channel is closed on chain identifying which of the partners initiated the close
-   * @param {String} channelAddress - ethereum address hexString
-   * @param {String} closingAddress - ethereum address hexString
+   * @param {Address} channelAddress - ethereum address hexString
+   * @param {Address} closingAddress - ethereum address hexString
    */
-  onChannelClose (channelAddress: Buffer, closingAddress: Buffer) {
+  onChannelClose (channelAddress: Address, closingAddress: Address) {
     let channel = this.channels[channelAddress.toString('hex')]
     channel.onChannelClose(closingAddress, this.currentBlock)
     if (closingAddress.compare(this.address) !== 0) {
@@ -737,17 +739,16 @@ export class Engine extends events.EventEmitter {
     return true
   }
 
-  onChannelCloseError (channelAddress: Buffer, err?) {
+  onChannelCloseError (channelAddress: Address, err?) {
     let channel = this.channels[channelAddress.toString('hex')]
     return channel.onChannelCloseError()
   }
 
-  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a the counterpary has updated their transfer proof on-chain
-   * @param {String} channelAddress - ethereum address hexString
-   * @param {String} nodeAddress - the party who submitted the proof
+   * @param {Address} channelAddress - ethereum address hexString
+   * @param {Address} nodeAddress - the party who submitted the proof
    */
-  onTransferUpdated (channelAddress: Buffer, nodeAddress: Buffer) {
+  onTransferUpdated (channelAddress: Address, nodeAddress: Address) {
     return this.channels[channelAddress.toString('hex')].onTransferUpdated(nodeAddress, this.currentBlock)
   }
 
@@ -755,41 +756,38 @@ export class Engine extends events.EventEmitter {
     return this.channels[channelAddress.toString('hex')].onTransferUpdatedError()
   }
 
-  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel is settled on-chain
-   * @param {String} channelAddress - ethereum address hexString
+   * @param {Address} channelAddress - ethereum address hexString
    */
-  onChannelSettled (channelAddress: Buffer) {
+  onChannelSettled (channelAddress: Address) {
     return this.channels[channelAddress.toString('hex')].onChannelSettled(this.currentBlock)
   }
-  onChannelSettledError (channelAddress: Buffer, err?) {
+  onChannelSettledError (channelAddress: Address, err?) {
     return this.channels[channelAddress.toString('hex')].onChannelSettledError()
   }
 
-  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a lock has been withdrawn on-chain.  If a user was withholding the secret in a mediate transfer,
    * the party can now unlock the pending locks in the other channels.  This is why it is essential in a mediated transfer setting
    * that each hop decrements the expiration by a safe margin such that they may claim a lock off chain in case of byzantine faults
-   * @param {String} channelAddress - ethereum address hexString
-   * @param {String} secret - the 32 byte secret in hexString
-   * @param {String} receiverAddress - ethereum address hexString which unlocked the lock on-chain
+   * @param {Address} channelAddress - ethereum address hexString
+   * @param {Buffer} secret - the 32 byte secret in hexString
+   * @param {Buffer} receiverAddress - ethereum address hexString which unlocked the lock on-chain
    */
-  onChannelSecretRevealed (channelAddress: Buffer, secret: Buffer, receiverAddress: Buffer) {
+  onChannelSecretRevealed (channelAddress: Address, secret: Buffer, receiverAddress: Buffer) {
     return this.channels[channelAddress.toString('hex')].onChannelSecretRevealed(secret, receiverAddress, this.currentBlock)
   }
-  onChannelSecretRevealedError (channelAddress: Buffer, secret: Buffer, err?) {
+  onChannelSecretRevealedError (channelAddress: Address, secret: Buffer, err?) {
     return this.channels[channelAddress.toString('hex')].onChannelSecretRevealedError(secret)
   }
 
-  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel has been closed and the channel lifetime exceeds the refund interval.
    * i.e. channel.closedBlock - channel.openedBlock > refundInterval.  This is in hopes to incentives longer lived state channels
    * by reducing the cost of their deployment for longer periods.
-   * @param {String} channelAddress - ethereum address hexString
-   * @param {String} receiverAddress - ethereum address hexString of the party that received the refund
+   * @param {Address} channelAddress - ethereum address hexString
+   * @param {Address} receiverAddress - ethereum address hexString of the party that received the refund
    * @param {BN} amount- the amount of GOT refunded
    */
-  onRefund (channelAddress: Buffer, receiverAddress: Buffer, amount: BN) {
+  onRefund (channelAddress: Address, receiverAddress: Address, amount: BN) {
     return true
   }
 }
