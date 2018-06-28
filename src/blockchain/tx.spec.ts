@@ -90,7 +90,7 @@ if (!cfg) {
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
       .then(([nonce, gasPrice]) => cTx.txFull.manager.newChannel({ nonce, gasPrice, to: cfg.manager }, cData))
       .then((x) => {
-        console.log('NEW-CHANNEL', x)
+        console.log('NEW-CHANNEL', x.length, x)
         // todo: fixme - ideally we matched what events to contract methods
         netChannel = (x.filter(l => l._type === 'ChannelNew')[0] as any).netting_channel
       })

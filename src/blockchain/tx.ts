@@ -15,7 +15,7 @@ import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs } from '../u
 import { waitFor } from './monitoring'
 
 import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
-  ChannelEvents, ManagerEvents, TokenEvents } from '../types/contracts'
+  ChannelEventsMap, ManagerEventsMap, TokenEventsMap } from '../types/contracts'
 import { ContractTxConfig, WaitForConfig } from './types'
 
 export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
@@ -126,9 +126,9 @@ export default (cfg: ContractTxConfig) => {
 
   // todo - handle logs properly
   const txFull = {
-    token: paramsToTxFull(estimateRawTx.token, sendRawTx.token, TokenOrdIO as any, cfg) as TxFull<TokenIO, TokenEvents>,
-    manager: paramsToTxFull(estimateRawTx.manager, sendRawTx.manager, ManagerOrdIO as any, cfg) as TxFull<ManagerIO, ManagerEvents>,
-    channel: paramsToTxFull(estimateRawTx.channel, sendRawTx.channel, ChannelOrdIO as any, cfg) as TxFull<ChannelIO, ChannelEvents>
+    token: paramsToTxFull(estimateRawTx.token, sendRawTx.token, TokenOrdIO as any, cfg) as TxFull<TokenIO, TokenEventsMap>,
+    manager: paramsToTxFull(estimateRawTx.manager, sendRawTx.manager, ManagerOrdIO as any, cfg) as TxFull<ManagerIO, ManagerEventsMap>,
+    channel: paramsToTxFull(estimateRawTx.channel, sendRawTx.channel, ChannelOrdIO as any, cfg) as TxFull<ChannelIO, ChannelEventsMap>
   }
 
   const call = {

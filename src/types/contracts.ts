@@ -1,7 +1,7 @@
 import { TxParamsRequired, TxParamsWithGas, GasPrice, Address, TxParams, TxHash } from 'eth-types'
-import { ChannelEventTypes, ChannelEventsToArgs } from '../__GEN__/NettingChannelContract'
-import { ManagerEventTypes, ManagerEventsToArgs } from '../__GEN__/ChannelManagerContract'
-import { TokenEventTypes, TokenEventsToArgs } from '../__GEN__/HumanStandardToken'
+import { ChannelEventTypes, ChannelEventsToArgs, ChannelIO } from '../__GEN__/NettingChannelContract'
+import { ManagerEventTypes, ManagerEventsToArgs, ManagerIO } from '../__GEN__/ChannelManagerContract'
+import { TokenEventTypes, TokenEventsToArgs, TokenIO, TokenOrdIO } from '../__GEN__/HumanStandardToken'
 
 export type TxCall<T extends { [K: string]: [any, any] }> = {
   [K in keyof T]: T[K][0] extends null ?
@@ -24,10 +24,10 @@ export type TxSendRaw<T extends { [K: string]: [any, any] }> = {
 }
 
 // TODO: ideally we match events with particular methods, but seems this info not present in abi
-export type TxFull<T extends { [K: string]: [any, any] }, Ev> = {
+export type TxFull<T extends { [K: string]: [any, any] }, EvMap extends { [P in keyof T]: any }> = {
   [K in keyof T]: T[K][0] extends null ?
-  (params: TxParamsRequired & Partial<TxParamsWithGas>) => Promise<Ev[]> :
-  (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<Ev[]>
+  (params: TxParamsRequired & Partial<TxParamsWithGas>) => Promise<EvMap[K][]> :
+  (params: TxParamsRequired & Partial<TxParamsWithGas>, data: T[K][0]) => Promise<EvMap[K][]>
 }
 
 export type GenOrder = [
@@ -53,3 +53,33 @@ export type EventTypeToEvent<Ev extends BlockchainEventType> =
 export type BlockchainEventType = ChannelEventTypes | ManagerEventTypes | TokenEventTypes
 
 export type BlockchainEvent = ChannelEvents | ManagerEvents | TokenEvents
+
+export type AsMethodEventMap<IO, Map extends { [P in keyof IO]: BlockchainEventType }> = {
+    // [P in keyof Map]: ExtractEvents<Args, Map[P]>
+    [P in keyof Map]: EventTypeToEvent<Map[P]>
+  }
+
+// TODO: make sure the maps are exhausted
+type TokenEventsMapRaw = {
+  approve: 'Approval'
+  approveAndCall: 'Approval'
+  transfer: 'Transfer'
+  transferFrom: 'Transfer'
+}
+export type TokenEventsMap = AsMethodEventMap<TokenIO, TokenEventsMapRaw>
+
+type ManagerEventsMapRaw = {
+  collectFees: 'FeesCollected'
+  transferOwnership: 'OwnershipTransferred'
+  newChannel: 'ChannelNew' | 'Transfer'
+}
+export type ManagerEventsMap = AsMethodEventMap<ManagerIO, ManagerEventsMapRaw>
+
+type ChannelEventsMapRaw = {
+  deposit: 'ChannelNewBalance'
+  close: 'ChannelClosed' | 'Refund'
+  updateTransfer: 'TransferUpdated'
+  withdraw: 'ChannelSecretRevealed'
+  settle: 'ChannelSettled'
+}
+export type ChannelEventsMap = AsMethodEventMap<ChannelIO, ChannelEventsMapRaw>
