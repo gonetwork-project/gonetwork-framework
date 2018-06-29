@@ -148,3 +148,4 @@ export const createContractsProxy = (cfg: ContractTxConfig) => {
 export default createContractsProxy
 
 export type ContractsProxy = ReturnType<typeof createContractsProxy>
+export type Txs = TxFull<TokenIO, TokenEventsMap> & TxFull<ManagerIO, ManagerEventsMap> & TxFull<ChannelIO, ChannelEventsMap>

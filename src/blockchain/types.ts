@@ -3,7 +3,7 @@ import * as E from 'eth-types'
 import * as T from '../types'
 import { Observable } from 'rxjs/Observable'
 
-import { ContractsProxy } from './contracts-proxy'
+import { ContractsProxy, Txs } from './contracts-proxy'
 import { P2P } from '../p2p/p2p-types'
 
 export type SignatureCb = (cb: (pk: E.PrivateKey) => void) => void
@@ -107,12 +107,12 @@ export interface BlockchainServiceConfig {
   signatureCb: SignatureCb
 }
 
-export interface BlockchainService {
+export interface IBlockchainService extends Txs {
   config: Readonly<BlockchainServiceConfig>
   monitoring: Readonly<Monitoring>
   rpc: Readonly<RPC>
-  p2p: Readonly<P2P>
   contractsProxy: Readonly<ContractsProxy>
+  txs: Txs
 }
 
-export type BlockchainServiceCreate = (cfg: BlockchainServiceConfig) => Readonly<BlockchainService>
+export type BlockchainServiceCreate = (cfg: BlockchainServiceConfig) => Readonly<IBlockchainService>

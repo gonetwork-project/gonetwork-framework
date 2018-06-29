@@ -1,6 +1,8 @@
 const test = require('tape')
 const util = require('ethereumjs-util')
 
+const BlockchainService = require('../lib/blockchain').BlockchainService
+
 const Engine = require('../lib/state-channel').Engine
 const channel = require('../lib/state-channel').channel
 const message = require('../lib/state-channel').message
@@ -75,13 +77,14 @@ class MockBlockchain {
   constructor (blockchainQueue) {
     this.blockchainQueue = blockchainQueue
     this.cmdQueue = []
+    this.config = {}
   }
 
   handle (msg) {
     this.blockchainQueue.push(msg)
   }
 
-  closeChannel (channelAddress, proof) {
+  close (channelAddress, proof) {
     this.cmdQueue.push('closeChannel')
     var self = this
     var args = arguments
@@ -100,7 +103,7 @@ class MockBlockchain {
     })
   }
 
-  withdrawLock (channelAddress, encodedLock, merkleProof, secret) {
+  withdraw (channelAddress, encodedLock, merkleProof, secret) {
     this.cmdQueue.push('withdrawPeerOpenLocks')
     var self = this
     var args = arguments
@@ -897,16 +900,19 @@ test('test engine', function (t) {
 
         assert.equals(blockchainQueue.length, 2, 'only a single lock proof is needed')
         // Assert the withdraw proof
-        console.log(blockchainQueue[1])
+        // console.log('PROOF', engine.channels[channelAddress.toString('hex')].peerState.proof)
+    
 
         // arguments: channelAddress, encodedLock, merkleProof,secret,
         var proofArgs = blockchainQueue[1]
-        var encodedLock = proofArgs[1]
-        var secret = proofArgs[3]
-        var hashLock = proofArgs[1].slice(64, 96)
+        // console.log('ARGS', proofArgs)
+    
+        var encodedLock = proofArgs[1].locked_encoded
+        var secret = proofArgs[1].secret
+        var hashLock = proofArgs[1].locked_encoded.slice(64, 96)
         var proof = engine.channels[channelAddress.toString('hex')].peerState.proof
         assert.equals(util.sha3(secret).compare(hashLock), 0)
-        assert.equals(merkletree.checkMerkleProof(proofArgs[2], proof.locksRoot, util.sha3(encodedLock)), true)
+        assert.equals(merkletree.checkMerkleProof(proofArgs[1].merkle_proof, proof.locksRoot, util.sha3(encodedLock)), true)
         assert.equals(engine.channels[channelAddress.toString('hex')].isOpen(), false)
         assert.equals(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_IS_CLOSING)
       })

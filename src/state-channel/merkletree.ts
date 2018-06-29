@@ -240,6 +240,7 @@ export function checkMerkleProofOrdered (proof, root, element, index) {
  * @memberof merkletree
  */
 export function checkMerkleProof (proof, root, element) {
+  // TODO: proper testing - in the engine context it is tested with proof = [] and root === element
   let buffer = proof.reduce(function (acc, currentValue) {
     return util.sha3(concatBuffer(acc, currentValue))
   }, element)

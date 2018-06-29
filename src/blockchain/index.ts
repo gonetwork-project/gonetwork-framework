@@ -3,19 +3,12 @@ import rpcCreate from './rpc'
 import { Monitoring } from './monitoring'
 import { createContractsProxy } from './contracts-proxy'
 
-import { P2P } from '../p2p/p2p'
-
-import { BlockchainServiceCreate } from './types'
+import { BlockchainServiceCreate, BlockchainServiceConfig, IBlockchainService } from './types'
 
 export * from './types'
 
 export const serviceCreate: BlockchainServiceCreate = config => {
   const rpc = rpcCreate(config.providerUrl)
-  const p2p = new P2P({
-    address: config.owner.toString('hex'),
-    mqttUrl: config.mqttUrl,
-    storage: fakeStorage()
-  })
   const monitoring = new Monitoring({
     rpc,
     channelManagerAddress: config.manager,
@@ -23,16 +16,27 @@ export const serviceCreate: BlockchainServiceCreate = config => {
     storage: fakeStorage()
   })
 
-  return {
+  const proxy = createContractsProxy({
+    signatureCb: config.signatureCb,
+    rpc: rpc,
+    chainId: config.chainId,
+    owner: config.owner
+  })
+
+  const txs = Object.assign(proxy.txFull.channel, proxy.txFull.manager, proxy.txFull.token)
+
+  return Object.assign({
     config,
-    p2p,
     rpc,
     monitoring,
-    contractsProxy: createContractsProxy({
-      signatureCb: config.signatureCb,
-      rpc: rpc,
-      chainId: config.chainId,
-      owner: config.owner
-    })
+    txs,
+    contractsProxy: proxy
+  }, txs)
+}
+
+// @ts-ignore
+export class BlockchainService implements Readonly<IBlockchainService> {
+  constructor (config: BlockchainServiceConfig) {
+    Object.assign(this, serviceCreate(config))
   }
 }

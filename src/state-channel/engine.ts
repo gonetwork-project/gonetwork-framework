@@ -7,8 +7,13 @@ import * as channelLib from './channel'
 import * as channelStateLib from './channel-state'
 import * as stateMachineLib from './state-machine'
 
-import { BlockchainService } from '..'
-import { BlockNumber, Address } from 'eth-types'
+import { IBlockchainService } from '..'
+import { BlockNumber, Address, PrivateKey } from 'eth-types'
+
+// todo: unify with BlockchainService -
+// this actually is better than blockchain approach
+// as we do not access private key - any way we should be consistent here
+type SignFn = (msg: { sign: (pk: PrivateKey) => void }) => void
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -44,8 +49,9 @@ export class Engine extends events.EventEmitter {
   targetStateMachine = stateMachineLib.TargetFactory()
 
   address: Buffer
-  signature: any
-  blockchain: BlockchainService
+
+  signature: SignFn
+  blockchain: IBlockchainService
 
   /**
    * @constructror.
@@ -53,7 +59,7 @@ export class Engine extends events.EventEmitter {
    * @param {Function} signatureService - the callback that requests the privatekey for signing of messages.  This allows the user to store the private key in a secure store or other means
    * @param {BlockchainService} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
    */
-  constructor (address: Buffer, signatureService: Function, blockchainService: BlockchainService) {
+  constructor (address: Buffer, signatureService: SignFn, blockchainService: IBlockchainService) {
     super()
 
     this.address = address
@@ -288,6 +294,7 @@ export class Engine extends events.EventEmitter {
    * @param {message} msg - A message implementation in the message namespace
    */
   send (msg: messageLib.SignedMessage) {
+    // todo:
     console.log('SENDING:' + messageLib.SERIALIZE(msg))
   }
 
@@ -433,7 +440,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _peerAddress = peerAddress
 
-    return this.blockchain.contractsProxy.txFull.manager.newChannel({ to: this.blockchain.config.manager },
+    return this.blockchain.newChannel({ to: this.blockchain.config.manager },
       { partner: peerAddress, settle_timeout: channelLib.SETTLE_TIMEOUT }).then(function (vals) {
         // ChannelNew(address netting_channel,address participant1,address participant2,uint settle_timeout);
         // var channelAddress = vals[0];
@@ -465,7 +472,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
-    return this.blockchain.contractsProxy.txFull.channel.close({ to: channelAddress }, proof).then(function (closingAddress) {
+    return this.blockchain.close({ to: channelAddress }, proof).then(function (closingAddress) {
       // channelAddress,closingAddress,block
       // TODO: @Artur, only call this after the transaction is mined i.e. txMulitplexer
       // return self.onChannelClose(_channelAddress,closingAddress);
@@ -491,7 +498,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
-    return this.blockchain.contractsProxy.txFull.channel.updateTransfer({ to: channelAddress }, proof).then(function (nodeAddress) {
+    return this.blockchain.updateTransfer({ to: channelAddress }, proof).then(function (nodeAddress) {
       // self.onTransferUpdated(nodeAddress)
     }).catch(function (err) {
       self.onTransferUpdatedError(_channelAddress, err)
@@ -521,9 +528,9 @@ export class Engine extends events.EventEmitter {
       let _channelAddress = channelAddress
       let self = this
 
-      let promise = this.blockchain.contractsProxy.txFull.channel.withdraw(
+      let promise = this.blockchain.withdraw(
         { to: channelAddress },
-        { locked_encoded: p.encodeLock(), merkle_proof: p.merkle_proof, secret: _secret })
+        { locked_encoded: p.encodeLock(), merkle_proof: p.merkleProof, secret: _secret })
         .then(function (vals) {
           // var secret = vals[0];
           // var receiverAddress = vals[1];
@@ -557,7 +564,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     channel.issueSettle(this.currentBlock)
 
-    return self.blockchain.contractsProxy.txFull.channel.settle({ to: _channelAddress }).then(function () {
+    return self.blockchain.settle({ to: _channelAddress }).then(function () {
       // return self.onChannelSettled(_channelAddress);
     }).catch(function (err) {
       return self.onChannelSettledError(_channelAddress, err)
@@ -584,7 +591,7 @@ export class Engine extends events.EventEmitter {
     let _channelAddress = channelAddress
     let self = this
 
-    return self.blockchain.contractsProxy.txFull.channel.deposit({ to: _channelAddress },
+    return self.blockchain.deposit({ to: _channelAddress },
       { amount }).then(function (vals) {
         // event ChannelNewBalance(address token_address, address participant, uint balance);
         // var tokenAddress = vals[0];
@@ -611,7 +618,7 @@ export class Engine extends events.EventEmitter {
     let channel = this.channels[channelAddress.toString('hex')]
     let _channelAddress = channel.channelAddress
 
-    return this.blockchain.contractsProxy.txFull.token.approve({ to: this.blockchain.config.hsToken },
+    return this.blockchain.approve({ to: this.blockchain.config.hsToken },
       { _spender: channel.channelAddress, _value: amount })
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -633,7 +640,7 @@ export class Engine extends events.EventEmitter {
   approveChannelManager (amount: BN) {
     const self = this
 
-    return self.blockchain.contractsProxy.txFull.token.approve(
+    return self.blockchain.approve(
       { to: self.blockchain.config.gotToken },
       { _spender: self.blockchain.config.manager, _value: amount })
       .then(function (vals) {

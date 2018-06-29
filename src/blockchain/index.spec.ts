@@ -2,14 +2,14 @@ import { Observable } from 'rxjs'
 
 import { serviceCreate } from '.'
 import { config } from './spec.base'
-import { BlockchainService } from './types'
+import { IBlockchainService } from './types'
 
 const cfg = config('infura')
 
 if (!cfg) {
   test.skip('skipped - infura only', () => undefined)
 } else {
-  let srv: BlockchainService
+  let srv: IBlockchainService
   beforeEach(() => {
     srv = serviceCreate(cfg)
   })

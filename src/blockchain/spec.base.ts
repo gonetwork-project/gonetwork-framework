@@ -57,7 +57,7 @@ const toAdd = (s: string) => as.Address(new Buffer(s.substring(2), 'hex'))
 
 export const waitFor = (n: number) => Observable.timer(n).toPromise()
 
-export const config = <E extends Env> (env) => {
+export const config = (env: Env) => {
   if (!testEnvironments.find(e => env === e)) {
     return null
   }
