@@ -13,7 +13,15 @@ import { BlockNumber, Address, PrivateKey } from 'eth-types'
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
 // as we do not access private key - any way we should be consistent here
-type SignFn = (msg: { sign: (pk: PrivateKey) => void }) => void
+export type SignFn = (msg: { sign: (pk: PrivateKey) => void }) => void
+export type SendFn = (to: Address, msg: string) => Promise<boolean>
+
+export type Config = {
+  address: Address
+  sign: SignFn
+  send: SendFn
+  blockchain: IBlockchainService
+}
 
 /**
  * @class GoNetworks Engine encapsualtes off chain interactions between clients and propogation onto the blockchain.
@@ -52,6 +60,7 @@ export class Engine extends events.EventEmitter {
 
   signature: SignFn
   blockchain: IBlockchainService
+  private _send: SendFn
 
   /**
    * @constructror.
@@ -59,12 +68,13 @@ export class Engine extends events.EventEmitter {
    * @param {Function} signatureService - the callback that requests the privatekey for signing of messages.  This allows the user to store the private key in a secure store or other means
    * @param {BlockchainService} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
    */
-  constructor (address: Buffer, signatureService: SignFn, blockchainService: IBlockchainService) {
+  constructor ({ address, sign, send, blockchain }: Config) {
     super()
 
     this.address = address
-    this.signature = signatureService
-    this.blockchain = blockchainService
+    this.signature = sign
+    this.blockchain = blockchain
+    this._send = send
 
     const self = this
 
@@ -262,12 +272,12 @@ export class Engine extends events.EventEmitter {
 
   /**
    * Send a direct transfer to your channel partner.  This method calls send(directTransfer) and applies the directTransfer to the local channel state.
-   * @param {Buffer} to - eth address who this message will be sent to.  Only differs from target if mediating a transfer
+   * @param {Address} to - eth address who this message will be sent to.  Only differs from target if mediating a transfer
    * @param {BN} transferredAmount - the monotonically increasing amount to send.  This value is set by taking the previous transferredAmount + amount you want to transfer.
    * @throws "Invalid MediatedTransfer: unknown to address"
    * @throws 'Invalid DirectTransfer:state channel is not open'
    */
-  sendDirectTransfer (to: Buffer, transferredAmount: BN) {
+  sendDirectTransfer (to: Address, transferredAmount: BN) {
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: unknown to address')
     }
@@ -278,7 +288,7 @@ export class Engine extends events.EventEmitter {
     let msgID = this.incrementedMsgID()
     let directTransfer = channel.createDirectTransfer(msgID, transferredAmount)
     this.signature(directTransfer)
-    this.send(directTransfer)
+    this.send(to, directTransfer)
     channel.handleTransfer(directTransfer)
   }
 
@@ -293,9 +303,9 @@ export class Engine extends events.EventEmitter {
    * or implement webRTC p2p protocol for transport etc.
    * @param {message} msg - A message implementation in the message namespace
    */
-  send (msg: messageLib.SignedMessage) {
-    // todo:
-    console.log('SENDING:' + messageLib.SERIALIZE(msg))
+  send (to: Address, msg: messageLib.SignedMessage) {
+    // console.log('SENDING:' + )
+    this._send(to, messageLib.SERIALIZE(msg))
   }
 
   /** Internal event handlers triggered by state-machine workflows and blockchain events
@@ -323,7 +333,7 @@ export class Engine extends events.EventEmitter {
               state.initiator,
               state.currentBlock)
             this.signature(mediatedTransfer)
-            this.send(mediatedTransfer)
+            this.send(state.to, mediatedTransfer)
             channel.handleTransfer(mediatedTransfer)
             break
           case 'GOT.sendRequestSecret':
@@ -335,7 +345,7 @@ export class Engine extends events.EventEmitter {
               amount: state.lock.amount
             })
             this.signature(requestSecret)
-            this.send(requestSecret)
+            this.send(state.to, requestSecret)
             break
           case 'GOT.sendRevealSecret':
             channel = this.channelByPeer[state.to.toString('hex')]
@@ -344,7 +354,7 @@ export class Engine extends events.EventEmitter {
             // send this secret (backwards and forwards maybe)
             let revealSecret = new messageLib.RevealSecret({ to: state.revealTo, secret: state.secret })
             this.signature(revealSecret)
-            this.send(revealSecret)
+            this.send(state.to, revealSecret)
             // we dont register the secret, we wait for the echo Reveal
             break
           case 'GOT.sendSecretToProof':
@@ -359,7 +369,7 @@ export class Engine extends events.EventEmitter {
             let secretToProof = channel.createSecretToProof(state.msgID, state.secret)
             this.signature(secretToProof)
             channel.handleTransfer(secretToProof)
-            this.send(secretToProof)
+            this.send(state.to, secretToProof)
             // TODO: in the future, wait to apply secret to proof locally. We basically locked the state up now
             // It makes sense, in a sense.  With this implementation, when a lock secret is revealed and echoed back
             // the peer MUST accept a valid SecretToProof or no more new transfers can take place as the states are unsynced

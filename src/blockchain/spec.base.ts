@@ -1,16 +1,12 @@
 
 import '../observable-add'
 
-import * as fs from 'fs'
-import * as path from 'path'
-
-import * as e2e from '../tests/config'
+import * as e2e from '../tests'
 
 import * as E from 'eth-types'
 import { SignatureCb } from './types'
 
 import { as, CHAIN_ID } from '../utils/eth-utils'
-import { Observable } from 'rxjs/Observable'
 
 // todo will break in a browser environment
 (global as any).fetch = require('node-fetch')
@@ -53,10 +49,6 @@ const infura = {
 }
 type Config = typeof infura
 
-const toAdd = (s: string) => as.Address(new Buffer(s.substring(2), 'hex'))
-
-export const waitFor = (n: number) => Observable.timer(n).toPromise()
-
 export const config = (env: Env) => {
   if (!testEnvironments.find(e => env === e)) {
     return null
@@ -65,15 +57,12 @@ export const config = (env: Env) => {
     return infura
   }
 
-  const add = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'temp', 'contract-addresses.json'), 'utf8'))
-
   const c: Config = {
+    ...e2e.contracts(),
+
     providerUrl: 'http://localhost:8545',
     mqttUrl: 'mqtt://localhost:1883',
     chainId: CHAIN_ID.GETH_PRIVATE_CHAINS,
-    manager: toAdd(add.manager),
-    gotToken: toAdd(add.gotToken),
-    hsToken: toAdd(add.testToken),
 
     accounts: e2e.accounts,
     signatureCb: ((cb) => cb(e2e.accounts[0].privateKey)) as SignatureCb,

@@ -1,7 +1,6 @@
 import rpcCreate from './rpc'
 import { as, BN } from '../utils'
 
-import { waitFor, setWaitForDefault } from './monitoring'
 import createContracts from './contracts-proxy'
 import * as base from './spec.base'
 import { init } from '../tests/init-contracts'
@@ -9,9 +8,9 @@ import * as E from 'eth-types'
 
 let _cfg = base.config('local')
 let cfg: NonNullable<typeof _cfg> = _cfg as any
-setWaitForDefault({ timeout: 60 * 1000, interval: 200 })
 
-const GOTAllow = as.Wei(200) // todo: make units for Got and other ERC20
+// todo: make units for Got and other ERC20
+const GOTAllow = as.Wei(200)
 const HSAllow = as.Wei(200)
 
 beforeAll(() => {

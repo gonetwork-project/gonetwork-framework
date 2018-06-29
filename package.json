@@ -67,6 +67,9 @@
       "jsx",
       "json",
       "node"
-    ]
+    ],
+    "moduleNameMapper": {
+      "eth-types": "<rootDir>/types/eth.ts"
+    }
   }
 }

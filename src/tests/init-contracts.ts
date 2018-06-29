@@ -1,7 +1,17 @@
 import * as pr from 'child_process'
+import * as path from 'path'
 import * as fs from 'fs'
 
+import { as } from '../utils'
+import { Address } from 'eth-types'
+
 import * as cfg from './config'
+
+export type ContractAddresses = {
+  manager: Address, hsToken: Address, gotToken: Address
+}
+
+const toAdd = (s: string) => as.Address(new Buffer(s.substring(2), 'hex'))
 
 // https://github.com/trufflesuite/ganache-cli
 // for now running this command manually
@@ -99,4 +109,14 @@ export const init: (f?: boolean) => {
   } else {
     return gen()
   }
+}
+
+export const contracts = () => {
+  const add = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'temp', 'contract-addresses.json'), 'utf8'))
+
+  return {
+    manager: toAdd(add.manager),
+    gotToken: toAdd(add.gotToken),
+    hsToken: toAdd(add.testToken)
+  } as ContractAddresses
 }

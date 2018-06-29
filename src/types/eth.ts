@@ -19,6 +19,8 @@ declare module 'eth-types' {
   // IMPORTANT - be aware that there is another popular BigNumber.js lib used in the ecosystem (maybe more)
   import { BN } from 'bn.js'
 
+  export { BN }
+
   export type BN_Num_Str = BN | number | string
   // https://etherconverter.online/
   export type Wei = BN & { __Wei__: true }

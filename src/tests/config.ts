@@ -1,3 +1,7 @@
+import '../observable-add'
+// todo will break in a browser environment
+(global as any).fetch = require('node-fetch')
+
 import * as path from 'path'
 import * as fs from 'fs'
 
