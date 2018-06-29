@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-import { serviceCreate } from '.'
+import { serviceCreate, BlockchainService } from '.'
 import { config } from './spec.base'
 import { IBlockchainService } from './types'
 
@@ -11,7 +11,7 @@ if (!cfg) {
 } else {
   let srv: IBlockchainService
   beforeEach(() => {
-    srv = serviceCreate(cfg)
+    srv = new BlockchainService(cfg)
   })
 
   test('service - rpc - blockNumber', () =>

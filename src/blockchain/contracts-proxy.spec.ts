@@ -4,7 +4,7 @@ import { as, BN } from '../utils'
 import { waitFor, setWaitForDefault } from './monitoring'
 import createContracts from './contracts-proxy'
 import * as base from './spec.base'
-import { init } from '../tests/init'
+import { init } from '../tests/init-contracts'
 import * as E from 'eth-types'
 
 let _cfg = base.config('local')

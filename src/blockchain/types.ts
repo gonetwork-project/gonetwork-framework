@@ -94,7 +94,7 @@ export interface ContractTxConfig {
 
 export interface BlockchainServiceConfig {
   providerUrl: string
-  mqttUrl: string
+  // mqttUrl: string
 
   manager: E.Address
   gotToken: E.Address

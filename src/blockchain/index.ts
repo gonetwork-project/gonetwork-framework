@@ -34,9 +34,7 @@ export const serviceCreate: BlockchainServiceCreate = config => {
   }, txs)
 }
 
-// @ts-ignore
-export class BlockchainService implements Readonly<IBlockchainService> {
-  constructor (config: BlockchainServiceConfig) {
-    Object.assign(this, serviceCreate(config))
-  }
+export function BlockchainService (this: IBlockchainService, config: BlockchainServiceConfig) {
+  this.config = config
+  Object.assign(this, serviceCreate(config))
 }
