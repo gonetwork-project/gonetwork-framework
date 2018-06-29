@@ -9,6 +9,7 @@ import * as stateMachineLib from './state-machine'
 
 import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
+import { BlockchainEvent } from '../types'
 
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
@@ -57,10 +58,10 @@ export class Engine extends events.EventEmitter {
   targetStateMachine = stateMachineLib.TargetFactory()
 
   address: Buffer
-
   signature: SignFn
   blockchain: IBlockchainService
   private _send: SendFn
+  private _sub: any
 
   /**
    * @constructror.
@@ -70,6 +71,11 @@ export class Engine extends events.EventEmitter {
    */
   constructor ({ address, sign, send, blockchain }: Config) {
     super()
+
+    // sanity check
+    if (!channelLib.SETTLE_TIMEOUT.gt(channelLib.REVEAL_TIMEOUT)) {
+      throw new Error('SETTLE_TIMEOUT must be strictly and much larger then REVEAL_TIMEOUT')
+    }
 
     this.address = address
     this.signature = sign
@@ -85,9 +91,29 @@ export class Engine extends events.EventEmitter {
       self.handleEvent(event, state)
     })
 
-    // sanity check
-    if (!channelLib.SETTLE_TIMEOUT.gt(channelLib.REVEAL_TIMEOUT)) {
-      throw new Error('SETTLE_TIMEOUT must be strictly and much larger then REVEAL_TIMEOUT')
+  }
+
+  dispose = () => {
+    this.initiatorStateMachine.off()
+    this.targetStateMachine.off()
+  }
+
+  onBlockchainEvent = (e: BlockchainEvent) => {
+    switch (e._type) {
+      case 'Approval': return this.onApproval(e._owner, e._spender, e._value)
+      case 'ChannelClosed': return this.onChannelClose('???' as any, e.closing_address) // FIXME
+      case 'ChannelDeleted': return // FIXME
+      case 'ChannelNew': return this.onChannelNew(e.netting_channel, e.participant1, e.participant2, e.settle_timeout)
+      case 'ChannelNewBalance': return this.onChannelNewBalance(e.token_address, e.participant, e.balance)
+      case 'ChannelSecretRevealed': return this.onChannelSecretRevealed('???' as any, e.secret, e.receiver_address) // FIXME
+      case 'ChannelSettled': return this.onChannelSettled('???' as any) // FIXME
+      case 'FeesCollected': return // FIXME
+      case 'OwnershipTransferred': return // FIXME
+      case 'Refund': return this.onRefund('???' as any, e.receiver, e.amount) // FIXME
+      case 'Transfer': return // FIXME
+      case 'TransferUpdated': return this.onTransferUpdated('???' as any, e.node_address) // FIXME
+      default:
+        ((e: never) => { throw new Error('UNREACHABLE') })(e)
     }
   }
 
@@ -312,7 +338,7 @@ export class Engine extends events.EventEmitter {
    * @param {string} event - the GOT.* namespaced event triggered asynchronously by external engine components i.e. stateMachine, on-chain event handlers,etc.
    * @param {object} state - the accompanying object state
    */
-  handleEvent (event, state) { // todo: improve and unify events accross rest of the project
+  handleEvent (event: string, state: any) { // todo: improve and unify events across rest of the project
     try {
       if (event.startsWith('GOT.')) {
         let channel
@@ -665,11 +691,11 @@ export class Engine extends events.EventEmitter {
   }
 
   /** Callback when a ERC20 token approves someone for an allowance
-   * @param {String} owner - ethereum address hexString
-   * @param {String} spender - ethereum address hexString
+   * @param {Address} owner - ethereum address
+   * @param {Address} spender - ethereum address
    * @param {BN} value - the allowance that was set
    */
-  onApproval (owner, spender, value) {
+  onApproval (owner: Address, spender: Address, value: BN) {
     return true // todo
   }
 
@@ -677,15 +703,15 @@ export class Engine extends events.EventEmitter {
     return true // todo
   }
 
-  // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a new channel is created by the channel manager
-   * @param {String} channelAddress - ethereum address hexString
-   * @param {String} addressOne - ethereum address hexString
-   * @param {String} addressTwo - ethereum address hexString
+   * @param {Address} channelAddress - ethereum address
+   * @param {Address} addressOne - ethereum address
+   * @param {Address} addressTwo - ethereum address
    * @param {BN} settleTimeout- the settle_timeout for the channel
    */
-  onChannelNew (channelAddress: Buffer, addressOne: Buffer, addressTwo: Buffer, settleTimeout: BN) {
-    let peerAddress: any = null
+  onChannelNew (channelAddress: Address, addressOne: Address, addressTwo: Address, settleTimeout: BN) {
+    let peerAddress: Address | null = null
+
     if (addressOne.compare(this.address) === 0) {
       peerAddress = addressTwo
     } else if (addressTwo.compare(this.address) === 0) {

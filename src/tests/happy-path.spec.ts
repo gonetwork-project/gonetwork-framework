@@ -16,7 +16,7 @@ beforeAll(() => {
   c2 = setupClient(1)
 })
 
-test('e2e::happy-path', () => {
-  return flows.createChannelAndDeposit(c1, c2, as.Wei(2000))
+test('e2e::happy-path', () =>
+  flows.createChannelAndDeposit(c1, c2, as.Wei(2000))
     .then(x => console.log(x))
-}, minutes(2))
+, minutes(2))
