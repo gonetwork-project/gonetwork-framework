@@ -99,18 +99,21 @@ export class Engine extends events.EventEmitter {
 
   onBlockchainEvent = (e: BlockchainEvent) => {
     switch (e._type) {
-      case 'Approval': return this.onApproval(e._owner, e._spender, e._value)
-      case 'ChannelClosed': return this.onChannelClose('???' as any, e.closing_address) // FIXME
-      case 'ChannelDeleted': return // FIXME
-      case 'ChannelNew': return this.onChannelNew(e.netting_channel, e.participant1, e.participant2, e.settle_timeout)
+      // netting-channel
+      case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
       case 'ChannelNewBalance': return this.onChannelNewBalance(e.token_address, e.participant, e.balance)
-      case 'ChannelSecretRevealed': return this.onChannelSecretRevealed('???' as any, e.secret, e.receiver_address) // FIXME
-      case 'ChannelSettled': return this.onChannelSettled('???' as any) // FIXME
-      case 'FeesCollected': return // FIXME
-      case 'OwnershipTransferred': return // FIXME
-      case 'Refund': return this.onRefund('???' as any, e.receiver, e.amount) // FIXME
-      case 'Transfer': return // FIXME
-      case 'TransferUpdated': return this.onTransferUpdated('???' as any, e.node_address) // FIXME
+      case 'ChannelSecretRevealed': return this.onChannelSecretRevealed(e._contract, e.secret, e.receiver_address)
+      case 'ChannelSettled': return this.onChannelSettled(e._contract)
+      case 'Refund': return this.onRefund(e._contract, e.receiver, e.amount)
+      case 'TransferUpdated': return this.onTransferUpdated(e._contract, e.node_address)
+      // token
+      case 'Approval': return this.onApproval(e._owner, e._spender, e._value)
+      case 'Transfer': return // FIXME -- add handler
+      // manager
+      case 'ChannelDeleted': return // FIXME -- add handler
+      case 'ChannelNew': return this.onChannelNew(e.netting_channel, e.participant1, e.participant2, e.settle_timeout)
+      case 'FeesCollected': return // FIXME -- add handler
+      case 'OwnershipTransferred': return // FIXME -- add handler
       default:
         ((e: never) => { throw new Error('UNREACHABLE') })(e)
     }

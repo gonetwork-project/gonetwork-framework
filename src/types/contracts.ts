@@ -39,7 +39,7 @@ export type GenOrders = {
   [k: string]: GenOrder
 }
 
-export type ExtractEvents<E, K extends keyof E> = E[K]
+export type ExtractEvents<E, K extends keyof E> = E[K] & { _contract: Address }
 
 export type TokenEvents = ExtractEvents<TokenEventsToArgs, TokenEventTypes>
 export type ManagerEvents = ExtractEvents<ManagerEventsToArgs, ManagerEventTypes>
@@ -48,16 +48,17 @@ export type ChannelEvents = ExtractEvents<ChannelEventsToArgs, ChannelEventTypes
 export type EventTypeToEvent<Ev extends BlockchainEventType> =
   Ev extends ChannelEventTypes ? ChannelEventsToArgs[Ev] :
   Ev extends ManagerEventTypes ? ManagerEventsToArgs[Ev] :
-  Ev extends TokenEventTypes ? TokenEventsToArgs[Ev] : never
+  Ev extends TokenEventTypes ? TokenEventsToArgs[Ev]
+  : never
 
 export type BlockchainEventType = ChannelEventTypes | ManagerEventTypes | TokenEventTypes
 
 export type BlockchainEvent = ChannelEvents | ManagerEvents | TokenEvents
 
 export type AsMethodEventMap<IO, Map extends { [P in keyof IO]: BlockchainEventType }> = {
-    // [P in keyof Map]: ExtractEvents<Args, Map[P]>
-    [P in keyof Map]: EventTypeToEvent<Map[P]>
-  }
+  // [P in keyof Map]: ExtractEvents<Args, Map[P]>
+  [P in keyof Map]: EventTypeToEvent<Map[P]>
+}
 
 // TODO: make sure the maps are exhausted
 type TokenEventsMapRaw = {
