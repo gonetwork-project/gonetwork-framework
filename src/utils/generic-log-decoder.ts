@@ -11,9 +11,6 @@ export default class GenericLogDecoder {
     this.eventMap = GenericLogDecoder.generateEventMap(contracts)
   }
 
-  static normalizeName (name) {
-    return name.replace(/^_/, '')
-  }
   static generateTopic (def: any) {
     return util.addHexPrefix(abi.eventID(def.name, def.inputs.map(y => y.type)).toString('hex'))
   }
@@ -46,7 +43,7 @@ export default class GenericLogDecoder {
           if (t.type === 'address') {
             y = util.toBuffer(util.addHexPrefix(y))
           }
-          r[GenericLogDecoder.normalizeName(eventDef.inputs[i].name)] = y
+          r[eventDef.inputs[i].name] = y
           return r
         }, {})
       result._type = eventDef.name

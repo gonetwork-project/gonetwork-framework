@@ -75,9 +75,8 @@ if (base.isInEnv('local')) {
       .then(([nonce, gasPrice]) => {
         return cTx.txFull.token.approve({ nonce, gasPrice, to: cfg.gotToken }, cData)
           .then(x => {
-            console.log(x, x[0])
-            // _value vs value ?
-            expect((x[0] as any).value.eq(GOTAllow)).toBe(true)
+            console.log('APPROVE GOT', x, x[0])
+            expect(x[0]._value.eq(GOTAllow)).toBe(true)
           })
       })
   })
