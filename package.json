@@ -56,7 +56,8 @@
       "./src/blockchain/spec.base.ts",
       "./src/__GEN__",
       "./src/types",
-      "./src/observable-add"
+      "./src/observable-add",
+      "./src/state-channel"
     ],
     "rootDir": "./src",
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",

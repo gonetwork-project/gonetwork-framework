@@ -173,7 +173,7 @@ export class P2P implements T.P2P {
     console.log('[RECEIVED-MESSAGE]', m)
     return this._getChannel(m.peer)
       .then(ch => {
-        console.log('CHan4', ch)
+        console.log('MESSAGE', ch)
         if (ch.lastIn === m.id) {
           this._sendAck(m.peer, m.id)
         } else if (ch.lastIn === m.id - 1) {

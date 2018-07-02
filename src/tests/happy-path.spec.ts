@@ -1,14 +1,16 @@
-import { as } from '../utils'
+import { as, BN } from '../utils'
 
-import { setupClient } from './setup'
+import { setupClient, Client } from './setup'
 import { init } from './init-contracts'
-import * as flows from './flows'
+import * as flows from './flows-onchain'
 
 const secondes = n => n * 1000
 const minutes = n => n * 60 * 1000
 
-let c1
-let c2
+let c1: NonNullable<Client>
+let c2: NonNullable<Client>
+
+let sub
 
 // minimize number of deployments to every other 9-th run
 beforeAll(() => {
@@ -16,9 +18,20 @@ beforeAll(() => {
   console.log(`\n\nRUN: ${run}\n\n `)
   c1 = setupClient(0)
   c2 = setupClient(run)
+
+  c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
+  c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
+})
+
+afterAll(() => {
+  c1.blockchain.monitoring.dispose()
+  c1.blockchain.monitoring.off('*', c1.engine.onBlockchainEvent)
+
+  c2.blockchain.monitoring.dispose()
+  c2.blockchain.monitoring.off('*', c2.engine.onBlockchainEvent)
 })
 
 test('e2e::happy-path', () =>
   flows.createChannelAndDeposit(c1, c2, as.Wei(50))
-    .then(x => console.log(x))
-, minutes(2))
+    .then(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(200)))
+  , minutes(2))

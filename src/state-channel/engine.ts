@@ -108,12 +108,12 @@ export class Engine extends events.EventEmitter {
       case 'TransferUpdated': return this.onTransferUpdated(e._contract, e.node_address)
       // token
       case 'Approval': return this.onApproval(e._owner, e._spender, e._value)
-      case 'Transfer': return // FIXME -- add handler
+      case 'Transfer': return () => null // FIXME -- add handler
       // manager
-      case 'ChannelDeleted': return // FIXME -- add handler
+      case 'ChannelDeleted': return () => null // FIXME -- add handler
       case 'ChannelNew': return this.onChannelNew(e.netting_channel, e.participant1, e.participant2, e.settle_timeout)
-      case 'FeesCollected': return // FIXME -- add handler
-      case 'OwnershipTransferred': return // FIXME -- add handler
+      case 'FeesCollected': return () => null // FIXME -- add handler
+      case 'OwnershipTransferred': return () => null // FIXME -- add handler
       default:
         ((e: never) => { throw new Error('UNREACHABLE') })(e)
     }
@@ -303,12 +303,13 @@ export class Engine extends events.EventEmitter {
    * Send a direct transfer to your channel partner.  This method calls send(directTransfer) and applies the directTransfer to the local channel state.
    * @param {Address} to - eth address who this message will be sent to.  Only differs from target if mediating a transfer
    * @param {BN} transferredAmount - the monotonically increasing amount to send.  This value is set by taking the previous transferredAmount + amount you want to transfer.
-   * @throws "Invalid MediatedTransfer: unknown to address"
+   * @throws "Invalid DirectTransfer: unknown to address"
    * @throws 'Invalid DirectTransfer:state channel is not open'
    */
   sendDirectTransfer (to: Address, transferredAmount: BN) {
+    console.log('SENDING', to, transferredAmount, this.channelByPeer)
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
-      throw new Error('Invalid MediatedTransfer: unknown to address')
+      throw new Error('Invalid DirectTransfer: unknown to address')
     }
     let channel = this.channelByPeer[to.toString('hex')]
     if (!channel.isOpen()) {

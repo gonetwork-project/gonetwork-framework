@@ -20,6 +20,8 @@ export const setWaitForDefault = (cfg: T.WaitForConfig) => waitForDefault = cfg
 
 export type MonitorAddress = [E.Address, string]
 
+export const anyEventMark: T.AnyEventMark = '*'
+
 export interface State {
   addresses: MonitorAddress[],
   transactions: E.Address[]
@@ -74,7 +76,7 @@ export class Monitoring implements T.Monitoring {
     })
   }
 
-  asStream = (ev: BlockchainEventType | BlockchainEventType[]) =>
+  asStream = (ev: BlockchainEventType | BlockchainEventType[] | T.AnyEventMark) =>
     Observable.from(Array.isArray(ev) ? ev : [ev])
       .mergeMap(e => Observable.fromEvent(this, e)) as Observable<any>
 
@@ -90,11 +92,11 @@ export class Monitoring implements T.Monitoring {
     this.waitForTransactionRaw(tx, cfg)
       .toPromise()
 
-  on = (event: C.BlockchainEventType, listener: (...args: any[]) => void) => {
+  on = (event: C.BlockchainEventType | T.AnyEventMark, listener: (...args: any[]) => void) => {
     this._em.on(event, listener)
   }
 
-  off = (event: C.BlockchainEventType, listener: (...args: any[]) => void) => {
+  off = (event: C.BlockchainEventType | T.AnyEventMark, listener: (...args: any[]) => void) => {
     this._em.removeListener(event, listener)
   }
 
@@ -145,7 +147,7 @@ export class Monitoring implements T.Monitoring {
                 ))
               .do(({ logs, addresses }) => {
                 // everything here is done synchronously so top most switchMap will not terminate it
-                logs.forEach(l => this._em.emit(l._type, l))
+                logs.forEach(l => this._emit(l._type, l))
                 addresses.forEach(add => {
                   const a = s.addresses.find(_a => _a[0] === add)
                   if (a) {
@@ -157,6 +159,12 @@ export class Monitoring implements T.Monitoring {
           )
           .retryWhen(errs => errs.delay(1000))
       )
+
+  private _emit = (t: BlockchainEventType, e: C.BlockchainEvent) => {
+    console.log('EMITTING', t, e)
+    this._em.emit('*', e)
+    this._em.emit(t, e)
+  }
 
   private _saveState = (s: State) =>
     this._cfg.storage.setItem(KEY_PREFIX + this._cfg.channelManagerAddress, JSON.stringify(s))

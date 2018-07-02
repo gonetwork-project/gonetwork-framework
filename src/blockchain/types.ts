@@ -19,6 +19,13 @@ export interface MonitoringConfig {
   storage: T.Storage
   rpc: RPC
 }
+
+export type AnyEventMark = '*'
+export type MonitoringEmitCb<Ev extends T.BlockchainEventType = T.BlockchainEventType> = {
+  (e: AnyEventMark, listener: (args: T.BlockchainEvent) => any): void
+  (e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void): void
+}
+
 export interface Monitoring {
   blockNumbers: () => Observable<E.BlockNumber>
   gasPrice: () => Promise<E.GasPrice>
@@ -30,8 +37,8 @@ export interface Monitoring {
 
   waitForTransaction: (tx: E.TxHash, cfg?: Partial<WaitForConfig>) => Promise<E.TxReceipt>
 
-  on: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
-  off: <Ev extends T.BlockchainEventType>(e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void) => void
+  on: MonitoringEmitCb
+  off: MonitoringEmitCb
 
   asStream: <Ev extends T.BlockchainEventType>(e: Ev | Ev[]) =>
     Observable<T.EventTypeToEvent<Ev>>
