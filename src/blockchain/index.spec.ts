@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-import { serviceCreate, BlockchainService } from '.'
+import { BlockchainService } from '.'
 import { infura, isInEnv } from './spec.base'
 import { IBlockchainService } from './types'
 

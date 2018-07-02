@@ -16,8 +16,8 @@ let sub
 beforeAll(() => {
   const { run } = init()
   console.log(`\n\nRUN: ${run}\n\n `)
-  c1 = setupClient(0)
-  c2 = setupClient(run)
+  c1 = setupClient(0, { monitoringInterval: 0.5 * 1000 })
+  c2 = setupClient(run, { monitoringInterval: 200 * 1000 })
 
   c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
   c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)

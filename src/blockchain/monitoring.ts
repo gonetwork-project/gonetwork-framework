@@ -12,7 +12,6 @@ import * as E from 'eth-types'
 
 // todo: make it configurable
 const KEY_PREFIX = '___ETH_MONITORING___'
-const LOGS_INTERVAL = 5 * 1000
 
 let waitForDefault: T.WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
 
@@ -28,7 +27,6 @@ export interface State {
 }
 
 export class Monitoring implements T.Monitoring {
-  private _cfg: T.MonitoringConfig
   private _em = new EventEmitter()
   private _state: Promise<State>
   private _sub: any
@@ -36,8 +34,7 @@ export class Monitoring implements T.Monitoring {
   private _blockNumberSub = new BehaviorSubject<E.BlockNumber | undefined>(undefined)
   private _forceMonitoring = new Subject<boolean>()
 
-  constructor (cfg: T.MonitoringConfig) {
-    this._cfg = cfg
+  constructor (readonly cfg: T.MonitoringConfig) {
     this._state = cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress)
       .then(s => s ? JSON.parse(s) : ({
         addresses: [
@@ -57,7 +54,7 @@ export class Monitoring implements T.Monitoring {
   }
 
   blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
-  gasPrice = () => this._cfg.rpc.gasPrice() // todo: improve monitor of gas price it in very long intervals
+  gasPrice = () => this.cfg.rpc.gasPrice() // todo: improve monitor of gas price it in very long intervals
 
   subscribeAddress = (a: E.Address) =>
     this._state.then(s => {
@@ -68,7 +65,7 @@ export class Monitoring implements T.Monitoring {
     })
 
   unsubscribeAddress = (a: E.Address) => {
-    if (a === this._cfg.channelManagerAddress) return Promise.resolve(false)
+    if (a === this.cfg.channelManagerAddress) return Promise.resolve(false)
     return this._state.then(s => {
       s.addresses = s.addresses.filter(_a => !_a[0].equals(a))
       return this._saveState(s)
@@ -82,7 +79,7 @@ export class Monitoring implements T.Monitoring {
 
   waitForTransactionRaw = (tx: E.TxHash, cfg?: Partial<T.WaitForConfig>) =>
     Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
-      .switchMap(() => this._cfg.rpc.getTransactionReceipt(tx) as Promise<E.TxReceipt>)
+      .switchMap(() => this.cfg.rpc.getTransactionReceipt(tx) as Promise<E.TxReceipt>)
       .filter(Boolean)
       .take(1)
       .retryWhen(errs => errs.delay(3 * 1000)) // this should not happen
@@ -105,9 +102,9 @@ export class Monitoring implements T.Monitoring {
   private _blockNumber = () => this._blockNumberSub.value
 
   private _monitorBlockNumber = () =>
-    Observable.timer(0, LOGS_INTERVAL)
+    Observable.timer(0, this.cfg.logsInterval)
       .switchMap(() =>
-        Observable.defer(() => this._cfg.rpc.blockNumber())
+        Observable.defer(() => this.cfg.rpc.blockNumber())
           .retryWhen(errs => errs.delay(1000))
       )
       .do(x => !x.eq(this._blockNumber() || 0) && this._blockNumberSub.next(x))
@@ -130,13 +127,16 @@ export class Monitoring implements T.Monitoring {
                 .mergeMap(gs =>
                   Observable.defer(() => {
                     const bn = as.BlockNumber(xs.key)
+                    console.log('BLOCK_NUMBER_IN', xs.key, bn, blockNumber, bn.lt(blockNumber))
                     if (bn.lt(blockNumber)) {
-                      return this._cfg.rpc.getLogs({
+                      console.log('GETTING', bn, gs)
+                      return this.cfg.rpc.getLogs({
                         fromBlock: add(bn, as.BlockNumber(1)),
                         toBlock: blockNumber,
                         address: gs
                       })
                     } else {
+                      console.log('NO_OP')
                       return Observable.of([] as C.BlockchainEvent[])
                     }
                   })
@@ -147,6 +147,7 @@ export class Monitoring implements T.Monitoring {
                 ))
               .do(({ logs, addresses }) => {
                 // everything here is done synchronously so top most switchMap will not terminate it
+                // console.log('LOGS', blockNumber.toString(), logs.length)
                 logs.forEach(l => this._emit(l._type, l))
                 addresses.forEach(add => {
                   const a = s.addresses.find(_a => _a[0] === add)
@@ -167,7 +168,7 @@ export class Monitoring implements T.Monitoring {
   }
 
   private _saveState = (s: State) =>
-    this._cfg.storage.setItem(KEY_PREFIX + this._cfg.channelManagerAddress, JSON.stringify(s))
+    this.cfg.storage.setItem(KEY_PREFIX + this.cfg.channelManagerAddress, JSON.stringify(s))
 }
 
 export const waitForRaw = <P, T> (action: ((params: P) => Promise<T>), cfg?: Partial<T.WaitForConfig>) =>

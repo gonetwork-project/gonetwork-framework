@@ -1,4 +1,4 @@
-import { as, serializeRpcParam, decodeLogs, nextId } from '../utils'
+import { as, serializeRpcParam, decodeLogs, nextId, util, abi } from '../utils'
 
 import * as B from './types'
 
@@ -18,8 +18,13 @@ export const partialImplementation: B.ImplementationSpecs = {
   gasPrice: ['eth_gasPrice', null, as.GasPrice, null]
 }
 
-const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPCCall<any, any>) =>
+const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.ImplementationSpec<any, any>) =>
   (params: object) => {
+    let ps = (spec[1] && spec[1]!.length === 0) ?
+      [serializeRpcParam(params as any)] :
+      (spec[1] || [])
+        .map(a => (params[a] && serializeRpcParam(params[a]) || spec[3]![a as string]))
+
     return requestFn(providerUrl, {
       method: 'POST',
       headers: {
@@ -30,10 +35,7 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPC
         id: nextId(),
         method: spec[0],
         // this is bit of hack - in case of single parameter we do not want to wrap it in an object
-        params: (spec[1] && spec[1].length === 0) ?
-          [serializeRpcParam(params as any)] :
-          (spec[1] || [])
-            .map(a => (params[a] && serializeRpcParam(params[a]) || spec[3][a]))
+        params: ps
       })
     })
       .then(res => res.status === 200 ?
@@ -41,7 +43,10 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: B.RPC
           if (r.error) {
             return Promise.reject(r)
           }
-        //  console.log(spec[0], r)
+          // if (spec[0] === 'eth_getLogs') {
+          //   console.log('---> ETH_LOGS', r.result, spec[2](r.result))
+          // }
+          // console.log(spec[0], r)
           return spec[2](r.result)
         }) : Promise.reject(res))
   }

@@ -28,6 +28,8 @@ export const account = (privateKeyStr: string,
     privateKey: as.PrivateKey(new Buffer(privateKeyStr, 'hex'))
   })
 
+export const monitoringInterval = 2 * 1000
+
 export const mnemonic = 'dignity upset visa worry warrior donate record enforce time pledge ladder drop'
 
 export const pks: string[] = [

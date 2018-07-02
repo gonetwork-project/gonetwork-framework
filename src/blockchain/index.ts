@@ -13,7 +13,8 @@ export const serviceCreate: BlockchainServiceCreate = config => {
     rpc,
     channelManagerAddress: config.manager,
     tokenAddresses: [config.gotToken, config.hsToken],
-    storage: fakeStorage()
+    storage: fakeStorage(),
+    logsInterval: config.monitoringInterval
   })
 
   const proxy = createContractsProxy({

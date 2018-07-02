@@ -14,6 +14,7 @@ export type WaitForConfig = {
 }
 
 export interface MonitoringConfig {
+  logsInterval: number | 5000
   channelManagerAddress: E.Address
   tokenAddresses: E.Address[]
   storage: T.Storage
@@ -101,7 +102,7 @@ export interface ContractTxConfig {
 
 export interface BlockchainServiceConfig {
   providerUrl: string
-  // mqttUrl: string
+  monitoringInterval: number
 
   manager: E.Address
   gotToken: E.Address

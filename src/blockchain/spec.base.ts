@@ -44,6 +44,8 @@ export const infura: () => InfuraConfig = () => ({
   signatureCb: ((cb) => cb(infuraAccounts[0].privateKey)) as SignatureCb,
   owner: infuraAccounts[0].address,
 
+  monitoringInterval: 0.5 * 1000,
+
   manager: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
   gotToken: as.Address(new Buffer('a28a7a43bc389064ab5d16c0338968482b4e02bd', 'hex')),
   hsToken: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
@@ -66,6 +68,8 @@ export const local = () => {
 
     accounts: e2e.accounts,
     signatureCb: ((cb) => cb(e2e.accounts[0].privateKey)) as SignatureCb,
-    owner: e2e.accounts[0].address
+    owner: e2e.accounts[0].address,
+
+    monitoringInterval: 0.5 * 1000
   }
 }
