@@ -5,30 +5,40 @@ import createContracts from './contracts-proxy'
 import * as base from './spec.base'
 import { init } from '../tests/init-contracts'
 import * as E from 'eth-types'
+import { RPC } from './types'
 
-let _cfg = base.config('local')
-let cfg: NonNullable<typeof _cfg> = _cfg as any
+if (base.isInEnv('local')) {
+  let cfg: base.LocalConfig
 
-// todo: make units for Got and other ERC20
-const GOTAllow = as.Wei(200)
-const HSAllow = as.Wei(200)
+  // todo: make units for Got and other ERC20
+  const GOTAllow = as.Wei(200)
+  const HSAllow = as.Wei(200)
 
-beforeAll(() => {
-  init(true)
-  cfg = base.config('local') as any
-})
+  let acc1: NonNullable<typeof cfg>['accounts'][0]
+  let acc2: NonNullable<typeof cfg>['accounts'][0]
+  let rpc: RPC
+  let cTx: ReturnType<typeof createContracts>
 
-if (!cfg) {
-  test.skip('skipped - local only', () => undefined)
-} else {
-  const rpc = rpcCreate(cfg.providerUrl)
-  const [acc1, acc2] = cfg.accounts
+  beforeAll(() => {
+    init()
+    cfg = base.local()
+    console.log('\n\RUN\n\n', cfg.run)
+    acc1 = cfg.accounts[0]
+    acc2 = cfg.accounts[cfg.run];
 
-  const cTx = createContracts({
-    owner: acc1.address,
-    rpc,
-    chainId: cfg.chainId,
-    signatureCb: (fn) => fn(acc1.privateKey)
+    // block accessing accounts directly
+    (cfg as any).accounts = null
+
+    console.log(`ACC2: 0x${acc2.addressStr} abc`)
+
+    rpc = rpcCreate(cfg.providerUrl)
+    cTx = createContracts({
+      owner: acc1.address,
+      rpc,
+      chainId: cfg.chainId,
+      signatureCb: (fn) => fn(acc1.privateKey)
+    })
+
   })
 
   test('call - token.balanceOf', () =>
@@ -64,7 +74,11 @@ if (!cfg) {
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
       .then(([nonce, gasPrice]) => {
         return cTx.txFull.token.approve({ nonce, gasPrice, to: cfg.gotToken }, cData)
-          .then(x => console.log('APPROVE-GOT', x))
+          .then(x => {
+            console.log(x, x[0])
+            // _value vs value ?
+            expect((x[0] as any).value.eq(GOTAllow)).toBe(true)
+          })
       })
   })
 
@@ -115,5 +129,6 @@ if (!cfg) {
           .then(x => console.log('DEPOSIT-HS', x))
       })
   })
-
+} else {
+  test.skip('skipped - local only', () => undefined)
 }

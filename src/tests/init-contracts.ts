@@ -76,6 +76,7 @@ const gen = () => {
     }
 
     const r = JSON.parse(res[0])
+    r.run = 1
     // r.privateKeys = cfg.pks
     delete r['__GONETWORK_RESULT__']
     fs.writeFileSync(cfg.contractAddressesPath, JSON.stringify(r, null, 4), 'utf8')
@@ -87,12 +88,17 @@ const gen = () => {
   }
 }
 
-export const init: (f?: boolean) => {
-  testToken: string, gotToken: string, manager: string
-} = (force) => {
-  if (!force && fs.existsSync(cfg.contractAddressesPath)) {
-    const i = JSON.parse(fs.readFileSync(cfg.contractAddressesPath, 'utf8'))
-    console.log(i)
+export const init: () => {
+  testToken: string, gotToken: string, manager: string, run: number
+} = () => {
+  let i
+  if (fs.existsSync(cfg.contractAddressesPath)) {
+    i = JSON.parse(fs.readFileSync(cfg.contractAddressesPath, 'utf8'))
+  }
+
+  // 9 - number of other accounts
+  if (i && (i.run < 9)) {
+    // console.log(i)
     try {
       const r = pr.execSync(`curl --data-binary '{"jsonrpc":"2.0","id":"curltext","method":"eth_getTransactionCount","params":["${i.manager}"]}' -H 'content-type:text/plain;' localhost:8545`)
       const s = JSON.parse(r.toString())
@@ -100,6 +106,8 @@ export const init: (f?: boolean) => {
       if (!s.result || s.result === '0x0') {
         return gen()
       } else {
+        i.run += 1
+        fs.writeFileSync(cfg.contractAddressesPath, JSON.stringify(i, null, 4), 'utf8')
         return i
       }
 
@@ -111,12 +119,12 @@ export const init: (f?: boolean) => {
   }
 }
 
-export const contracts = () => {
+export const readFromDisk = () => {
   const add = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'temp', 'contract-addresses.json'), 'utf8'))
 
-  return {
+  return [{
     manager: toAdd(add.manager),
     gotToken: toAdd(add.gotToken),
     hsToken: toAdd(add.testToken)
-  } as ContractAddresses
+  }, add.run] as [ContractAddresses, number]
 }

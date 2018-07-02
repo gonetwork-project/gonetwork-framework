@@ -4,7 +4,7 @@ import { P2P } from '../p2p/p2p'
 
 import { fakeStorage, CHAIN_ID } from '../utils'
 import { Payload } from '../p2p/p2p-types'
-import { contracts as c } from './init-contracts'
+import { readFromDisk as c } from './init-contracts'
 
 import * as cfg from './config'
 
@@ -18,7 +18,7 @@ export const setupClient = (accountIndex: number) => {
     storage: fakeStorage()
   })
 
-  const contracts = c()
+  const [contracts, run] = c()
 
   const blockchain = serviceCreate({
     ...contracts,
@@ -35,7 +35,7 @@ export const setupClient = (accountIndex: number) => {
     blockchain: blockchain
   })
 
-  return { contracts, p2p, engine, blockchain, owner: account, txs: blockchain.txs }
+  return { run, contracts, p2p, engine, blockchain, owner: account, txs: blockchain.txs }
 }
 
 export type Client = ReturnType<typeof setupClient>

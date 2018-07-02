@@ -61,7 +61,6 @@ export class Engine extends events.EventEmitter {
   signature: SignFn
   blockchain: IBlockchainService
   private _send: SendFn
-  private _sub: any
 
   /**
    * @constructror.
@@ -130,6 +129,7 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Message: no signature found')
     }
 
+    // todo: refactor to exhaustive switch
     if (message instanceof messageLib.RequestSecret) {
       this.onRequestSecret(message)
     } else if (message instanceof messageLib.RevealSecret) {
@@ -141,7 +141,7 @@ export class Engine extends events.EventEmitter {
     } else if (message instanceof messageLib.SecretToProof) {
       this.onSecretToProof(message)
     } else {
-      throw new Error('Invalid Message: uknown message received')
+      throw new Error('Invalid Message: unknown message received')
     }
 
     // FIXME - msgID seems to be not always there

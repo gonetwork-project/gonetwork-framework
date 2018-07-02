@@ -13,6 +13,9 @@ import { as, CHAIN_ID } from '../utils/eth-utils'
 
 type Env = 'infura' | 'local'
 
+export type LocalConfig = ReturnType<typeof local>
+export type InfuraConfig = LocalConfig & { nettingChannel: E.Address, txHash: string, txHashFake: string }
+
 // mind that tests are specific for different environments - you may withe-list ones you want the tests run for
 // eg. `GONET_TEST_ENV=local jest --watch` -- [DEFAULT] only local (you need local eth-node running on port 8545 - chainId 1337)
 // `GONET_TEST_ENV=local,infura jest --watch` - both local and infura
@@ -29,7 +32,10 @@ const infuraAccounts = [
   e2e.account('c712c08b0c42c073f8c67cf5c0fa8c4cf5ffa89c0b33c2d4e53aa4fe969da887', 'f8e9b7b0f5936c0221b56f15ea2182d796d09e63')
 ]
 
-const infura = {
+export const isInEnv = (e: Env) => testEnvironments.includes(e)
+
+export const infura: () => InfuraConfig = () => ({
+  run: null as any as number, // run should not be needed for infura so it will throw when used
   providerUrl: 'https://ropsten.infura.io',
   mqttUrl: 'mqtt://localhost:1883',
   chainId: CHAIN_ID.ROPSTEN as E.ChainId,
@@ -46,32 +52,20 @@ const infura = {
 
   txHash: '0x57f8edeca8ca78d7d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12',
   txHashFake: '0x57f8edeca8ca78d8d2a1be8a7a37614e024e14120a03d4ec86088e651c7b7a12'
-}
-type Config = typeof infura
+})
 
-export const config = (env: Env) => {
-  if (!testEnvironments.find(e => env === e)) {
-    return null
-  }
-  if (env === 'infura') {
-    return infura
-  }
+export const local = () => {
+  const [contracts, run] = e2e.readFromDisk()
 
-  const c: Config = {
-    ...e2e.contracts(),
-
+  return {
+    run,
+    ...contracts,
     providerUrl: 'http://localhost:8545',
     mqttUrl: 'mqtt://localhost:1883',
-    chainId: CHAIN_ID.GETH_PRIVATE_CHAINS,
+    chainId: CHAIN_ID.GETH_PRIVATE_CHAINS as E.ChainId,
 
     accounts: e2e.accounts,
     signatureCb: ((cb) => cb(e2e.accounts[0].privateKey)) as SignatureCb,
-    owner: e2e.accounts[0].address,
-
-    nettingChannel: as.Address(new Buffer('NO_SUPPORTED', 'hex')),
-    txHash: 'NOT_SUPPORTED',
-    txHashFake: 'NOT_SUPPORTED'
+    owner: e2e.accounts[0].address
   }
-
-  return c
 }

@@ -1,19 +1,21 @@
 import { as } from '../utils'
 
-import { setupClient, Client } from './setup'
+import { setupClient } from './setup'
 import { init } from './init-contracts'
 import * as flows from './flows'
 
 const secondes = n => n * 1000
 const minutes = n => n * 60 * 1000
 
-let c1 // = setupClient(0)
-let c2 // = setupClient(1)
+let c1
+let c2
 
+// minimize number of deployments to every other 9-th run
 beforeAll(() => {
-  init(true)
+  const { run } = init()
+  console.log(`\n\nRUN: ${run}\n\n `)
   c1 = setupClient(0)
-  c2 = setupClient(1)
+  c2 = setupClient(run)
 })
 
 test('e2e::happy-path', () =>

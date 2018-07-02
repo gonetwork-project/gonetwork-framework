@@ -1,12 +1,10 @@
 import rpcCreate from './rpc'
 import { as } from '../utils'
-import { config } from './spec.base'
+import { infura, isInEnv } from './spec.base'
 
-const cfg = config('infura')
+if (isInEnv('infura')) {
+  const cfg = infura()
 
-if (!cfg) {
-  test.skip('skipped - infura only', () => undefined)
-} else {
   const rpc = rpcCreate(cfg.providerUrl)
 
   test('block-number', () =>
@@ -63,4 +61,6 @@ if (!cfg) {
     rpc.gasPrice()
       .then(x => expect(x.gt(0)).toBe(true))
   )
+} else {
+  test.skip('skipped - infura only', () => undefined)
 }

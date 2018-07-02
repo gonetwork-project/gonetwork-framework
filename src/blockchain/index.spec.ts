@@ -1,14 +1,11 @@
 import { Observable } from 'rxjs'
 
 import { serviceCreate, BlockchainService } from '.'
-import { config } from './spec.base'
+import { infura, isInEnv } from './spec.base'
 import { IBlockchainService } from './types'
 
-const cfg = config('infura')
-
-if (!cfg) {
-  test.skip('skipped - infura only', () => undefined)
-} else {
+if (isInEnv('infura')) {
+  const cfg = infura()
   let srv: IBlockchainService
   beforeEach(() => {
     srv = new BlockchainService(cfg)
@@ -85,4 +82,6 @@ if (!cfg) {
           })
       })
   })
+} else {
+  test.skip('skipped - infura only', () => undefined)
 }

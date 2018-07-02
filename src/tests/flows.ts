@@ -15,7 +15,8 @@ export const createChannel = (c1: Client, add2: Address, amount: Wei) =>
     .then(() =>
       c1.txs.newChannel({ to: c1.contracts.manager },
         { partner: add2, settle_timeout: new BN(500) }))
-    .then(logs => (logs.filter(x => x._type === 'ChannelNew')[0] as ManagerEventsToArgs['ChannelNew']).netting_channel)
+    .then(logs =>
+      (logs.filter(x => x._type === 'ChannelNew')[0] as ManagerEventsToArgs['ChannelNew']).netting_channel)
 
 export const deposit = (from: Client, token: Address, channel: Address, amount: Wei) =>
   from.txs.approve({ to: token }, { _spender: channel, _value: amount })
@@ -26,4 +27,4 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
     .then(log('CHANNEL_CREATED'))
     .then(ch => deposit(from, from.contracts.hsToken, ch, amount)
       .then(() => ({ channel: ch })))
-      .then(log('DEPOSITED'))
+    .then(log('DEPOSITED'))
