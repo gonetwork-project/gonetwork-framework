@@ -4,8 +4,8 @@ import { Wei, Address } from 'eth-types'
 import { BN } from '../utils'
 import { ManagerEventsToArgs } from '../__GEN__/ChannelManagerContract'
 
-const log = <T> (msg: string) => (p: T): Promise<T> => {
-  console.log(msg, p)
+const log = <T> (msg: string, logValue = false, ...rest: any[]) => (p: T): Promise<T> => {
+  logValue ? console.log(msg, p, ...rest) : console.log(msg, ...rest)
   return Promise.resolve(p)
 }
 
@@ -20,6 +20,7 @@ export const createChannel = (c1: Client, add2: Address, amount: Wei) =>
 
 export const deposit = (from: Client, token: Address, channel: Address, amount: Wei) =>
   from.txs.approve({ to: token }, { _spender: channel, _value: amount })
+    .then(log('APPROVED'))
     .then(() => from.txs.deposit({ to: channel }, { amount: amount }))
 
 export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =>

@@ -19,6 +19,6 @@ beforeAll(() => {
 })
 
 test('e2e::happy-path', () =>
-  flows.createChannelAndDeposit(c1, c2, as.Wei(2000))
+  flows.createChannelAndDeposit(c1, c2, as.Wei(50))
     .then(x => console.log(x))
 , minutes(2))

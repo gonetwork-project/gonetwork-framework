@@ -74,10 +74,7 @@ if (base.isInEnv('local')) {
     return Promise.all([rpc.getTransactionCount({ address: acc1.address }), rpc.gasPrice()])
       .then(([nonce, gasPrice]) => {
         return cTx.txFull.token.approve({ nonce, gasPrice, to: cfg.gotToken }, cData)
-          .then(x => {
-            console.log('APPROVE GOT', x, x[0])
-            expect(x[0]._value.eq(GOTAllow)).toBe(true)
-          })
+          .then(x => expect(x[0]._value.eq(GOTAllow)).toBe(true))
       })
   })
 
@@ -101,9 +98,8 @@ if (base.isInEnv('local')) {
     return rpc.gasPrice()
       .then((gasPrice) => cTx.txFull.manager.newChannel({ gasPrice, to: cfg.manager }, cData))
       .then((x) => {
-        console.log('NEW-CHANNEL', x.length, x)
-        // todo: fixme - ideally we matched what events to contract methods
         netChannel = (x.filter(l => l._type === 'ChannelNew')[0] as any).netting_channel
+        expect(netChannel).toBeInstanceOf(Buffer)
       })
   })
 

@@ -59,7 +59,7 @@ const paramsToEstimation = (order: GenOrders, cfg: ContractTxConfig) => {
             .then(r => ({
               estimatedGas: r,
               txParams: Object.assign({
-                gasLimit: r.add(r.div(new util.BN(5))) // adds ~20%
+                gasLimit: r.add(r.div(new util.BN(2))) // adds ~50%
               } as Partial<E.TxParams>, txRaw)
             }))
         })(encodeTxData(k, order[k][0]))
