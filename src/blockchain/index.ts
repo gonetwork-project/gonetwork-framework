@@ -1,11 +1,18 @@
 import { fakeStorage } from '../utils'
 import rpcCreate from './rpc'
-import { Monitoring } from './monitoring'
+import * as monitoring from './monitoring'
 import { createContractsProxy } from './contracts-proxy'
 
 import { BlockchainServiceCreate, BlockchainServiceConfig, IBlockchainService } from './types'
 
+const Monitoring = monitoring.Monitoring
+const waitFor = monitoring.waitFor
+
 export * from './types'
+export {
+  monitoring,
+  waitFor
+}
 
 export const serviceCreate: BlockchainServiceCreate = config => {
   const rpc = rpcCreate(config.providerUrl)

@@ -1,10 +1,9 @@
 import { as, BN } from '../utils'
 
-import { setupClient, Client } from './setup'
+import { setupClient, Client, waitFor } from './setup'
 import { init } from './init-contracts'
 import * as flows from './flows-onchain'
 
-const secondes = n => n * 1000
 const minutes = n => n * 60 * 1000
 
 let c1: NonNullable<Client>
@@ -33,5 +32,5 @@ afterAll(() => {
 
 test('e2e::happy-path', () =>
   flows.createChannelAndDeposit(c1, c2, as.Wei(50))
-    .then(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(200)))
+    .then(waitFor(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(200))))
   , minutes(2))

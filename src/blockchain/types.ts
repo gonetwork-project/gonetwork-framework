@@ -14,7 +14,7 @@ export type WaitForConfig = {
 }
 
 export interface MonitoringConfig {
-  logsInterval: number | 5000
+  logsInterval: number
   channelManagerAddress: E.Address
   tokenAddresses: E.Address[]
   storage: T.Storage

@@ -13,6 +13,7 @@ import 'rxjs/add/operator/take'
 import 'rxjs/add/operator/groupBy'
 import 'rxjs/add/operator/timeout'
 import 'rxjs/add/operator/distinctUntilChanged'
+import 'rxjs/add/operator/defaultIfEmpty'
 
 import 'rxjs/add/observable/timer'
 import 'rxjs/add/observable/empty'

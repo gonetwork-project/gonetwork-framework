@@ -127,16 +127,16 @@ export class Monitoring implements T.Monitoring {
                 .mergeMap(gs =>
                   Observable.defer(() => {
                     const bn = as.BlockNumber(xs.key)
-                    console.log('BLOCK_NUMBER_IN', xs.key, bn, blockNumber, bn.lt(blockNumber))
+                    // console.log('BLOCK_NUMBER_IN', xs.key, bn, blockNumber, bn.lt(blockNumber))
                     if (bn.lt(blockNumber)) {
-                      console.log('GETTING', bn, gs)
+                      // console.log('GETTING', bn, gs)
                       return this.cfg.rpc.getLogs({
                         fromBlock: add(bn, as.BlockNumber(1)),
                         toBlock: blockNumber,
                         address: gs
                       })
                     } else {
-                      console.log('NO_OP')
+                      // console.log('NO_OP')
                       return Observable.of([] as C.BlockchainEvent[])
                     }
                   })
@@ -162,7 +162,7 @@ export class Monitoring implements T.Monitoring {
       )
 
   private _emit = (t: BlockchainEventType, e: C.BlockchainEvent) => {
-    console.log('EMITTING', t, e)
+    // console.log('EMITTING', t, e)
     this._em.emit('*', e)
     this._em.emit(t, e)
   }
@@ -171,15 +171,22 @@ export class Monitoring implements T.Monitoring {
     this.cfg.storage.setItem(KEY_PREFIX + this.cfg.channelManagerAddress, JSON.stringify(s))
 }
 
-export const waitForRaw = <P, T> (action: ((params: P) => Promise<T>), cfg?: Partial<T.WaitForConfig>) =>
-  (params: P) =>
+export const waitForRaw = <P, T> (action: ((params?: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
+  (params?: P) =>
     Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
-      .switchMap(() => action(params) as Promise<T>)
+      .switchMap(() => {
+        return Observable.defer(() => action(params))
+          .defaultIfEmpty('SUCCESS')
+          .catch((err) => {
+            console.log(err)
+            return Observable.of(null)
+          })
+      })
       .filter(Boolean)
       .take(1)
       .timeout(cfg && cfg.timeout || waitForDefault.timeout)
 
-export const waitFor = <P, T> (action: ((params: P) => Promise<T>), cfg?: Partial<T.WaitForConfig>) =>
-  (params: P) =>
+export const waitFor = <P, T> (action: ((params?: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
+  (params?: P) =>
     waitForRaw(action, cfg)(params)
       .toPromise()
