@@ -749,6 +749,9 @@ export class Engine extends events.EventEmitter {
     if (this.pendingChannels.hasOwnProperty(peerAddress.toString('hex'))) {
       delete this.pendingChannels[peerAddress.toString('hex')]
     }
+
+    console.log('CHANNEL_ADDRESS', channelAddress)
+    this.blockchain.monitoring.subscribeAddress(channelAddress)
     return true
   }
 
