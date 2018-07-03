@@ -44,7 +44,7 @@ export type Config = {
 export class Engine extends events.EventEmitter {
   // dictionary of channels[peerAddress] that are pending mining
   pendingChannels = {}
-  channels = {}
+  channels: { [k: string]: channelLib.Channel } = {}
   // dictionary of channels[peerState.address.toString('hex')];
   channelByPeer = {}
   // dictionary of messages[msgID] = statemachine.*
@@ -98,6 +98,8 @@ export class Engine extends events.EventEmitter {
   }
 
   onBlockchainEvent = (e: BlockchainEvent) => {
+    console.log('EVENT', e._type)
+    console.log(e)
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
@@ -562,7 +564,7 @@ export class Engine extends events.EventEmitter {
     let openLockProofs = channel.issueWithdrawPeerOpenLocks(this.currentBlock)
     let withdraws: any[] = []
     for (let i = 0; i < openLockProofs.length; i++) {
-      let p = openLockProofs[i]
+      let p = openLockProofs[i]!
       // nonce,gasPrice,nettingChannelAddress, encodedOpenLock, merkleProof,secret)
       let _secret = p.openLock.secret
       let _channelAddress = channelAddress

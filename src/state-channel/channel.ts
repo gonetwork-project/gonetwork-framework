@@ -58,7 +58,7 @@ export const REVEAL_TIMEOUT = new BN(15)
 export class Channel {
   peerState: any
   myState: any
-  channelAddress: Buffer
+  channelAddress: E.Address
   openedBlock: E.BlockNumber
 
   issuedCloseBlock: E.BlockNumber | null = null
@@ -73,13 +73,13 @@ export class Channel {
    * @constructor
    * @param {ChannelState} peerState - The initialized ChannelState object representing a peer.
    * @param {ChannelState} myState - The initialized ChannelState object representing my state.
-   * @param {Buffer} channelAddress - The on chain netting channel ethereum contract address.
+   * @param {Address} channelAddress - The on chain netting channel ethereum contract address.
    * @param {BN} currentBlock - The current block number on ethereum.
    */
-  constructor (peerState, myState, channelAddress: Buffer, currentBlock: E.BlockNumber) {
+  constructor (peerState, myState, channelAddress: E.Address, currentBlock: E.BlockNumber) {
     this.peerState = peerState // channelState.ChannelStateSync
     this.myState = myState// channelState.ChannelStateSync
-    this.channelAddress = channelAddress || message.EMPTY_20BYTE_BUFFER
+    this.channelAddress = channelAddress || as.Address(message.EMPTY_20BYTE_BUFFER)
     this.openedBlock = currentBlock
   }
 

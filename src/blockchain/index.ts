@@ -6,7 +6,7 @@ import { createContractsProxy } from './contracts-proxy'
 import { BlockchainServiceCreate, BlockchainServiceConfig, IBlockchainService } from './types'
 
 const Monitoring = monitoring.Monitoring
-const waitFor = monitoring.waitFor
+const waitFor = monitoring.waitForValue
 
 export * from './types'
 export {

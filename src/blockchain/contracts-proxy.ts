@@ -12,7 +12,7 @@ import * as E from 'eth-types'
 import * as util from 'ethereumjs-util'
 
 import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs } from '../utils'
-import { waitFor } from './monitoring'
+import { waitForValue } from './monitoring'
 
 import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
   ChannelEventsMap, ManagerEventsMap, TokenEventsMap } from '../types/contracts'
@@ -105,7 +105,7 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData, waitCfg?: WaitForConfig) =>
         Promise.all([est[k](params, data), cfg.rpc.getTransactionCount({ address: cfg.owner })])
           .then(([x, nonce]) => (raw[k] as any)(Object.assign({ nonce }, x.txParams), data) as Promise<E.TxHash>)
-          .then(txHash => waitFor((t: E.TxHash) => cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
+          .then(txHash => waitForValue((t: E.TxHash) => cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(txReceipt => decodeLogs(txReceipt.logs))
       return acc
     }, {} as {} as TxFull<IO, any>)

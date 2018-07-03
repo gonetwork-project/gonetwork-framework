@@ -1,6 +1,6 @@
 import { as, BN } from '../utils'
 
-import { setupClient, Client, waitFor } from './setup'
+import { setupClient, Client, monitoring } from './setup'
 import { init } from './init-contracts'
 import * as flows from './flows-onchain'
 
@@ -32,5 +32,7 @@ afterAll(() => {
 
 test('e2e::happy-path', () =>
   flows.createChannelAndDeposit(c1, c2, as.Wei(50))
-    .then(waitFor(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(200))))
+    .then(() => monitoring.wait(2000))
+    .then(() => console.log('WAITED 2 secs'))
+    .then(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(50)))
   , minutes(2))
