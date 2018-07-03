@@ -307,7 +307,7 @@ export class Engine extends events.EventEmitter {
    * @throws 'Invalid DirectTransfer:state channel is not open'
    */
   sendDirectTransfer (to: Address, transferredAmount: BN) {
-    console.log('SENDING', to, transferredAmount, this.channelByPeer)
+    // console.log('SENDING', to, transferredAmount, this.channelByPeer)
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid DirectTransfer: unknown to address')
     }

@@ -97,7 +97,10 @@ export class Monitoring implements T.Monitoring {
     this._em.removeListener(event, listener)
   }
 
-  dispose = () => this._sub && this._sub.unsubscribe()
+  dispose = () => {
+    this._sub && this._sub.unsubscribe()
+    this._em.removeAllListeners()
+  }
 
   private _blockNumber = () => this._blockNumberSub.value
 
@@ -148,7 +151,15 @@ export class Monitoring implements T.Monitoring {
               .do(({ logs, addresses }) => {
                 // everything here is done synchronously so top most switchMap will not terminate it
                 // console.log('LOGS', blockNumber.toString(), logs.length)
-                logs.forEach(l => this._emit(l._type, l))
+                // TODO - it may throw, which means broken protocol
+                // not sure what monitoring should do in such a case
+                try {
+                  logs.forEach(l => this._emit(l._type, l))
+                } catch (err) {
+                  console.error('PROTOCOL BROKEN')
+                  console.error(err)
+                  this.dispose()
+                }
                 addresses.forEach(add => {
                   const a = s.addresses.find(_a => _a[0] === add)
                   if (a) {
@@ -158,7 +169,9 @@ export class Monitoring implements T.Monitoring {
                 this._saveState(s)
               })
           )
-          .retryWhen(errs => errs.delay(1000))
+          .retryWhen(errs => errs
+            .do(e => console.log('err', e))
+            .delay(1000))
       )
 
   private _emit = (t: BlockchainEventType, e: C.BlockchainEvent) => {
@@ -177,8 +190,8 @@ export const waitForRaw = <P, T> (action: ((params?: P) => Promise<T> | void), c
       .switchMap(() => {
         return Observable.defer(() => action(params))
           .defaultIfEmpty('SUCCESS')
-          .catch((err) => {
-            console.log(err)
+          .catch(() => {
+            // console.log(err)
             return Observable.of(null)
           })
       })

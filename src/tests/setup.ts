@@ -1,5 +1,5 @@
 import { Engine } from '../state-channel'
-import { serviceCreate, monitoring, waitFor } from '../blockchain'
+import { serviceCreate, monitoring, waitFor, LogsParams } from '../blockchain'
 import { P2P } from '../p2p/p2p'
 
 import { fakeStorage, CHAIN_ID } from '../utils'
@@ -36,16 +36,21 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
     monitoringInterval: cfg.monitoringInterval
   })
 
-  // seems that ganache-cli always return empty array if address set
-  // the other problem seems to be that fromBlock and toBlock are ignored
-  // todo: investigate it further
+  // ganache-cli always return empty array if addresses are properly encoded (`0x[20Bytes]`)
+  // another issue is that if no address present fromBlock and toBlock seem to be ignored
+  // we could consider fixing it properly:
+  // https://github.com/trufflesuite/ganache-core/blob/develop/lib/statemanager.js#L643
   const getLogs = blockchain.rpc.getLogs;
-  (blockchain.rpc.getLogs as any) = (ps) => {
-    return getLogs({ fromBlock: ps.fromBlock, toBlock: ps.toBlock })
-      .then(logs => {
-        console.log('LOGS-COUNT', accountIndex, logs.length)
-        return logs
-      })
+  (blockchain.rpc.getLogs as any) = (ps: LogsParams) => {
+    return getLogs({
+      fromBlock: ps.fromBlock, toBlock: ps.toBlock,
+      address: (ps as any).address.map(a =>
+        a.toString('hex'))
+    })
+      // .then(logs => {
+      //   console.log(`LOGS acc: ${accountIndex}, len: ${logs.length}, ${ps.fromBlock} - ${ps.toBlock}`)
+      //   return logs
+      // })
   }
 
   const engine = new Engine({
