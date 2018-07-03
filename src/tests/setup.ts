@@ -44,13 +44,15 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
   (blockchain.rpc.getLogs as any) = (ps: LogsParams) => {
     return getLogs({
       fromBlock: ps.fromBlock, toBlock: ps.toBlock,
-      address: (ps as any).address.map(a =>
-        a.toString('hex'))
+      address: ps.address
+      // address: (ps as any).address.map(a =>
+      //   a.toString('hex'))
     })
-      // .then(logs => {
-      //   console.log(`LOGS acc: ${accountIndex}, len: ${logs.length}, ${ps.fromBlock} - ${ps.toBlock}`)
-      //   return logs
-      // })
+      .then(logs => {
+        console.log(`LOGS acc: ${accountIndex}, len: ${logs.length}, ${ps.fromBlock} - ${ps.toBlock}`)
+        logs.length && console.log(logs)
+        return logs
+      })
   }
 
   const engine = new Engine({

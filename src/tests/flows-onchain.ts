@@ -12,6 +12,7 @@ const log = <T> (msg: string, logValue = false, ...rest: any[]) => (p: T): Promi
 export const createChannel = (c1: Client, add2: Address, amount: Wei) =>
   c1.txs.approve({ to: c1.contracts.gotToken },
     { _spender: c1.contracts.manager, _value: amount })
+    .then(log('APPROVED'))
     .then(() =>
       c1.txs.newChannel({ to: c1.contracts.manager },
         { partner: add2, settle_timeout: new BN(500) }))

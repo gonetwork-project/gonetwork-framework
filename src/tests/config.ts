@@ -18,7 +18,7 @@ export type Account = {
 
 // todo: make it configurable - most likely just by providing ports via argv
 export const mqttUrl = 'mqtt://localhost:1883'
-export const rpcUrl = 'http://localhost:8545'
+export const rpcUrl = 'http://localhost:8546'
 
 export const account = (privateKeyStr: string,
   addressStr: string = util.privateToAddress(new Buffer(privateKeyStr, 'hex')).toString('hex')): Account => ({
@@ -52,6 +52,10 @@ export const contractAddressesPath = path.resolve(tmpDir, 'contract-addresses.js
 
 export const migrationDir = path.resolve(__dirname, '..', '..', 'smart-contracts')
 export const migrationBuildDir = path.resolve(migrationDir, 'build')
+
+export const serverScript = path.resolve(__dirname, '..', '..', 'lib', 'tests', 'ganache-server.js')
+
+console.log(serverScript)
 
 if (!fs.existsSync(tmpDir)) {
   fs.mkdirSync(tmpDir)

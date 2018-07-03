@@ -23,11 +23,12 @@ const ganacheCli = [
 ].join(' ')
 
 const noEthNode = (msg, err) => {
-  console.log(err)
+//  console.log(err)
   console.error(msg)
+  console.log('You can start ganache-core server with: yarn compile && node lib/tests/ganache-core.js')
   console.log('IF ETH NODE IS RUNNING IT REQUIRES MORE INVESTIGATION\n')
-  console.log('EXAMPLE OF GANACHE CLI COMMAND - make sure it is running:\n')
-  console.log(ganacheCli)
+  // console.log('EXAMPLE OF GANACHE CLI COMMAND - make sure it is running:\n')
+  // console.log(ganacheCli)
   process.exit(1)
 }
 
@@ -100,7 +101,7 @@ export const init: () => {
   if (i && (i.run < 9)) {
     // console.log(i)
     try {
-      const r = pr.execSync(`curl --data-binary '{"jsonrpc":"2.0","id":"curltext","method":"eth_getTransactionCount","params":["${i.manager}"]}' -H 'content-type:text/plain;' localhost:8545`)
+      const r = pr.execSync(`curl --data-binary '{"jsonrpc":"2.0","id":"curltext","method":"eth_getTransactionCount","params":["${i.manager}"]}' -H 'content-type:text/plain;' localhost:8546`)
       const s = JSON.parse(r.toString())
 
       if (!s.result || s.result === '0x0') {
@@ -127,4 +128,8 @@ export const readFromDisk = () => {
     gotToken: toAdd(add.gotToken),
     hsToken: toAdd(add.testToken)
   }, add.run] as [ContractAddresses, number]
+}
+
+if (!module.parent) {
+  init()
 }

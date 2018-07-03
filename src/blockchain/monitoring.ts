@@ -184,8 +184,8 @@ export class Monitoring implements T.Monitoring {
     this.cfg.storage.setItem(KEY_PREFIX + this.cfg.channelManagerAddress, JSON.stringify(s))
 }
 
-export const waitForRaw = <P, T> (action: ((params?: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
-  (params?: P) =>
+export const waitForRaw = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
+  (params: P) =>
     Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
       .switchMap(() => {
         return Observable.defer(() => action(params))
@@ -197,9 +197,9 @@ export const waitForRaw = <P, T> (action: ((params?: P) => Promise<T> | void), c
       })
       .filter(Boolean)
       .take(1)
-      .timeout(cfg && cfg.timeout || waitForDefault.timeout)
+      .timeout(cfg && cfg.timeout || waitForDefault.timeout) as Observable<T>
 
-export const waitFor = <P, T> (action: ((params?: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
-  (params?: P) =>
+export const waitFor = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
+  (params: P) =>
     waitForRaw(action, cfg)(params)
       .toPromise()

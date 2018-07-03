@@ -62,7 +62,7 @@ export const local = () => {
   return {
     run,
     ...contracts,
-    providerUrl: 'http://localhost:8545',
+    providerUrl: 'http://localhost:8546',
     mqttUrl: 'mqtt://localhost:1883',
     chainId: CHAIN_ID.GETH_PRIVATE_CHAINS as E.ChainId,
 
