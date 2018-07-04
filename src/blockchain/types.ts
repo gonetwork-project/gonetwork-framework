@@ -4,14 +4,9 @@ import * as T from '../types'
 import { Observable } from 'rxjs/Observable'
 
 import { ContractsProxy, Txs } from './contracts-proxy'
-import { P2P } from '../p2p/p2p-types'
+import { Monitoring } from './monitoring'
 
 export type SignatureCb = (cb: (pk: E.PrivateKey) => void) => void
-
-export type WaitForConfig = {
-  interval: T.Milliseconds
-  timeout: T.Milliseconds
-}
 
 export interface MonitoringConfig {
   logsInterval: number
@@ -19,32 +14,6 @@ export interface MonitoringConfig {
   tokenAddresses: E.Address[]
   storage: T.Storage
   rpc: RPC
-}
-
-export type AnyEventMark = '*'
-export type MonitoringEmitCb<Ev extends T.BlockchainEventType = T.BlockchainEventType> = {
-  (e: AnyEventMark, listener: (args: T.BlockchainEvent) => any): void
-  (e: Ev, listener: (args: T.EventTypeToEvent<Ev>) => void): void
-}
-
-export interface Monitoring {
-  blockNumbers: () => Observable<E.BlockNumber>
-  gasPrice: () => Promise<E.GasPrice>
-
-  subscribeAddress: (ch: E.Address) => Promise<Boolean>
-  unsubscribeAddress: (ch: E.Address) => Promise<Boolean>
-
-  waitForTransactionRaw: (ch: E.TxHash, cfg?: Partial<WaitForConfig>) => Observable<E.TxReceipt>
-
-  waitForTransaction: (tx: E.TxHash, cfg?: Partial<WaitForConfig>) => Promise<E.TxReceipt>
-
-  on: MonitoringEmitCb
-  off: MonitoringEmitCb
-
-  asStream: <Ev extends T.BlockchainEventType>(e: Ev | Ev[]) =>
-    Observable<T.EventTypeToEvent<Ev>>
-
-  dispose: () => void
 }
 
 // #region RPC

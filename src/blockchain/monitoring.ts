@@ -6,31 +6,41 @@ import { EventEmitter } from 'events'
 import { as, add } from '../utils'
 
 import * as C from '../types/contracts'
-import { BlockchainEventType } from '../types'
+import { BlockchainEventType, BlockchainEvent, EventTypeToEvent, Milliseconds } from '../types'
 import * as T from './types'
 import * as E from 'eth-types'
 
-// todo: make it configurable
-const KEY_PREFIX = '___ETH_MONITORING___'
-
-let waitForDefault: T.WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
-
-export const setWaitForDefault = (cfg: T.WaitForConfig) => waitForDefault = cfg
-
 export type MonitorAddress = [E.Address, string]
 
-export const anyEventMark: T.AnyEventMark = '*'
+export type AnyEventMark = typeof anyEventMark
+export type MonitoringEmitCb<Ev extends BlockchainEventType = BlockchainEventType> = {
+  (e: AnyEventMark, listener: (args: BlockchainEvent) => any): void
+  (e: Ev, listener: (args: EventTypeToEvent<Ev>) => void): void
+}
+export type WaitForConfig = {
+  interval: Milliseconds
+  timeout: Milliseconds
+}
+
+const KEY_PREFIX = '___ETH_MONITORING___'
+
+let waitForDefault: WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
+
+export const setWaitForDefault = (cfg: WaitForConfig) => waitForDefault = cfg
+
+export const anyEventMark = '*'
 
 export interface State {
   addresses: MonitorAddress[],
   transactions: E.Address[]
 }
 
-export class Monitoring implements T.Monitoring {
+export class Monitoring {
   private _em = new EventEmitter()
   private _state: Promise<State>
   private _sub: any
 
+  private _protocolErrors = new Subject<Error[]>()
   private _blockNumberSub = new BehaviorSubject<E.BlockNumber | undefined>(undefined)
   private _forceMonitoring = new Subject<boolean>()
 
@@ -53,6 +63,8 @@ export class Monitoring implements T.Monitoring {
 
   }
 
+  protocolErrors = () => this._protocolErrors.asObservable()
+
   blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
   gasPrice = () => this.cfg.rpc.gasPrice() // todo: improve monitor of gas price it in very long intervals
 
@@ -73,11 +85,11 @@ export class Monitoring implements T.Monitoring {
     })
   }
 
-  asStream = (ev: BlockchainEventType | BlockchainEventType[] | T.AnyEventMark) =>
+  asStream = (ev: BlockchainEventType | BlockchainEventType[] | AnyEventMark) =>
     Observable.from(Array.isArray(ev) ? ev : [ev])
       .mergeMap(e => Observable.fromEvent(this, e)) as Observable<any>
 
-  waitForTransactionRaw = (tx: E.TxHash, cfg?: Partial<T.WaitForConfig>) =>
+  waitForTransactionRaw = (tx: E.TxHash, cfg?: Partial<WaitForConfig>) =>
     Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
       .switchMap(() => this.cfg.rpc.getTransactionReceipt(tx) as Promise<E.TxReceipt>)
       .filter(Boolean)
@@ -85,15 +97,15 @@ export class Monitoring implements T.Monitoring {
       .retryWhen(errs => errs.delay(3 * 1000)) // this should not happen
       .timeout(cfg && cfg.timeout || waitForDefault.timeout)
 
-  waitForTransaction = (tx: E.TxHash, cfg?: Partial<T.WaitForConfig>) =>
+  waitForTransaction = (tx: E.TxHash, cfg?: Partial<WaitForConfig>) =>
     this.waitForTransactionRaw(tx, cfg)
       .toPromise()
 
-  on = (event: C.BlockchainEventType | T.AnyEventMark, listener: (...args: any[]) => void) => {
+  on = (event: C.BlockchainEventType | AnyEventMark, listener: (...args: any[]) => void) => {
     this._em.on(event, listener)
   }
 
-  off = (event: C.BlockchainEventType | T.AnyEventMark, listener: (...args: any[]) => void) => {
+  off = (event: C.BlockchainEventType | AnyEventMark, listener: (...args: any[]) => void) => {
     this._em.removeListener(event, listener)
   }
 
@@ -153,13 +165,13 @@ export class Monitoring implements T.Monitoring {
                 // console.log('LOGS', blockNumber.toString(), logs.length)
                 // TODO - it may throw, which means broken protocol
                 // not sure what monitoring should do in such a case
-                try {
-                  logs.forEach(l => this._emit(l._type, l))
-                } catch (err) {
-                  console.error('PROTOCOL BROKEN')
-                  console.error(err)
-                  this.dispose()
-                }
+                const errs: Error[] = []
+                logs.forEach(l => {
+                  try {
+                    this._emit(l._type, l)
+                  } catch (e) { errs.push(e) }
+                })
+                errs.length && this._protocolErrors.next(errs)
                 addresses.forEach(add => {
                   const a = s.addresses.find(_a => _a[0] === add)
                   if (a) {
@@ -184,7 +196,7 @@ export class Monitoring implements T.Monitoring {
     this.cfg.storage.setItem(KEY_PREFIX + this.cfg.channelManagerAddress, JSON.stringify(s))
 }
 
-export const waitForValueRaw = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
+export const waitForValueRaw = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<WaitForConfig>) =>
   (params: P) =>
     Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
       .switchMap(() => {
@@ -199,7 +211,7 @@ export const waitForValueRaw = <P, T> (action: ((params: P) => Promise<T> | void
       .take(1)
       .timeout(cfg && cfg.timeout || waitForDefault.timeout) as Observable<T>
 
-export const waitForValue = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<T.WaitForConfig>) =>
+export const waitForValue = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<WaitForConfig>) =>
   (params: P) =>
     waitForValueRaw(action, cfg)(params)
       .toPromise()
