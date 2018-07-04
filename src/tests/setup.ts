@@ -1,7 +1,7 @@
 import { Engine } from '../state-channel'
 import { serviceCreate, setWaitForDefault } from '../blockchain'
 import { P2P } from '../p2p/p2p'
-import { SERIALIZE, DESERIALIZE } from '../state-channel/message'
+import { serialize } from '../state-channel/message'
 import { fakeStorage, CHAIN_ID } from '../utils'
 import { Payload } from '../p2p/p2p-types'
 import { readFromDisk as c } from './init-contracts'
@@ -36,7 +36,7 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
   const engine = new Engine({
     address: account.address,
     sign: (msg) => msg.sign(account.privateKey),
-    send: (to, msg) => p2p.send(to.toString('hex'), SERIALIZE(msg) as Payload),
+    send: (to, msg) => p2p.send(to.toString('hex'), serialize(msg) as Payload),
     blockchain: blockchain
   })
 

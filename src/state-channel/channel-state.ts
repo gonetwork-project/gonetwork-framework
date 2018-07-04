@@ -245,7 +245,7 @@ export class ChannelState {
    * @param {BN} safeBlock
    * @returns {BN}
    */
-  lockedAmount (safeBlock: util.BN) {
+  lockedAmount (safeBlock: E.BlockNumber) {
     // we only want lockedAmounts that have not yet expired
     return this._lockAmount(Object.values(this.pendingLocks), safeBlock)
   }
@@ -264,9 +264,8 @@ export class ChannelState {
    * @param {BN} safeBlock - safe expiration time
    * @returns {BN}
    */
-  _lockAmount (locksArray: message.Lock[], safeBlock?: util.BN) {
+  _lockAmount (locksArray: message.Lock[], safeBlock?: E.BlockNumber) {
     if (safeBlock) {
-      safeBlock = message.TO_BN(safeBlock)
       return locksArray.reduce(function (sum, lock) {
         if (lock.expiration.gt(safeBlock)) {
           return sum.add(lock.amount)

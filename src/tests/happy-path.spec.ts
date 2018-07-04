@@ -5,7 +5,7 @@ import { init } from './init-contracts'
 import * as flows from './flows-onchain'
 import { Subscription } from 'rxjs/Subscription'
 import { Observable } from 'rxjs/Observable'
-import { DESERIALIZE } from '../state-channel/message'
+import { deserializeAndDecode } from '../state-channel/message'
 
 const minutes = n => n * 60 * 1000
 export const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -32,8 +32,8 @@ beforeAll(() => {
   c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
   c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
 
-  c1.p2p.on('message-received', msg => c1.engine.onMessage(DESERIALIZE(msg)))
-  c2.p2p.on('message-received', msg => c2.engine.onMessage(DESERIALIZE(msg)))
+  c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
+  c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
 })
 
 afterAll(() => {

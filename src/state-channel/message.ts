@@ -4,7 +4,7 @@ import * as abi from 'ethereumjs-abi'
 import { BN } from 'bn.js'
 import { Address, Nonce, BlockNumber } from 'eth-types'
 
-import { as } from '../utils'
+import { as, castNum } from '../utils'
 
 /**
  * @namespace message
@@ -32,18 +32,13 @@ export class Hashable {
   }
 }
 
-/** Convert a base 16 int to a BN
- * @param {int} value - convert base 16 value to bn
- * @returns {BN}
+/** Serialize message object
+ * @param {SignedMessage} msg - message.SignedMessage base class type
+ * @returns {string} - serialized value
  * @memberof message
  */
-// FIXME - remove `any` and the following errors
-export function TO_BN (value: number | BN | any) {
-  if (util.BN.isBN(value)) {
-    return value
-  } else {
-    return new util.BN(value as number, 16)
-  }
+export function serialize (msg: SignedMessage) {
+  return JSON.stringify(msg)
 }
 
 /** A reviver function to be sent to JSON.parse to handle buffer serialization and deserialization
@@ -52,7 +47,7 @@ export function TO_BN (value: number | BN | any) {
  * @returns {} - deserialized value
  * @memberof message
  */
-export function JSON_REVIVER_FUNC (k: object, v: any) {
+export function jsonReviver (k: object, v: any) {
   if (
     v !== null &&
     typeof v === 'object' &&
@@ -65,22 +60,13 @@ export function JSON_REVIVER_FUNC (k: object, v: any) {
   return v
 }
 
-/** Serialize message object
- * @param {SignedMessage} msg - message.SignedMessage base class type
- * @returns {string} - serialized value
- * @memberof message
- */
-export function SERIALIZE (msg: SignedMessage) {
-  return JSON.stringify(msg)
-}
-
 /** Deserialize message object
  * @param {string} data - serialized value
- * @return{SignedMessage} - message type
+ * @return {SignedMessage} - message type
  * @memberof message
  */
-export function DESERIALIZE (data: string) {
-  return JSON.parse(data, JSON_REVIVER_FUNC) as SignedMessage
+function deserialize (data: string) {
+  return JSON.parse(data, jsonReviver) as SignedMessage
 }
 
 /** Deserialize a received message and create the appropriate object type based on classType property
@@ -88,8 +74,8 @@ export function DESERIALIZE (data: string) {
  * @returns {SignedMessage} - message type
  * @memberof message
  */
-export function DESERIALIZE_AND_DECODE_MESSAGE (data: string) {
-  const jsonObj = DESERIALIZE(data)
+export function deserializeAndDecode (data: string) {
+  const jsonObj = deserialize(data)
   if (jsonObj.hasOwnProperty('classType')) {
     switch (jsonObj.classType) {
       case 'SignedMessage':
@@ -217,7 +203,7 @@ export class Proof extends SignedMessage {
   constructor (options) {
     super(options)
     this.nonce = as.Nonce(options.nonce || new util.BN(0))
-    this.transferredAmount = TO_BN(options.transferredAmount) || new util.BN(0)
+    this.transferredAmount = as.Wei(options.transferredAmount || 0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
     this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER
@@ -269,7 +255,7 @@ export class ProofMessage extends SignedMessage {
     super(options)
 
     this.nonce = as.Nonce(options.nonce || new util.BN(0))
-    this.transferredAmount = TO_BN(options.transferredAmount) || new util.BN(0)
+    this.transferredAmount = as.Wei(options.transferredAmount || 0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
     this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER;
@@ -332,7 +318,7 @@ export class Lock extends Hashable {
   constructor (options: Partial<LockOptions>) {
     super()
 
-    this.amount = TO_BN(options.amount) || new util.BN(0)
+    this.amount = as.Wei(options.amount || 0)
     this.expiration = as.BlockNumber(options.expiration || new util.BN(0))
     this.hashLock = options.hashLock || EMPTY_32BYTE_BUFFER
   }
@@ -391,7 +377,7 @@ export class DirectTransfer extends ProofMessage {
   constructor (options: DirectTransferOptions) {
     super(options)
 
-    this.msgID = TO_BN(options.msgID) || new util.BN(0)
+    this.msgID = castNum(options.msgID || 0)
     this.to = options.to || EMPTY_20BYTE_BUFFER
   }
 
@@ -500,10 +486,10 @@ export class RequestSecret extends SignedMessage {
 
   constructor (options) {
     super(options)
-    this.msgID = TO_BN(options.msgID) || new util.BN(0) // fixme: using zero does not feel rigth; fix here and everywhere else
+    this.msgID = castNum(options.msgID || 0) // fixme: using zero does not feel right; fix here and everywhere else
     this.to = options.to || EMPTY_20BYTE_BUFFER
     this.hashLock = options.hashLock || EMPTY_32BYTE_BUFFER // Serializable Lock Object
-    this.amount = TO_BN(options.amount) || new util.BN(0)
+    this.amount = as.Wei(options.amount || 0)
   }
 
   getHash () {
@@ -529,7 +515,7 @@ export class RevealSecret extends SignedMessage {
 
   constructor (options) {
     super(options)
-    this.msgID = TO_BN(options.msgID) || new util.BN(0)
+    this.msgID = castNum(options.msgID || 0)
     this.secret = options.secret || EMPTY_32BYTE_BUFFER
     this.to = options.to || EMPTY_20BYTE_BUFFER
   }
@@ -563,7 +549,7 @@ export class SecretToProof extends ProofMessage {
 
   constructor (options) {
     super(options)
-    this.msgID = TO_BN(options.msgID) || new util.BN(0)
+    this.msgID = castNum(options.msgID || 0)
     this.to = options.to || EMPTY_20BYTE_BUFFER
     this.secret = options.secret || EMPTY_32BYTE_BUFFER
   }
