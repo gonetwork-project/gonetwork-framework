@@ -31,11 +31,14 @@ beforeAll(() => {
 })
 
 afterAll(() => {
-  c1.blockchain.monitoring.dispose()
-  c1.blockchain.monitoring.off('*', c1.engine.onBlockchainEvent)
+  if (sub) {
+    sub.unsubscribe()
+    c1.blockchain.monitoring.dispose()
+    c1.blockchain.monitoring.off('*', c1.engine.onBlockchainEvent)
 
-  c2.blockchain.monitoring.dispose()
-  c2.blockchain.monitoring.off('*', c2.engine.onBlockchainEvent)
+    c2.blockchain.monitoring.dispose()
+    c2.blockchain.monitoring.off('*', c2.engine.onBlockchainEvent)
+  }
 })
 
 test('e2e::happy-path', () =>

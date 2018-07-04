@@ -22,26 +22,35 @@ export type WaitForConfig = {
   timeout: Milliseconds
 }
 
+export type StartBlock = Exclude<E.DefaultBlock, 'pending'>
+
 export interface MonitoringConfig {
   logsInterval: Milliseconds
   channelManagerAddress: E.Address
   tokenAddresses: E.Address[]
   storage: Storage
   rpc: RPC
+  startBlock?: StartBlock
+}
+
+export interface State {
+  addresses: MonitorAddress[],
+  transactions: E.Address[]
 }
 
 const KEY_PREFIX = '___ETH_MONITORING___'
 
 let waitForDefault: WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
 
+const startToBlockNumber = (s: StartBlock, blockNumber: Observable<E.BlockNumber>) => {
+  if (s === 'earliest') return Observable.of('-1')
+  else if (s === 'latest') return blockNumber.take(1).map(b => b.toString())
+  else return Observable.of(s.toString())
+}
+
 export const setWaitForDefault = (cfg: WaitForConfig) => waitForDefault = cfg
 
 export const anyEventMark = '*'
-
-export interface State {
-  addresses: MonitorAddress[],
-  transactions: E.Address[]
-}
 
 export class Monitoring {
   private _em = new EventEmitter()
@@ -53,11 +62,16 @@ export class Monitoring {
   private _forceMonitoring = new Subject<boolean>()
 
   constructor (readonly cfg: MonitoringConfig) {
-    this._state = cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress)
-      .then(s => s ? JSON.parse(s) : ({
+    this._state = Observable.zip(
+      cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress),
+      startToBlockNumber(cfg.startBlock || 'latest', this.blockNumbers())
+    )
+      .do(x => console.log('START', x[1]))
+      .toPromise()
+      .then(([s, b]) => s ? JSON.parse(s) : ({
         addresses: [
-          [cfg.channelManagerAddress, '-1'],
-          ...cfg.tokenAddresses.map(t => [t, '-1'])
+          [cfg.channelManagerAddress, b],
+          ...cfg.tokenAddresses.map(t => [t, b])
         ],
         transactions: []
       }))
@@ -76,13 +90,18 @@ export class Monitoring {
   blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
   gasPrice = () => this.cfg.rpc.gasPrice() // todo: improve monitor of gas price it in very long intervals
 
-  subscribeAddress = (a: E.Address) =>
-    this._state.then(s => {
-      if (s.addresses.find(_a => _a[0].equals(a))) return Promise.resolve(false)
-      s.addresses.push([a, '-1'])
-      return this._saveState(s)
-        .then(() => this._forceMonitoring.next(true) || true)
-    })
+  subscribeAddress = (a: E.Address, s?: StartBlock) =>
+    Observable.zip(
+      this._state,
+      startToBlockNumber(s || 'latest', this.blockNumbers())
+    )
+      .toPromise()
+      .then(([s, b]) => {
+        if (s.addresses.find(_a => _a[0].equals(a))) return Promise.resolve(false)
+        s.addresses.push([a, b])
+        return this._saveState(s)
+          .then(() => this._forceMonitoring.next(true) || true)
+      })
 
   unsubscribeAddress = (a: E.Address) => {
     if (a === this.cfg.channelManagerAddress) return Promise.resolve(false)
