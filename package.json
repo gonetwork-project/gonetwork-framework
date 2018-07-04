@@ -10,7 +10,8 @@
     "lint-js": "node node_modules/standard/bin/cmd 'src/state-channel/**/*.js' 'test/**/*.js' 'demo/**/*.js'",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
     "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration",
-    "abi-to-ts": "cd scripts && rm abi-to-ts.js && (tsc abi-to-ts.ts || echo) && node abi-to-ts.js && cd .."
+    "abi-to-ts": "cd scripts && rm abi-to-ts.js && (tsc abi-to-ts.ts || echo) && node abi-to-ts.js && cd ..",
+    "ganache": "yarn compile && node lib/tests/ganache-server.js"
   },
   "author": "Amit Shah",
   "license": "MIT",
