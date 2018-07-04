@@ -4,7 +4,6 @@ import '../observable-add'
 import * as e2e from '../tests'
 
 import * as E from 'eth-types'
-import { SignatureCb } from './types'
 
 import { as, CHAIN_ID } from '../utils/eth-utils'
 
@@ -41,7 +40,7 @@ export const infura: () => InfuraConfig = () => ({
   chainId: CHAIN_ID.ROPSTEN as E.ChainId,
 
   accounts: infuraAccounts,
-  signatureCb: ((cb) => cb(infuraAccounts[0].privateKey)) as SignatureCb,
+  signatureCb: ((cb) => cb(infuraAccounts[0].privateKey)) as E.SignatureCb,
   owner: infuraAccounts[0].address,
 
   monitoringInterval: 2 * 1000,
@@ -67,7 +66,7 @@ export const local = () => {
     chainId: CHAIN_ID.GETH_PRIVATE_CHAINS as E.ChainId,
 
     accounts: e2e.accounts,
-    signatureCb: ((cb) => cb(e2e.accounts[0].privateKey)) as SignatureCb,
+    signatureCb: ((cb) => cb(e2e.accounts[0].privateKey)) as E.SignatureCb,
     owner: e2e.accounts[0].address,
 
     monitoringInterval: 0.5 * 1000

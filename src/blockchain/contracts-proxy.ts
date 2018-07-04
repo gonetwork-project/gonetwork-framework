@@ -12,11 +12,20 @@ import * as E from 'eth-types'
 import * as util from 'ethereumjs-util'
 
 import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs } from '../utils'
-import { waitForValue } from './monitoring'
+import { waitForValue, WaitForConfig } from './monitoring'
 
 import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
   ChannelEventsMap, ManagerEventsMap, TokenEventsMap } from '../types/contracts'
-import { ContractTxConfig, WaitForConfig } from './types'
+import { RPC } from './rpc'
+
+export interface ContractTxConfig {
+  rpc: RPC
+  chainId: E.ChainId
+
+  owner: E.Address
+  signatureCb: E.SignatureCb
+}
+type EncodeData = ReturnType<typeof encodeTxData>
 
 export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
   const names = abiInSpec.map(o => o[0])
@@ -29,7 +38,6 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
     ].join(''))
   }
 }
-type EncodeData = ReturnType<typeof encodeTxData>
 
 export const decodeTxData = (order: GenOrder[1], data: Buffer): any => {
   if (order.length === 0) return null as any

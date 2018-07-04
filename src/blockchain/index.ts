@@ -1,18 +1,44 @@
 import { fakeStorage } from '../utils'
-import rpcCreate from './rpc'
+import rpcCreate, { RPC } from './rpc'
 import * as monitoring from './monitoring'
-import { createContractsProxy } from './contracts-proxy'
-
-import { BlockchainServiceCreate, BlockchainServiceConfig, IBlockchainService } from './types'
+import { createContractsProxy, ContractsProxy, Txs } from './contracts-proxy'
 
 const Monitoring = monitoring.Monitoring
 const waitFor = monitoring.waitForValue
 
-export * from './types'
 export {
   monitoring,
-  waitFor
+  waitFor,
+  RPC,
+  ContractsProxy
 }
+
+import * as E from 'eth-types'
+
+export interface BlockchainServiceConfig {
+  providerUrl: string
+  monitoringInterval: number
+
+  manager: E.Address
+  gotToken: E.Address
+  hsToken: E.Address
+
+  chainId: E.ChainId
+
+  // todo: Important discuss
+  owner: E.Address
+  signatureCb: E.SignatureCb
+}
+
+export interface IBlockchainService extends Txs {
+  config: Readonly<BlockchainServiceConfig>
+  monitoring: Readonly<monitoring.Monitoring>
+  rpc: Readonly<RPC>
+  contractsProxy: Readonly<ContractsProxy>
+  txs: Txs
+}
+
+export type BlockchainServiceCreate = (cfg: BlockchainServiceConfig) => Readonly<IBlockchainService>
 
 export const serviceCreate: BlockchainServiceCreate = config => {
   const rpc = rpcCreate(config.providerUrl)

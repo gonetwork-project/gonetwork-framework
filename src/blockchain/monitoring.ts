@@ -6,9 +6,9 @@ import { EventEmitter } from 'events'
 import { as, add } from '../utils'
 
 import * as C from '../types/contracts'
-import { BlockchainEventType, BlockchainEvent, EventTypeToEvent, Milliseconds } from '../types'
-import * as T from './types'
+import { BlockchainEventType, BlockchainEvent, EventTypeToEvent, Milliseconds, Storage } from '../types'
 import * as E from 'eth-types'
+import { RPC } from './rpc'
 
 export type MonitorAddress = [E.Address, string]
 
@@ -20,6 +20,14 @@ export type MonitoringEmitCb<Ev extends BlockchainEventType = BlockchainEventTyp
 export type WaitForConfig = {
   interval: Milliseconds
   timeout: Milliseconds
+}
+
+export interface MonitoringConfig {
+  logsInterval: Milliseconds
+  channelManagerAddress: E.Address
+  tokenAddresses: E.Address[]
+  storage: Storage
+  rpc: RPC
 }
 
 const KEY_PREFIX = '___ETH_MONITORING___'
@@ -44,7 +52,7 @@ export class Monitoring {
   private _blockNumberSub = new BehaviorSubject<E.BlockNumber | undefined>(undefined)
   private _forceMonitoring = new Subject<boolean>()
 
-  constructor (readonly cfg: T.MonitoringConfig) {
+  constructor (readonly cfg: MonitoringConfig) {
     this._state = cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress)
       .then(s => s ? JSON.parse(s) : ({
         addresses: [

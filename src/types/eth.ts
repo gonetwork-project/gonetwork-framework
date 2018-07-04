@@ -116,7 +116,7 @@ declare module 'eth-types' {
   }
 
   // todo: discuss defaults
-  export interface TxParams extends TxConstParams, TxParamsWithGas {}
+  export interface TxParams extends TxConstParams, TxParamsWithGas { }
 
   export interface TxResult<T = any> {
     result: T
@@ -148,4 +148,7 @@ declare module 'eth-types' {
     CLASSIC_TESTNET: 62,
     GETH_PRIVATE_CHAINS: 1337 // default
   }
+
+  // TODO - consider
+  export type SignatureCb = (cb: (pk: PrivateKey) => void) => void
 }

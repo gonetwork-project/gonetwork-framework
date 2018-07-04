@@ -5,7 +5,7 @@ import createContracts from './contracts-proxy'
 import * as base from './spec.base'
 import { init } from '../tests/init-contracts'
 import * as E from 'eth-types'
-import { RPC } from './types'
+import { RPC } from '.'
 
 if (base.isInEnv('local')) {
   let cfg: base.LocalConfig

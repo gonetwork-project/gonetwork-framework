@@ -1,8 +1,7 @@
 import { Observable } from 'rxjs'
 
-import { BlockchainService } from '.'
+import { BlockchainService, IBlockchainService } from '.'
 import { infura, isInEnv } from './spec.base'
-import { IBlockchainService } from './types'
 
 if (isInEnv('infura')) {
   const cfg = infura()
