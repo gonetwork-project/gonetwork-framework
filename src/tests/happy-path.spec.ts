@@ -24,6 +24,7 @@ beforeAll(() => {
   sub = Observable.from([c1, c2])
     .mergeMap((c, idx) => c.blockchain.monitoring.protocolErrors()
       .do(errs => console.warn(`Client-${idx} PROTOCOL-ERRORS ${errs.length}`))
+      .do(errs => console.warn(...errs.map(e => e.stack!.split('\n')).map(e => e[0] + '\n' + e[1])))
     )
     .subscribe()
 

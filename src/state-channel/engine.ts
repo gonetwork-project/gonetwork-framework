@@ -11,6 +11,10 @@ import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
 
+// helper method for debugging - will be removed once mo
+const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? string : string[]) =>
+  Array.isArray(add) ? add.map((a: Address) => a.toString('hex')) : (add as Address).toString('hex') as any
+
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
 // as we do not access private key - any way we should be consistent here
@@ -103,7 +107,7 @@ export class Engine extends events.EventEmitter {
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
-      case 'ChannelNewBalance': return this.onChannelNewBalance(e.token_address, e.participant, e.balance)
+      case 'ChannelNewBalance': return this.onChannelNewBalance(e._contract, e.participant, e.balance)
       case 'ChannelSecretRevealed': return this.onChannelSecretRevealed(e._contract, e.secret, e.receiver_address)
       case 'ChannelSettled': return this.onChannelSettled(e._contract)
       case 'Refund': return this.onRefund(e._contract, e.receiver, e.amount)
@@ -716,7 +720,7 @@ export class Engine extends events.EventEmitter {
    * @param {BN} settleTimeout- the settle_timeout for the channel
    */
   onChannelNew (channelAddress: Address, addressOne: Address, addressTwo: Address, settleTimeout: BN) {
-    let peerAddress: Address | null = null
+    let peerAddress: Address
 
     if (addressOne.compare(this.address) === 0) {
       peerAddress = addressTwo
@@ -750,6 +754,9 @@ export class Engine extends events.EventEmitter {
       delete this.pendingChannels[peerAddress.toString('hex')]
     }
 
+    // const ads = addToStr([channelAddress, addressOne, addressTwo])
+    // debugger
+
     console.log('CHANNEL_ADDRESS', channelAddress)
     this.blockchain.monitoring.subscribeAddress(channelAddress)
     return true
@@ -770,6 +777,9 @@ export class Engine extends events.EventEmitter {
    * @param {String} balance - the new deposited balance for the participant in the channel
    */
   onChannelNewBalance (channelAddress: Buffer, address: Buffer, balance: BN) {
+    // const [c, a] = [channelAddress, address].map(x => x.toString('hex'))
+    // const [_c, _a] = [c, a].map(x => ([this.channels[x], this.channelByPeer[x]]))
+    // debugger
     this.channels[channelAddress.toString('hex')].onChannelNewBalance(address, balance)
     return true // todo
   }
