@@ -3,6 +3,8 @@ import * as util from 'ethereumjs-util'
 import * as message from './message'
 import * as merkletree from './merkletree'
 
+import * as E from 'eth-types'
+
 /** @class channel state endpoint; each Channel is composed of two channel state represent both actors
  * @property {message.Proof} proof-the proof snapshot of this endpoint.  If this channel state represents the peer, this proof is submitted during
  * channel closing.
@@ -14,9 +16,10 @@ import * as merkletree from './merkletree'
  * @see Channel
  */
 export class ChannelState {
+  // todo: fix merkletree types
   proof: any
-  address: any
-  depositBalance: any
+  address: E.Address
+  depositBalance: E.Wei // fixme: use proper currency / maybe tagged with currency symbol
   pendingLocks: any
   openLocks: any
   merkleTree: any

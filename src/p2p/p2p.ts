@@ -133,7 +133,7 @@ export class P2P implements T.P2P {
     this._sendingSubs[address] = this._sendingQueues[address]
       .switchMap(ch => {
         const m = ch.outbox.find(m => !m[2])
-        console.log('SENDING QUEUE next msg', address, m)
+        // console.log('SENDING QUEUE next msg', address, m)
         if (!m) return Observable.empty()
         return this._keepSending(address, m)
       })
@@ -170,10 +170,10 @@ export class P2P implements T.P2P {
     this._storage.setItem(addressToChannelKey(address), JSON.stringify(channel))
 
   private _handleMessageReceived = (m: T.ReceivedMessage) => {
-    console.log('[RECEIVED-MESSAGE]', m)
+    // console.log('[RECEIVED-MESSAGE]', m)
     return this._getChannel(m.peer)
       .then(ch => {
-        console.log('MESSAGE', ch)
+        // console.log('MESSAGE', ch)
         if (ch.lastIn === m.id) {
           this._sendAck(m.peer, m.id)
         } else if (ch.lastIn === m.id - 1) {
@@ -182,7 +182,7 @@ export class P2P implements T.P2P {
             .then(() => {
               this._sendAck(m.peer, m.id)
               try {
-                this._emit('message-received', m)
+                this._emit('message-received', m.payload)
               } catch (err) {
                 ch.isBroken = true
                 ch.brokenInfo = {
@@ -202,7 +202,7 @@ export class P2P implements T.P2P {
   }
 
   private _handleAck = (m: T.ReceivedMessage) => {
-    console.log('[ACK-RECEIVED]', m)
+    // console.log('[ACK-RECEIVED]', m)
     const { peer, id } = m
     this._getChannel(peer)
       .then(ch => {

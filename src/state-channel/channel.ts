@@ -6,6 +6,7 @@ import { BN } from 'bn.js'
 import { as, add } from '../utils'
 
 import * as E from 'eth-types'
+import { ChannelState } from './channel-state'
 
 // Transfers apply state mutations to the channel object.  Once a transfer is verified
 // we apply it to the Channel
@@ -56,8 +57,8 @@ export const REVEAL_TIMEOUT = new BN(15)
  * @property {Object.<string,int>} withdrawnLocks - the state of the on-chain withdraw proof
  */
 export class Channel {
-  peerState: any
-  myState: any
+  peerState: ChannelState
+  myState: ChannelState
   channelAddress: E.Address
   openedBlock: E.BlockNumber
 
@@ -479,7 +480,7 @@ export class Channel {
     let self = this
     let lockProofs = Object.values(this.peerState.openLocks).map(function (lock) {
       try {
-        return new OpenLockProof({ 'openLock': lock, 'merkleProof': self.peerState.generateLockProof(lock) })
+        return new OpenLockProof({ 'openLock': lock, 'merkleProof': self.peerState.generateLockProof(lock as any) })
       } catch (err) {
         // todo: this is a very critical - you still should be able to unlock rest of the lock
         console.log(err)

@@ -19,7 +19,7 @@ const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? 
 // this actually is better than blockchain approach
 // as we do not access private key - any way we should be consistent here
 export type SignFn = (msg: { sign: (pk: PrivateKey) => void }) => void
-export type SendFn = (to: Address, msg: string) => Promise<boolean>
+export type SendFn = (to: Address, msg: messageLib.SignedMessage) => Promise<boolean>
 
 export type Config = {
   address: Address
@@ -50,7 +50,7 @@ export class Engine extends events.EventEmitter {
   pendingChannels = {}
   channels: { [k: string]: channelLib.Channel } = {}
   // dictionary of channels[peerState.address.toString('hex')];
-  channelByPeer = {}
+  channelByPeer: { [k: string]: channelLib.Channel } = {}
   // dictionary of messages[msgID] = statemachine.*
   messageState = {}
 
@@ -102,8 +102,8 @@ export class Engine extends events.EventEmitter {
   }
 
   onBlockchainEvent = (e: BlockchainEvent) => {
-    console.log('EVENT', e._type)
-    console.log(e)
+    // console.log('EVENT', e._type)
+    // console.log(e)
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
@@ -126,13 +126,14 @@ export class Engine extends events.EventEmitter {
   }
 
   /**
-   * Handle an incoming message after it has been deserialized
+   * Handle an incoming message after it has been de-serialized
    * @param {message.SignedMessage} message
    * @returns {message.Ack}
    * @throws "Invalid Message: no signature found"
-   * @throws "Invalid Message: uknown message received"
+   * @throws "Invalid Message: unknown message received"
    */
   onMessage (message: messageLib.SignedMessage) {
+    console.log('RECEIVED MSG', message)
     // TODO: all messages must be signed here?
     if (!message.isSigned()) {
       throw new Error('Invalid Message: no signature found')
@@ -325,7 +326,8 @@ export class Engine extends events.EventEmitter {
     let directTransfer = channel.createDirectTransfer(msgID, transferredAmount)
     this.signature(directTransfer)
     this.send(to, directTransfer)
-    channel.handleTransfer(directTransfer)
+    // FIXME: adding types revealed that BlockNumber is missing - either fix or discuss
+    channel.handleTransfer(directTransfer, undefined as any as BlockNumber)
   }
 
   incrementedMsgID () {
@@ -340,8 +342,8 @@ export class Engine extends events.EventEmitter {
    * @param {message} msg - A message implementation in the message namespace
    */
   send (to: Address, msg: messageLib.SignedMessage) {
-    // console.log('SENDING:' + )
-    this._send(to, messageLib.SERIALIZE(msg))
+    console.log('SENDING:' + msg)
+    this._send(to, msg)
   }
 
   /** Internal event handlers triggered by state-machine workflows and blockchain events
@@ -756,8 +758,7 @@ export class Engine extends events.EventEmitter {
 
     // const ads = addToStr([channelAddress, addressOne, addressTwo])
     // debugger
-
-    console.log('CHANNEL_ADDRESS', channelAddress)
+    // console.log('CHANNEL_ADDRESS', channelAddress)
     this.blockchain.monitoring.subscribeAddress(channelAddress)
     return true
   }

@@ -10,7 +10,7 @@ export type Status = 'initializing' // loading persistent state
 export type CommEventType = 'status-changed' | 'message-received'
 
 export type MessageId = number & { __MSG_ID__: true }
-export type Payload = string & { __PAYLOAD__: true }
+export type Payload = string // & { __PAYLOAD__: true }
 export type Ack = boolean & { __ACK__: true }
 
 export type InternalMessageOut = [MessageId, Payload, Ack]
@@ -39,8 +39,8 @@ export interface P2P {
   status: Status
 
   // restrict to only known events
-  on: (e: CommEventType, listener: (...args: any[]) => void) => void
-  off: (e: CommEventType, listener: (...args: any[]) => void) => void
+  on: (e: CommEventType, listener: (m: string) => void) => void
+  off: (e: CommEventType, listener: (m: string) => void) => void
 
   // true indicates that massage has been persisted
   // false indicates that the message will not be sent (e.g. when status: broken)
