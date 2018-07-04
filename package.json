@@ -58,6 +58,8 @@
       "./src/blockchain/spec.base.ts",
       "./src/__GEN__",
       "./src/types",
+      "./src/tests",
+      "./src/utils/mocks",
       "./src/observable-add",
       "./src/state-channel"
     ],

@@ -1,14 +1,13 @@
 import { fakeStorage } from '../utils'
 import rpcCreate, { RPC } from './rpc'
-import * as monitoring from './monitoring'
+import { Monitoring, MonitoringConfig, waitForValue, setWaitForDefault } from './monitoring'
 import { createContractsProxy, ContractsProxy, Txs } from './contracts-proxy'
 
-const Monitoring = monitoring.Monitoring
-const waitFor = monitoring.waitForValue
-
 export {
-  monitoring,
-  waitFor,
+  Monitoring,
+  MonitoringConfig,
+  waitForValue,
+  setWaitForDefault,
   RPC,
   ContractsProxy
 }
@@ -17,7 +16,8 @@ import * as E from 'eth-types'
 
 export interface BlockchainServiceConfig {
   providerUrl: string
-  monitoringInterval: number
+
+  monitoringConfig?: Partial<MonitoringConfig>
 
   manager: E.Address
   gotToken: E.Address
@@ -32,7 +32,7 @@ export interface BlockchainServiceConfig {
 
 export interface IBlockchainService extends Txs {
   config: Readonly<BlockchainServiceConfig>
-  monitoring: Readonly<monitoring.Monitoring>
+  monitoring: Readonly<Monitoring>
   rpc: Readonly<RPC>
   contractsProxy: Readonly<ContractsProxy>
   txs: Txs
@@ -42,13 +42,14 @@ export type BlockchainServiceCreate = (cfg: BlockchainServiceConfig) => Readonly
 
 export const serviceCreate: BlockchainServiceCreate = config => {
   const rpc = rpcCreate(config.providerUrl)
-  const monitoring = new Monitoring({
+  const monitoring = new Monitoring(Object.assign({
     rpc,
     channelManagerAddress: config.manager,
     tokenAddresses: [config.gotToken, config.hsToken],
     storage: fakeStorage(),
-    logsInterval: config.monitoringInterval
-  })
+    logsInterval: 5000,
+    startBlock: 'latest'
+  } as MonitoringConfig, config.monitoringConfig))
 
   const proxy = createContractsProxy({
     signatureCb: config.signatureCb,

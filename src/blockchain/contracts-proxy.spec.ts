@@ -29,8 +29,6 @@ if (base.isInEnv('local')) {
     // block accessing accounts directly
     (cfg as any).accounts = null
 
-    console.log(`ACC2: 0x${acc2.addressStr} abc`)
-
     rpc = rpcCreate(cfg.providerUrl)
     cTx = createContracts({
       owner: acc1.address,

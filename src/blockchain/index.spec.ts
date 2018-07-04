@@ -48,7 +48,7 @@ if (isInEnv('infura')) {
   )
 
   test('service - monitoring - subscribe', () => {
-    srv.monitoring.subscribeAddress(cfg.nettingChannel)
+    srv.monitoring.subscribeAddress(cfg.nettingChannel, 'earliest')
     return srv.monitoring.asStream(['ChannelClosed', 'ChannelSettled'])
       .take(2)
       .toArray()
@@ -68,7 +68,7 @@ if (isInEnv('infura')) {
     // srv.unsubscribeAddress(cfg.nettingChannel)
     // expect('TO-DO').toBe('TO-DO')
 
-    return srv.monitoring.subscribeAddress(cfg.nettingChannel)
+    return srv.monitoring.subscribeAddress(cfg.nettingChannel, 'earliest')
       .then(() => {
         srv.monitoring.unsubscribeAddress(cfg.nettingChannel)
         return srv.monitoring.asStream(['ChannelClosed', 'ChannelSettled'])

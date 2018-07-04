@@ -6,6 +6,7 @@ import * as e2e from '../tests'
 import * as E from 'eth-types'
 
 import { as, CHAIN_ID } from '../utils/eth-utils'
+import { MonitoringConfig } from './monitoring'
 
 // todo will break in a browser environment
 (global as any).fetch = require('node-fetch')
@@ -43,7 +44,10 @@ export const infura: () => InfuraConfig = () => ({
   signatureCb: ((cb) => cb(infuraAccounts[0].privateKey)) as E.SignatureCb,
   owner: infuraAccounts[0].address,
 
-  monitoringInterval: 2 * 1000,
+  monitoringConfig: {
+    logsInterval: 2 * 1000,
+    startBlock: 'earliest'
+  } as MonitoringConfig,
 
   manager: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
   gotToken: as.Address(new Buffer('a28a7a43bc389064ab5d16c0338968482b4e02bd', 'hex')),
@@ -69,6 +73,9 @@ export const local = () => {
     signatureCb: ((cb) => cb(e2e.accounts[0].privateKey)) as E.SignatureCb,
     owner: e2e.accounts[0].address,
 
-    monitoringInterval: 0.5 * 1000
+    monitoringConfig: {
+      logsInterval: 0.5 * 1000,
+      startBlock: 'latest'
+    } as MonitoringConfig
   }
 }

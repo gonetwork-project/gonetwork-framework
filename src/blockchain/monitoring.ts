@@ -40,7 +40,7 @@ export interface State {
 
 const KEY_PREFIX = '___ETH_MONITORING___'
 
-let waitForDefault: WaitForConfig = { interval: 5 * 1000, timeout: 120 * 1000 }
+let waitForDefault: WaitForConfig = { interval: 2 * 1000, timeout: 120 * 1000 }
 
 const startToBlockNumber = (s: StartBlock, blockNumber: Observable<E.BlockNumber>) => {
   if (s === 'earliest') return Observable.of('-1')
@@ -66,7 +66,6 @@ export class Monitoring {
       cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress),
       startToBlockNumber(cfg.startBlock || 'latest', this.blockNumbers())
     )
-      .do(x => console.log('START', x[1]))
       .toPromise()
       .then(([s, b]) => s ? JSON.parse(s) : ({
         addresses: [
@@ -242,5 +241,3 @@ export const waitForValue = <P, T> (action: ((params: P) => Promise<T> | void), 
   (params: P) =>
     waitForValueRaw(action, cfg)(params)
       .toPromise()
-
-export const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))

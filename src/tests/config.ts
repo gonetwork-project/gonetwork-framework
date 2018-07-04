@@ -8,6 +8,7 @@ import * as fs from 'fs'
 import * as E from 'eth-types'
 
 import { as, util } from '../utils'
+import { MonitoringConfig } from '../blockchain'
 
 export type Account = {
   privateKey: E.PrivateKey,
@@ -28,7 +29,10 @@ export const account = (privateKeyStr: string,
     privateKey: as.PrivateKey(new Buffer(privateKeyStr, 'hex'))
   })
 
-export const monitoringInterval = 2 * 1000
+export const monitoringConfig: Partial<MonitoringConfig> = {
+  logsInterval: 2 * 1000,
+  startBlock: 'latest'
+}
 
 export const mnemonic = 'dignity upset visa worry warrior donate record enforce time pledge ladder drop'
 
@@ -54,8 +58,6 @@ export const migrationDir = path.resolve(__dirname, '..', '..', 'smart-contracts
 export const migrationBuildDir = path.resolve(migrationDir, 'build')
 
 export const serverScript = path.resolve(__dirname, '..', '..', 'lib', 'tests', 'ganache-server.js')
-
-console.log(serverScript)
 
 if (!fs.existsSync(tmpDir)) {
   fs.mkdirSync(tmpDir)

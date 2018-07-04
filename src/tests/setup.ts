@@ -1,5 +1,5 @@
 import { Engine } from '../state-channel'
-import { serviceCreate, monitoring } from '../blockchain'
+import { serviceCreate, setWaitForDefault } from '../blockchain'
 import { P2P } from '../p2p/p2p'
 
 import { fakeStorage, CHAIN_ID } from '../utils'
@@ -8,11 +8,8 @@ import { readFromDisk as c } from './init-contracts'
 
 import * as cfgBase from './config'
 
-monitoring.setWaitForDefault({ timeout: 15 * 1000, interval: 250 })
-
-export {
-  monitoring
-}
+// TODO: not ideal
+setWaitForDefault({ timeout: 15 * 1000, interval: 250 })
 
 export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBase>) => {
   const cfg = Object.assign({}, cfgBase, config)
@@ -33,7 +30,7 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
     owner: account.address,
     signatureCb: (cb) => cb(account.privateKey),
     providerUrl: cfg.rpcUrl,
-    monitoringInterval: cfg.monitoringInterval
+    monitoringConfig: cfg.monitoringConfig
   })
 
   const engine = new Engine({
