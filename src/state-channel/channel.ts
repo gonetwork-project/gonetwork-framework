@@ -92,8 +92,8 @@ export class Channel {
    * @param {BN} currentBlock - The current block number
    * @returns {BN}
    */
-  transferrableFromTo (from, to, currentBlock?: E.BlockNumber) {
-    let safeBlock: E.BlockNumber | null = null
+  transferrableFromTo (from: ChannelState, to: ChannelState, currentBlock?: E.BlockNumber) {
+    let safeBlock: E.BlockNumber | undefined = undefined
     if (currentBlock) {
       safeBlock = add(currentBlock, as.BlockNumber(REVEAL_TIMEOUT))
     }

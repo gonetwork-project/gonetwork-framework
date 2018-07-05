@@ -245,7 +245,7 @@ export class ChannelState {
    * @param {BN} safeBlock
    * @returns {BN}
    */
-  lockedAmount (safeBlock: E.BlockNumber) {
+  lockedAmount (safeBlock?: E.BlockNumber) {
     // we only want lockedAmounts that have not yet expired
     return this._lockAmount(Object.values(this.pendingLocks), safeBlock)
   }
