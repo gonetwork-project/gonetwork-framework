@@ -49,11 +49,11 @@ afterAll(() => {
 test('e2e::happy-path', () =>
   flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
     .then(() => wait(500))
-    .then(flowsOff.sendDirect(c1, c2, as.Wei(50)))
-    .then(() => expect(
-      c1.engine.channelByPeer[c2.owner.addressStr].myState.transferredAmount
-        .eq(c2.engine.channelByPeer[c1.owner.addressStr].peerState.transferredAmount)
-    ).toBe(true))
-    .then(() => wait(200))
+    .then(flowsOff.sendDirect(c1, c2, as.Wei(20)))
+    .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(20), c2, as.Wei(0))).toBe(true))
+    // .then(flowsOff.sendDirect(c1, c2, as.Wei(20)))
+    // .then(() => console.log(c1.engine.channels, c2.engine.channels))
+    // .then(() => expect(flowsOff.transferredEqual(c1)).toBe(true))
+    .then(() => console.log(c1.engine.channelByPeer[c2.owner.addressStr].myState.transferredAmount))
     .catch(err => console.error(err))
   , minutes(2))
