@@ -38,7 +38,15 @@ export class Hashable {
  * @memberof message
  */
 export function serialize (msg: SignedMessage) {
-  return JSON.stringify(msg)
+  return JSON.stringify(msg, (key, value) => {
+    // this is crazy but BN .parse .stringify is broken: https://github.com/indutny/bn.js/issues/191
+    // another problem is with JSON.stringify itself - seems that BN.isBN(value) returns false
+    // TODO: implement proper (de)serialization - this is rather a temporary hack
+    if (key === 'transferredAmount' || key === 'nonce' || key === 'msgID') {
+      return new BN(value, 16).toString(10)
+    }
+    return value
+  })
 }
 
 /** A reviver function to be sent to JSON.parse to handle buffer serialization and deserialization
@@ -47,6 +55,7 @@ export function serialize (msg: SignedMessage) {
  * @returns {} - deserialized value
  * @memberof message
  */
+// TODO: improve it - send either raw buffers (ideal) or stringify to hex
 export function jsonReviver (k: object, v: any) {
   if (
     v !== null &&

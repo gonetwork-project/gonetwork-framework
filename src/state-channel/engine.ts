@@ -11,7 +11,7 @@ import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
 
-// helper method for debugging - will be removed once mo
+// helper method for debugging - will be removed once stabilized
 const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? string : string[]) =>
   !Buffer.isBuffer(add) ? (add as Address[]).map((a) => a.toString('hex')) : (add as Address).toString('hex') as any
 
@@ -133,7 +133,7 @@ export class Engine extends events.EventEmitter {
    * @throws "Invalid Message: unknown message received"
    */
   onMessage (message: messageLib.SignedMessage) {
-    console.log('RECEIVED MSG', message)
+    // console.log('RECEIVED MSG', message)
     // TODO: all messages must be signed here?
     if (!message.isSigned()) {
       throw new Error('Invalid Message: no signature found')
@@ -234,20 +234,15 @@ export class Engine extends events.EventEmitter {
   }
 
   onDirectTransfer (directTransfer: messageLib.DirectTransfer) {
-    // FIXME - .from is incorrect which indicates a deeper issue with recovering the address
-    // const channelByPeer = this.channelByPeer[directTransfer.from.toString('hex')]
- 
     const channel = this.channels[directTransfer.channelAddress.toString('hex')]
 
     if (!channel) {
       throw new Error('Invalid DirectTransfer: channel does not exist')
     }
-
     if (!channel.isOpen()) {
       throw new Error('Invalid Channel State:state channel is not open')
     }
 
-    console.log('EMIT TO UI: transferred:' + directTransfer.transferredAmount.sub(channel.peerState.transferredAmount))
     channel.handleTransfer(directTransfer, this.currentBlock)
   }
 
@@ -319,7 +314,6 @@ export class Engine extends events.EventEmitter {
    * @throws 'Invalid DirectTransfer:state channel is not open'
    */
   sendDirectTransfer (to: Address, transferredAmount: BN) {
-    // console.log('SENDING', to, transferredAmount, this.channelByPeer)
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid DirectTransfer: unknown to address')
     }
@@ -346,10 +340,7 @@ export class Engine extends events.EventEmitter {
    * or implement webRTC p2p protocol for transport etc.
    * @param {message} msg - A message implementation in the message namespace
    */
-  send (to: Address, msg: messageLib.SignedMessage) {
-    console.log('SENDING:' + msg)
-    this._send(to, msg)
-  }
+  send = (to: Address, msg: messageLib.SignedMessage) => this._send(to, msg)
 
   /** Internal event handlers triggered by state-machine workflows and blockchain events
    * @param {string} event - the GOT.* namespaced event triggered asynchronously by external engine components i.e. stateMachine, on-chain event handlers,etc.
@@ -359,7 +350,7 @@ export class Engine extends events.EventEmitter {
     try {
       if (event.startsWith('GOT.')) {
         let channel
-        console.log(event)
+        // console.log(event)
         switch (event) {
           case 'GOT.sendMediatedTransfer':
             channel = this.channelByPeer[state.to.toString('hex')]

@@ -41,12 +41,12 @@ export class ChannelState {
 
   /** @property {BN} the nonce that ensures transfer ordering as retreived from the proof */
   get nonce () {
-    return this.proof.nonce
+    return this.proof.nonce as E.BN
   }
 
   /** @property {BN} the monotonically increasing transferredAmount retrieved from the proof */
   get transferredAmount () {
-    return this.proof.transferredAmount
+    return this.proof.transferredAmount as E.Wei
   }
 
   /** update the channel state to reflect locked transfer

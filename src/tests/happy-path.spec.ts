@@ -26,18 +26,13 @@ beforeAll(() => {
     .mergeMap((c, idx) => c.blockchain.monitoring.protocolErrors()
       .do(errs => console.warn(`Client-${idx} PROTOCOL-ERRORS ${errs.length}`))
       .do(errs => console.warn(...errs.map(e => e.stack!.split('\n')).map(e => e[0] + '\n' + e[1])))
-    )
-    .subscribe()
+    ).subscribe()
 
   c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
   c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
 
   c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
-  c2.p2p.on('message-received', msg => {
-    console.log(msg)
-    console.log(deserializeAndDecode(msg))
-    c2.engine.onMessage(deserializeAndDecode(msg) as any)
-  })
+  c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
 })
 
 afterAll(() => {
@@ -57,8 +52,10 @@ test('e2e::happy-path', () =>
     .then(() => wait(500))
     .then(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(50)))
     .then(() => wait(500))
-    .then(() => console.log(c1.engine.channelByPeer[c2.owner.addressStr], 'SENDER'))
-    .then(() => console.log(c2.engine.channelByPeer[c1.owner.addressStr], 'RECEIVER'))
+    .then(() => expect(
+      c1.engine.channelByPeer[c2.owner.addressStr].myState.transferredAmount
+        .eq(c2.engine.channelByPeer[c1.owner.addressStr].peerState.transferredAmount)
+    ).toBe(true))
     .then(() => wait(200))
     .catch(err => console.error(err))
   , minutes(2))
