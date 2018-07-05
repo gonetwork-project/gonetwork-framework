@@ -1,14 +1,13 @@
 import { as, BN } from '../utils'
 
-import { setupClient, Client } from './setup'
+import { setupClient, Client, wait, minutes } from './setup'
 import { init } from './init-contracts'
-import * as flows from './flows-onchain'
 import { Subscription } from 'rxjs/Subscription'
 import { Observable } from 'rxjs/Observable'
 import { deserializeAndDecode } from '../state-channel/message'
 
-const minutes = n => n * 60 * 1000
-export const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+import * as flowsOn from './flows-onchain'
+import * as flowsOff from './flows-offchain'
 
 let c1: NonNullable<Client>
 let c2: NonNullable<Client>
@@ -48,10 +47,9 @@ afterAll(() => {
 })
 
 test('e2e::happy-path', () =>
-  flows.createChannelAndDeposit(c1, c2, as.Wei(50))
+  flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
     .then(() => wait(500))
-    .then(() => c1.engine.sendDirectTransfer(c2.owner.address, new BN(50)))
-    .then(() => wait(500))
+    .then(flowsOff.sendDirect(c1, c2, as.Wei(50)))
     .then(() => expect(
       c1.engine.channelByPeer[c2.owner.addressStr].myState.transferredAmount
         .eq(c2.engine.channelByPeer[c1.owner.addressStr].peerState.transferredAmount)

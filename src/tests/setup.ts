@@ -7,8 +7,12 @@ import { Payload } from '../p2p/p2p-types'
 import { readFromDisk as c } from './init-contracts'
 
 import * as cfgBase from './config'
+import { Milliseconds } from '../types'
 
-// TODO: not ideal
+export const wait = (ms: Milliseconds) => new Promise(resolve => setTimeout(resolve, ms))
+export const minutes = n => n * 60 * 1000
+
+// TODO: not ideal mechanism - for test we increase block mining frequency
 setWaitForDefault({ timeout: 15 * 1000, interval: 250 })
 
 export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBase>) => {
