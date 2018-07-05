@@ -13,7 +13,7 @@ import { BlockchainEvent } from '../types'
 
 // helper method for debugging - will be removed once mo
 const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? string : string[]) =>
-  Array.isArray(add) ? add.map((a: Address) => a.toString('hex')) : (add as Address).toString('hex') as any
+  !Buffer.isBuffer(add) ? (add as Address[]).map((a) => a.toString('hex')) : (add as Address).toString('hex') as any
 
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
@@ -223,7 +223,8 @@ export class Engine extends events.EventEmitter {
     }
 
     let channel = this.channelByPeer[secretToProof.from.toString('hex')]
-    channel.handleTransfer(secretToProof, this.currentBlock)
+    // FIXME
+    channel.handleTransfer(secretToProof as any, this.currentBlock)
     if (this.messageState.hasOwnProperty(secretToProof.msgID.toString())) {
       this.messageState[secretToProof.msgID.toString()].applyMessage('receiveSecretToProof', secretToProof)
     } else {
@@ -233,11 +234,15 @@ export class Engine extends events.EventEmitter {
   }
 
   onDirectTransfer (directTransfer: messageLib.DirectTransfer) {
-    if (!this.channelByPeer.hasOwnProperty(directTransfer.from.toString('hex'))) {
+    // FIXME - .from is incorrect which indicates a deeper issue with recovering the address
+    // const channelByPeer = this.channelByPeer[directTransfer.from.toString('hex')]
+ 
+    const channel = this.channels[directTransfer.channelAddress.toString('hex')]
+
+    if (!channel) {
       throw new Error('Invalid DirectTransfer: channel does not exist')
     }
 
-    let channel = this.channelByPeer[directTransfer.from.toString('hex')]
     if (!channel.isOpen()) {
       throw new Error('Invalid Channel State:state channel is not open')
     }
@@ -326,7 +331,7 @@ export class Engine extends events.EventEmitter {
     let directTransfer = channel.createDirectTransfer(msgID, transferredAmount)
     this.signature(directTransfer)
     this.send(to, directTransfer)
-    // FIXME: adding types revealed that BlockNumber is missing - either fix or discuss
+    // FIXME: adding types revealed that BlockNumber is missing
     channel.handleTransfer(directTransfer, undefined as any as BlockNumber)
   }
 
@@ -756,9 +761,6 @@ export class Engine extends events.EventEmitter {
       delete this.pendingChannels[peerAddress.toString('hex')]
     }
 
-    // const ads = addToStr([channelAddress, addressOne, addressTwo])
-    // debugger
-    // console.log('CHANNEL_ADDRESS', channelAddress)
     this.blockchain.monitoring.subscribeAddress(channelAddress)
     return true
   }
@@ -778,9 +780,6 @@ export class Engine extends events.EventEmitter {
    * @param {String} balance - the new deposited balance for the participant in the channel
    */
   onChannelNewBalance (channelAddress: Buffer, address: Buffer, balance: BN) {
-    // const [c, a] = [channelAddress, address].map(x => x.toString('hex'))
-    // const [_c, _a] = [c, a].map(x => ([this.channels[x], this.channelByPeer[x]]))
-    // debugger
     this.channels[channelAddress.toString('hex')].onChannelNewBalance(address, balance)
     return true // todo
   }

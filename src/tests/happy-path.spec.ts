@@ -33,7 +33,11 @@ beforeAll(() => {
   c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
 
   c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
-  c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
+  c2.p2p.on('message-received', msg => {
+    console.log(msg)
+    console.log(deserializeAndDecode(msg))
+    c2.engine.onMessage(deserializeAndDecode(msg) as any)
+  })
 })
 
 afterAll(() => {
@@ -56,4 +60,5 @@ test('e2e::happy-path', () =>
     .then(() => console.log(c1.engine.channelByPeer[c2.owner.addressStr], 'SENDER'))
     .then(() => console.log(c2.engine.channelByPeer[c1.owner.addressStr], 'RECEIVER'))
     .then(() => wait(200))
+    .catch(err => console.error(err))
   , minutes(2))

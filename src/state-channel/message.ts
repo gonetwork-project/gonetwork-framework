@@ -156,13 +156,13 @@ export class SignedMessage {
   }
 
   /** _recoverAddress - recovers the ethereum address form the signature and message hash
-   * @returns {Buffer} - 20 byte Buffer representing the ethereum address
+   * @returns {Address} - 20 byte Buffer representing the ethereum address
    */
   _recoverAddress () {
     const buffer = this.getHash()
     const pk = util.ecrecover(buffer as any, this.signature.v, util.toBuffer(this.signature.r), util.toBuffer(this.signature.s))
     const address = util.pubToAddress(pk)
-    return address
+    return address as Address
   }
 
   /** @property {Buffer} from - the calculate from based on the message hash and signature
@@ -229,7 +229,7 @@ export interface ProofMessageOptions {
   nonce: Nonce
   transferredAmount: BN
   locksRoot: Buffer
-  channelAddress: Buffer
+  channelAddress: Address
   messageHash: Buffer
   signature: Signature
 }
@@ -239,7 +239,7 @@ export interface ProofMessageOptions {
  * @property {BN} nonce
  * @property {BN} transferredAmount
  * @property {Buffer} locksRoot
- * @property {Buffer} channelAddress
+ * @property {Address} channelAddress
  * @property {Buffer} messageHash
  * @property {Signature} signature
  * @memberof message
@@ -248,7 +248,7 @@ export class ProofMessage extends SignedMessage {
   nonce: Nonce
   transferredAmount: BN
   locksRoot: Buffer
-  channelAddress: Buffer
+  channelAddress: Address
   messageHash: Buffer
 
   constructor (options: Partial<ProofMessageOptions>) {
@@ -257,7 +257,7 @@ export class ProofMessage extends SignedMessage {
     this.nonce = as.Nonce(options.nonce || new util.BN(0))
     this.transferredAmount = as.Wei(options.transferredAmount || 0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
-    this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
+    this.channelAddress = options.channelAddress || as.Address(EMPTY_20BYTE_BUFFER)
     this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER;
     (this as any).signature = options.signature || null // fixme
   }
@@ -360,19 +360,19 @@ export class OpenLock extends Lock {
 
 export interface DirectTransferOptions extends Partial<ProofMessageOptions> {
   msgID: BN
-  to: Buffer
+  to: Address
 }
 
 /** @class A direct transfer that can be sent to an engine instance to immediately complete a transfer of funds.
  * Once a direct transfer is sent, the actor sending the message can consider the funds transferred (Given a reliable transport)
  * @extends ProofMessage
  * @property {BN} msgID - incrementing msgID for transport management
- * @property {Buffer} to - Ethereum Address of intended recipient
+ * @property {Address} to - Ethereum Address of intended recipient
  * @memberof message
  */
 export class DirectTransfer extends ProofMessage {
   msgID: BN
-  to: Buffer
+  to: Address
 
   constructor (options: DirectTransferOptions) {
     super(options)
