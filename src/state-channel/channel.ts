@@ -92,7 +92,7 @@ export class Channel {
    * @param {BN} currentBlock - The current block number
    * @returns {BN}
    */
-  transferrableFromTo (from: ChannelState, to: ChannelState, currentBlock?: E.BlockNumber) {
+  transferrableFromTo (from: ChannelState, to: ChannelState, currentBlock: E.BlockNumber) {
     let safeBlock: E.BlockNumber | undefined = undefined
     if (currentBlock) {
       safeBlock = add(currentBlock, as.BlockNumber(REVEAL_TIMEOUT))
@@ -333,22 +333,18 @@ export class Channel {
    * @returns message.DirectTransfer
    * @throws "Insufficient funds: direct transfer cannot be completed:..."
    */
-  createDirectTransfer (msgID: BN, transferredAmount: BN) {
-    let transferrable = this.transferrableFromTo(this.myState, this.peerState)
+  createDirectTransfer (msgID: BN, amount: BN, currentBlock: E.BlockNumber) {
+    let transferrable = this.transferrableFromTo(this.myState, this.peerState, currentBlock)
 
-    if (transferredAmount.lte(new BN(0)) ||
-      transferredAmount.lte(this.myState.transferredAmount) ||
-      transferredAmount.gt(transferrable)) {
-      throw new Error('Insufficient funds: direct transfer cannot be completed:' +
-        transferredAmount.toString() + ' - ' + this.myState.transferredAmount.toString() + ' > ' +
-        transferrable.toString(10))
+    if (amount.lte(new BN(0)) || transferrable.lt(amount)) {
+      throw new Error('Insufficient funds: lock amount must be less than or equal to transferrable amount')
     }
 
     return new message.DirectTransfer({
       msgID: msgID,
       nonce: this.incrementedNonce(),
       channelAddress: this.channelAddress,
-      transferredAmount: transferredAmount,
+      transferredAmount: this.myState.transferredAmount.add(amount),
       to: this.peerState.address,
       locksRoot: this.myState.merkleTree.getRoot()
     })
@@ -413,7 +409,7 @@ export class Channel {
    */
   onBlock (currentBlock: E.BlockNumber) {
     // we use to auto issue settle but now we leave it to the user.
-    let events: [string,Buffer][] = []
+    let events: [string, Buffer][] = []
     if (this.canIssueSettle(currentBlock)) {
       events.push(['GOT.issueSettle', this.channelAddress])
     }
