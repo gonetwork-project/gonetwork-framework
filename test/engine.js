@@ -1,7 +1,7 @@
 const test = require('tape')
 const util = require('ethereumjs-util')
 
-const BlockchainService = require('../lib/blockchain').BlockchainService
+const BlockchainService = require('../lib/blockchain-old').BlockchainService
 
 const Engine = require('../lib/state-channel').Engine
 const channel = require('../lib/state-channel').channel

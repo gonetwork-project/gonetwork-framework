@@ -240,7 +240,8 @@ export class ChannelState {
     // }, new util.BN(0))
   }
 
-  /** determine the amount of funds that are locked. The safeblock parameter is required if you want to prevent
+  // TODO: figure out safeBlock
+  /** determine the amount of funds that are locked. The safeBlock parameter is required if you want to prevent
    * channel exhaustion due to lock expirations.
    * @param {BN} safeBlock
    * @returns {BN}
@@ -277,17 +278,6 @@ export class ChannelState {
         return sum.add(lock.amount)
       }, new util.BN(0))
     }
-  }
-
-  /** Deprecated */
-  balance (peerState) {
-    throw new Error('not implemented')
-  }
-
-  /** Deprecated */
-  transferrable (peerState) {
-    throw new Error('not implemented')
-    // this.balance(peerState).sub(this.lockedAmount)
   }
 
   /** create a lock proof that maybe submitted for onchain withdrawal of lock during the settlement period

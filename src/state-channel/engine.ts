@@ -322,11 +322,10 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid DirectTransfer:state channel is not open')
     }
     let msgID = this.incrementedMsgID()
-    let directTransfer = channel.createDirectTransfer(msgID, transferredAmount)
+    let directTransfer = channel.createDirectTransfer(msgID, transferredAmount, this.currentBlock)
     this.signature(directTransfer)
     this.send(to, directTransfer)
-    // FIXME: adding types revealed that BlockNumber is missing
-    channel.handleTransfer(directTransfer, undefined as any as BlockNumber)
+    channel.handleTransfer(directTransfer, this.currentBlock)
   }
 
   incrementedMsgID () {
@@ -512,11 +511,18 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Close: Cannot reissue Closed')
     }
 
-    let proof = channel.issueClose(this.currentBlock)
+    let proof = channel.issueClose(this.currentBlock) as messageLib.Proof
     let self = this
     let _channelAddress = channelAddress
 
-    return this.blockchain.close({ to: channelAddress }, proof).then(function (closingAddress) {
+    debugger
+    return this.blockchain.close({ to: channelAddress }, {
+      nonce: proof.nonce,
+      transferred_amount: proof.transferredAmount,
+      extra_hash: proof.messageHash,
+      signature: proof.signature,
+      locksroot: proof.locksRoot
+    } as any).then(function (closingAddress) {
       // channelAddress,closingAddress,block
       // TODO: @Artur, only call this after the transaction is mined i.e. txMulitplexer
       // return self.onChannelClose(_channelAddress,closingAddress);

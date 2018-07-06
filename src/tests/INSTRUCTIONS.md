@@ -1,4 +1,4 @@
-This code is used to test framework end to end with as little mocking as possible. For now we concentrate only on fake eth node (ganache-cli) that runs at `localhost:8545`. Right now we use predefined set of private keys.
+This code is used to test framework end to end with as little mocking as possible. For now we concentrate only on fake eth node (ganache-cli) that runs at `localhost:8546`. Right now we use predefined set of private keys.
 
 Once it works fine there we will add support for test networks like `ropsten` and custom private keys.
 

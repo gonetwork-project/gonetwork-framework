@@ -111,7 +111,7 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
   return Object.keys(order)
     .reduce((acc, k) => {
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData, waitCfg?: WaitForConfig) =>
-        Promise.all([est[k](params, data), cfg.rpc.getTransactionCount({ address: cfg.owner })])
+        Promise.all([est[k](params, data), params.nonce ? Promise.resolve(params.nonce) : cfg.rpc.getTransactionCount({ address: cfg.owner })])
           .then(([x, nonce]) => (raw[k] as any)(Object.assign({ nonce }, x.txParams), data) as Promise<E.TxHash>)
           .then(txHash => waitForValue((t: E.TxHash) => cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(txReceipt => decodeLogs(txReceipt.logs))
