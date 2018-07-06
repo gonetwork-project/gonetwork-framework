@@ -49,6 +49,7 @@ afterAll(() => {
 test('e2e::happy-path', () =>
   flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
     .then(() => wait(500))
+    .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
     .then(flowsOff.sendDirect(c1, c2, as.Wei(20)))
     .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(20), c2, as.Wei(0))).toBe(true))
     .then(flowsOff.sendDirect(c1, c2, as.Wei(30)))
@@ -57,6 +58,7 @@ test('e2e::happy-path', () =>
     .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(30), c2, as.Wei(30))).toBe(true))
     .then(() => expect(() => flowsOff.sendDirect(c2, c1, as.Wei(40))()).toThrow())
     // FIXME: Insufficient funds: direct transfer cannot be completed:79 - 30 > 50
-    // .then(flowsOff.sendDirect(c1, c2, as.Wei(79)))
-    // .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(79), c2, as.Wei(30))).toBe(true))
+    .then(() => expect(() => flowsOff.sendDirect(c1, c2, as.Wei(81))()).toThrow())
+    .then(flowsOff.sendDirect(c1, c2, as.Wei(80)))
+    .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true))
   , minutes(2))

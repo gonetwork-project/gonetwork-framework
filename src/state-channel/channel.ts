@@ -333,12 +333,11 @@ export class Channel {
    * @returns message.DirectTransfer
    * @throws "Insufficient funds: direct transfer cannot be completed:..."
    */
-  createDirectTransfer (msgID: BN, transferredAmount: BN) {
-    let transferrable = this.transferrableFromTo(this.myState, this.peerState)
+  createDirectTransfer (msgID: BN, transferredAmount: BN, currentBlock: E.BlockNumber) {
+    let transferrable = this.transferrableFromTo(this.myState, this.peerState, currentBlock)
 
-    if (transferredAmount.lte(new BN(0)) ||
-      transferredAmount.lte(this.myState.transferredAmount) ||
-      transferredAmount.gt(transferrable)) {
+    if (transferredAmount.lte(this.myState.transferredAmount) ||
+      transferredAmount.sub(this.myState.transferredAmount).gt(transferrable)) {
       throw new Error('Insufficient funds: direct transfer cannot be completed:' +
         transferredAmount.toString() + ' - ' + this.myState.transferredAmount.toString() + ' > ' +
         transferrable.toString(10))
