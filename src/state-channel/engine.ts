@@ -61,7 +61,7 @@ export class Engine extends events.EventEmitter {
   initiatorStateMachine = stateMachineLib.InitiatorFactory()
   targetStateMachine = stateMachineLib.TargetFactory()
 
-  address: Buffer
+  address: Address
   signature: SignFn
   blockchain: IBlockchainService
   private _send: SendFn
@@ -795,7 +795,7 @@ export class Engine extends events.EventEmitter {
     if (closingAddress.compare(this.address) !== 0) {
       return this.transferUpdate(channelAddress)
     }
-    return true
+    return Promise.resolve()
   }
 
   onChannelCloseError (channelAddress: Address, err?) {
