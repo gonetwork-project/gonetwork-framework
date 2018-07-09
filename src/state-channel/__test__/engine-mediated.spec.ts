@@ -4,175 +4,11 @@ import * as assert from 'assert'
 import { channel, message, merkletree } from '..'
 import { Address, BlockNumber } from 'eth-types'
 
-import { setup, createEngine, pkAddr, MockBlockchain, channelAddress, mockSendFn, TestEventBus } from './engine-setup'
+import { setup, pkAddr, channelAddress, TestEventBus } from './engine-setup'
 import { assertChannelState, assertProof } from './engine-assert'
-import { add, add1 } from '../../utils'
+import { add1 } from '../../utils'
 
-describe('test engine', () => {
-  test('can initialize engine', () => {
-    let engine = createEngine(0)
-    // assert engine parameters
-    assert.equal(engine.currentBlock.eq(new util.BN(0)), true, 'currentBlock initialized correctly')
-    assert.equal(engine.msgID.eq(new util.BN(0)), true, 'msgID initialized correctly')
-    assert.equal(engine.address.compare(pkAddr[0].address), 0, 'ethereum address set correctly')
-  })
-
-  test(`component test: create new channel with 0x ${pkAddr[1].address.toString('hex')}, depositBalance 501,327`,
-    () => {
-      let currentBlock = new util.BN(0)
-      let engine = createEngine(0)
-      engine.blockchain = new MockBlockchain([]) as any
-      engine.newChannel(pkAddr[1].address)
-
-      assert.equal(engine.pendingChannels.hasOwnProperty(pkAddr[1].address.toString('hex')), true)
-      try {
-        engine.newChannel(pkAddr[1].address)
-      } catch (err) {
-        assert.equal(err.message, 'Invalid Channel: cannot create new channel as channel already exists with peer', 'can handle multiple calls to create new channel')
-      }
-
-      engine.onChannelNew(channelAddress,
-        pkAddr[0].address,
-        pkAddr[1].address,
-        channel.SETTLE_TIMEOUT)
-
-      // handle multiple events coming back from blockchain
-      try {
-        engine.onChannelNew(channelAddress,
-          pkAddr[0].address,
-          pkAddr[1].address,
-          new util.BN(0))
-      } catch (err) {
-        assert.equal(err.message, 'Invalid Channel: cannot add new channel as it already exists', 'can handle duplicate calls to onChannelNew')
-      }
-
-      assert.equal(engine.pendingChannels.hasOwnProperty(pkAddr[1].address.toString('hex')), false)
-      assert.equal(engine.channels.hasOwnProperty(channelAddress.toString('hex')), true)
-      assert.equal(engine.channelByPeer.hasOwnProperty(pkAddr[1].address.toString('hex')), true)
-
-      engine.onChannelNewBalance(channelAddress, pkAddr[1].address, new util.BN(327))
-      engine.onChannelNewBalance(channelAddress, pkAddr[0].address, new util.BN(501))
-
-      assertChannelState(
-        engine, channelAddress, new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-
-      // try an out of order deposit
-      try {
-        engine.onChannelNewBalance(channelAddress, pkAddr[1].address, new util.BN(320))
-      } catch (err) {
-        assert.equal(err.message, 'Invalid Deposit Amount: deposit must be monotonically increasing')
-      }
-      assertChannelState(
-        engine, channelAddress, new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-    })
-
-  test('component test: e2e engine direct transfer', function () {
-    let { engine, engine2, currentBlock, sendQueue } = setup()
-
-    currentBlock = add1(currentBlock)
-
-    // START  A DIRECT TRANSFER FROM ENGINE(0) to ENGINE(1)
-
-    assert.equal(sendQueue.length, 0, 'send direct transfer')
-    engine.sendDirectTransfer(pkAddr[1].address, new util.BN(50))
-    // sent but not prcessed yet by engine(1) as expected
-    assertChannelState(
-      engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-    assertChannelState(
-      engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-
-    assert.equal(sendQueue.length, 1, 'send direct transfer')
-
-    let msg = message.deserializeAndDecode(sendQueue[sendQueue.length - 1]) as any
-    assert.equal(msg.to.compare(engine2.address), 0, 'send direct has correct address')
-    engine2.onMessage(msg)
-    assertChannelState(
-      engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-    assertChannelState(
-      engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
-
-    engine2.sendDirectTransfer(pkAddr[0].address, new util.BN(377))
-    msg = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
-    assert.equal(sendQueue.length, 2)
-    engine.onMessage(msg)
-
-    assertChannelState(
-      engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0), currentBlock)
-    assertChannelState(
-      engine2, channelAddress,
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
-
-    // engine2 has no more money left!
-    assert.throws(function () {
-      try {
-        engine2.sendDirectTransfer(pkAddr[0].address, new util.BN(377))
-      } catch (err) {
-        assert.equal(err.message, 'Insufficient funds: direct transfer cannot be completed:377 - 377 > 0')
-        throw new Error()
-      }
-    }, 'Insufficient funds: direct transfer cannot be completed:377 - 377 > 0')
-
-    assertChannelState(
-      engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0), currentBlock)
-    assertChannelState(
-      engine2, channelAddress,
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
-
-    // now engine(0) tries to send more money then it has
-    assert.throws(function () {
-      try {
-        engine.sendDirectTransfer(pkAddr[1].address, new util.BN(879))
-      } catch (err) {
-        assert.equal(err.message, 'Insufficient funds: direct transfer cannot be completed:879 - 50 > 828')
-        throw new Error()
-      }
-    })
-
-    assertChannelState(
-      engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0), currentBlock)
-    assertChannelState(
-      engine2, channelAddress,
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
-
-    engine.sendDirectTransfer(pkAddr[1].address, new util.BN(828))
-    msg = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
-    assert.equal(sendQueue.length, 3)
-    engine2.onMessage(msg)
-
-    assertChannelState(
-      engine, channelAddress,
-      new util.BN(2), new util.BN(501), new util.BN(828), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0), currentBlock)
-    assertChannelState(
-      engine2, channelAddress,
-      new util.BN(1), new util.BN(327), new util.BN(377), new util.BN(0), new util.BN(0),
-      new util.BN(2), new util.BN(501), new util.BN(828), new util.BN(0), new util.BN(0), currentBlock)
-
-    engine.closeChannel(channelAddress)
-    // console.log(engine.channels[channelAddress.toString('hex')].state)
-    assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_IS_CLOSING)
-    assert.equal(engine2.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)
-  })
-
+describe('test engine - mediated transfer', () => {
   test('component test: #1) e2e engine mediated transfer #2)engine 1 responds with transferUpdate when it receives a channelClose event as it did not issue close',
     () => {
       let { engine, engine2, currentBlock, sendQueue, mockBlockChain, blockchainQueue } = setup()
@@ -848,7 +684,6 @@ describe('test engine', () => {
       new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
 
     // MAIN PART OF TEST
-
     assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)
     assert.equal(engine2.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN);
     (mockBlockChain as any).closeChannel = function (channelAddress, proof, success, error) {
