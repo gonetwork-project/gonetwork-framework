@@ -6,7 +6,7 @@ import { Address, BlockNumber } from 'eth-types'
 
 import { setup, pkAddr, channelAddress, TestEventBus } from './engine-setup'
 import { assertChannelState, assertProof } from './engine-assert'
-import { add1 } from '../../utils'
+import { add1, as } from '../../utils'
 
 describe('test engine - mediated transfer', () => {
   test('component test: #1) e2e engine mediated transfer #2)engine 1 responds with transferUpdate when it receives a channelClose event as it did not issue close',
@@ -14,8 +14,6 @@ describe('test engine - mediated transfer', () => {
       let { engine, engine2, currentBlock, sendQueue, mockBlockChain, blockchainQueue } = setup()
 
       currentBlock = add1(currentBlock)
-
-      // START  A MEDIATED TRANSFER FROM ENGINE(0) to ENGINE(1)
 
       assert.equal(sendQueue.length, 0, 'send direct transfer')
 
@@ -31,7 +29,7 @@ describe('test engine - mediated transfer', () => {
         secretHashPair.hash
       )
 
-      assert.equal(sendQueue.length, 1, 'medited transfer in send queue')
+      assert.equal(sendQueue.length, 1, 'mediated transfer in send queue')
       assertChannelState(
         engine, channelAddress,
         new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0),
@@ -41,12 +39,11 @@ describe('test engine - mediated transfer', () => {
         engine2, channelAddress,
         new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
         new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-      // console.log(mt.to.toString('hex') +":"+ pk_addr[1].address.toString('hex'));
+
       let mediatedTransfer = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
 
       engine2.onMessage(mediatedTransfer as any)
       assert.equal(sendQueue.length, 2, 'requestSecret in send queu')
-      // console.log(engine.channelByPeer[pk_addr[1].address.toString('hex')]);
 
       assertChannelState(
         engine, channelAddress,
@@ -69,11 +66,7 @@ describe('test engine - mediated transfer', () => {
       assert.equal(sendQueue.length, 4, 'reveal secret in send queue from target -> initiator')
       let revealSecretTarget = message.deserializeAndDecode(sendQueue[sendQueue.length - 1]) as any
       assert.equal(revealSecretTarget.from.compare(pkAddr[1].address), 0, 'reveal secret signed by initiator')
-      console.log(revealSecretTarget)
       engine.onMessage(revealSecretTarget)
-
-      console.log(engine.channels[channelAddress.toString('hex')].myState)
-      console.log(engine2.channels[channelAddress.toString('hex')].peerState)
 
       // TEST #1 states should be synced
       assertChannelState(
@@ -111,7 +104,7 @@ describe('test engine - mediated transfer', () => {
       assert.equal(engine2.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_IS_CLOSING)
 
       assert.equal(blockchainQueue.length, 1, 'blockchain, no open locks to call to blockchain')
-      assertProof(blockchainQueue[0][1], 2, channelAddress, 50, message.EMPTY_32BYTE_BUFFER, engine.address)
+      assertProof(blockchainQueue[0], as.Nonce(2), channelAddress, as.Wei(50), message.EMPTY_32BYTE_BUFFER, engine.address)
       assert.equal(mockBlockChain.cmdQueue.length, 1)
       assert.equal(mockBlockChain.cmdQueue[0], 'closeChannel')
 
@@ -122,7 +115,7 @@ describe('test engine - mediated transfer', () => {
           engine.withdrawPeerOpenLocks(channelAddress)
           assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_CLOSED)
           assert.equal(engine2.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_IS_CLOSING)
-          assert.equal(blockchainQueue.length, 2, 'engine(2) didnt send any transfers to engine(1) so no close proof needed by engine(1)')
+          assert.equal(blockchainQueue.length, 2, 'engine(2) did not send any transfers to engine(1) so no close proof needed by engine(1)')
           assert.equal(mockBlockChain.cmdQueue.length, 2)
           assert.equal(mockBlockChain.cmdQueue[0], 'closeChannel')
           assert.equal(mockBlockChain.cmdQueue[1], 'updateTransfer')
@@ -384,7 +377,7 @@ describe('test engine - mediated transfer', () => {
         assertState(engine.messageState['1'].state, 'completedTransfer')
 
         assert.equal(mockBlockChain.cmdQueue[0], 'closeChannel', 'first command should be close channel')
-        assertProof(blockchainQueue[0][1], 1, channelAddress, 0,
+        assertProof(blockchainQueue[0][1], as.Nonce(1), channelAddress, as.Wei(0),
           engine.channels[channelAddress.toString('hex')].peerState.proof.locksRoot, engine2.address)
 
         // now we have to manually execute withdrawLocks onchain
@@ -393,11 +386,9 @@ describe('test engine - mediated transfer', () => {
 
         assert.equal(blockchainQueue.length, 2, 'only a single lock proof is needed')
         // Assert the withdraw proof
-        // console.log('PROOF', engine.channels[channelAddress.toString('hex')].peerState.proof)
 
         // arguments: channelAddress, encodedLock, merkleProof,secret,
         let proofArgs = blockchainQueue[1]
-        // console.log('ARGS', proofArgs)
 
         let encodedLock = proofArgs[1].locked_encoded
         let secret = proofArgs[1].secret
@@ -455,8 +446,8 @@ describe('test engine - mediated transfer', () => {
       let secretHashPair = message.GenerateRandomSecretHashPair()
 
       engine.sendMediatedTransfer(
-        util.toBuffer(acct4),
-        util.toBuffer(acct4),
+        acct4,
+        acct4,
         new util.BN(15),
         currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
@@ -474,11 +465,7 @@ describe('test engine - mediated transfer', () => {
       engine2.onMessage(revealSecretInitiator as any)
 
       let revealSecretTarget = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
-      console.log(revealSecretTarget)
       engine.onMessage(revealSecretTarget as any)
-
-      console.log(engine2.messageState)
-      console.log(sendQueue)
 
       let secretToProof = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
       engine2.onMessage(secretToProof as any)
@@ -488,8 +475,8 @@ describe('test engine - mediated transfer', () => {
       secretHashPair = message.GenerateRandomSecretHashPair()
 
       engine2.sendMediatedTransfer(
-        util.toBuffer(acct1),
-        util.toBuffer(acct1),
+        acct1,
+        acct1,
         new util.BN(7),
         currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
@@ -518,8 +505,8 @@ describe('test engine - mediated transfer', () => {
       secretHashPair = message.GenerateRandomSecretHashPair()
 
       engine2.sendMediatedTransfer(
-        util.toBuffer(acct1),
-        util.toBuffer(acct1),
+        acct1,
+        acct1,
         new util.BN(3),
         currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
         secretHashPair.secret as any,
@@ -541,8 +528,8 @@ describe('test engine - mediated transfer', () => {
       secretHashPair = message.GenerateRandomSecretHashPair()
 
       engine2.sendMediatedTransfer(
-        util.toBuffer(acct1),
-        util.toBuffer(acct1),
+        acct1,
+        acct1,
         new util.BN(2),
         currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
@@ -563,8 +550,8 @@ describe('test engine - mediated transfer', () => {
       secretHashPair = message.GenerateRandomSecretHashPair()
 
       engine2.sendMediatedTransfer(
-        util.toBuffer(acct1),
-        util.toBuffer(acct1),
+        acct1,
+        acct1,
         new util.BN(2),
         currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
@@ -583,12 +570,8 @@ describe('test engine - mediated transfer', () => {
       // ACTUAL TEST, make sure transferrable correct on both sides even if secret is not revealed to initiator
       let channelOne = engine.channels[channelAddress.toString('hex')]
 
-      console.log(channelOne.transferrableFromTo(channelOne.peerState, channelOne.myState, currentBlock))
       assert.equal(channelOne.transferrableFromTo(channelOne.peerState, channelOne.myState, currentBlock).eq(new util.BN(1)), true)
-
       channelOne = engine2.channels[channelAddress.toString('hex')]
-
-      console.log(channelOne.transferrableFromTo(channelOne.peerState, channelOne.myState, currentBlock))
       assert.equal(channelOne.transferrableFromTo(channelOne.myState, channelOne.peerState, currentBlock).eq(new util.BN(1)), true)
     })
 
@@ -623,12 +606,10 @@ describe('test engine - mediated transfer', () => {
       engine2, channelAddress,
       new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
       new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
-    // console.log(mt.to.toString('hex') +":"+ pk_addr[1].address.toString('hex'));
     let mediatedTransfer = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
 
     engine2.onMessage(mediatedTransfer as any)
-    assert.equal(sendQueue.length, 2, 'requestSecret in send queu')
-    // console.log(engine.channelByPeer[pk_addr[1].address.toString('hex')]);
+    assert.equal(sendQueue.length, 2, 'requestSecret in send queue')
 
     assertChannelState(
       engine, channelAddress,
@@ -651,11 +632,7 @@ describe('test engine - mediated transfer', () => {
     assert.equal(sendQueue.length, 4, 'reveal secret in send queue from target -> initiator')
     let revealSecretTarget = message.deserializeAndDecode(sendQueue[sendQueue.length - 1]) as any
     assert.equal(revealSecretTarget.from.compare(pkAddr[1].address), 0, 'reveal secret signed by initiator')
-    console.log(revealSecretTarget)
     engine.onMessage(revealSecretTarget)
-
-    console.log(engine.channels[channelAddress.toString('hex')].myState)
-    console.log(engine2.channels[channelAddress.toString('hex')].peerState)
 
     assertChannelState(
       engine, channelAddress,

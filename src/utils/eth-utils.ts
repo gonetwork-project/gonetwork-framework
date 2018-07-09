@@ -131,3 +131,11 @@ export const nextId = () => {
   }
   return ++id
 }
+
+export const serializeSignature = (sig: E.Signature) => {
+  let packed = abi.solidityPack(['bytes32', 'bytes32', 'uint8'], [sig.r, sig.s, sig.v])
+  if (packed.length !== 65) {
+    throw new Error('Incompatible Signature!')
+  }
+  return packed
+}

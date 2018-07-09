@@ -1,7 +1,7 @@
 import { TxParamsRequired, TxParamsWithGas, GasPrice, Address, TxParams, TxHash } from 'eth-types'
 import { ChannelEventTypes, ChannelEventsToArgs, ChannelIO } from '../__GEN__/NettingChannelContract'
 import { ManagerEventTypes, ManagerEventsToArgs, ManagerIO } from '../__GEN__/ChannelManagerContract'
-import { TokenEventTypes, TokenEventsToArgs, TokenIO, TokenOrdIO } from '../__GEN__/HumanStandardToken'
+import { TokenEventTypes, TokenEventsToArgs, TokenIO } from '../__GEN__/HumanStandardToken'
 
 export type TxCall<T extends { [K: string]: [any, any] }> = {
   [K in keyof T]: T[K][0] extends null ?

@@ -122,7 +122,7 @@ export const TargetFactory = function () {
           if (state.lock.expiration.lte(currentBlock.add(channel.REVEAL_TIMEOUT))) {
             (this as any).transition(state, 'expiredTransfer')
           } else {
-            console.log('Safe to process lock, lets request it:' + state.initiator.toString('hex'));
+            // console.log('Safe to process lock, lets request it:' + state.initiator.toString('hex'));
             (this as any).emit('GOT.sendRequestSecret', state);
             // this.eventEmitter.emit('sendSecretRequest',state,currentBlock,revealTimeout);
             (this as any).transition(state, 'awaitRevealSecret')

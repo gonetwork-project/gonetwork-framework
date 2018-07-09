@@ -10,6 +10,7 @@ import * as stateMachineLib from './state-machine'
 import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
+import { serializeSignature } from '../utils'
 
 // helper method for debugging - will be removed once stabilized
 const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? string : string[]) =>
@@ -102,8 +103,6 @@ export class Engine extends events.EventEmitter {
   }
 
   onBlockchainEvent = (e: BlockchainEvent) => {
-    // console.log('EVENT', e._type)
-    // console.log(e)
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
@@ -247,6 +246,8 @@ export class Engine extends events.EventEmitter {
   }
 
   onMediatedTransfer (mediatedTransfer: messageLib.MediatedTransfer) {
+    // const [med, ch, to] = addToStr([mediatedTransfer.from, mediatedTransfer.channelAddress, mediatedTransfer.to])
+    // debugger
     if (!this.channelByPeer.hasOwnProperty(mediatedTransfer.from.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
@@ -259,7 +260,7 @@ export class Engine extends events.EventEmitter {
 
     channel.handleTransfer(mediatedTransfer, this.currentBlock)
     if (mediatedTransfer.target.compare(this.address) === 0) {
-      console.log('Start targetStateMachine')
+      // console.log('Start targetStateMachine')
       this.messageState[mediatedTransfer.msgID.toString()] = new stateMachineLib.MessageState(mediatedTransfer, this.targetStateMachine)
       this.messageState[mediatedTransfer.msgID.toString()].applyMessage('init', this.currentBlock)
     }
@@ -267,8 +268,8 @@ export class Engine extends events.EventEmitter {
 
   /**
    * Send a locked transfer to your channel partner. This method intiatlizes a initator state machine which will queue the message for send via handleEvent
-   * @param {Buffer} to - eth address who this message will be sent to.  Only differs from target if mediating a transfer
-   * @param {Buffer} target - eth address of the target.
+   * @param {Address} to - eth address who this message will be sent to.  Only differs from target if mediating a transfer
+   * @param {Address} target - eth address of the target.
    * @param {BN} amount - amount to lock and send.
    * @param {BN} expiration - the absolute block number this locked transfer expires at.
    * @param {Buffer} secret - Bytes32 cryptographic secret
@@ -276,7 +277,10 @@ export class Engine extends events.EventEmitter {
    * @throws "Invalid MediatedTransfer: channel does not exist"
    * @throws 'Invalid Channel State:state channel is not open'
    */
-  sendMediatedTransfer (to: Buffer, target: Buffer, amount: BN, expiration: BlockNumber, secret: Buffer, hashLock: Buffer) {
+  sendMediatedTransfer (to: Address, target: Address, amount: BN, expiration: BlockNumber, secret: Buffer, hashLock: Buffer) {
+    // const [t1, t2] = addToStr([to, target])
+    // console.log(t1, t2)
+    // debugger
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
@@ -418,7 +422,7 @@ export class Engine extends events.EventEmitter {
           case 'GOT.issueSettle':
             // TODO emit "IssueSettle to ui + channel";
             let channelAddress = state
-            console.log('CAN ISSUE SETTLE:' + channelAddress.toString('hex'))
+            // console.log('CAN ISSUE SETTLE:' + channelAddress.toString('hex'))
             break
         }
         return
@@ -451,7 +455,7 @@ export class Engine extends events.EventEmitter {
     let self = this
     Object.values(this.messageState).map(function (messageState: any) {
       try {
-        console.debug('CALL HANDLE BLOCK ON MESSAGE')
+        // console.debug('CALL HANDLE BLOCK ON MESSAGE')
         messageState.applyMessage('handleBlock', self.currentBlock)
       } catch (err) {
         console.log(err)
@@ -459,7 +463,7 @@ export class Engine extends events.EventEmitter {
     })
     // handleBlock for each of the channels, perhaps SETTLE_TIMEOUT has passed
     Object.values(this.channels).map(function (channel: any) {
-      console.debug('CALL HANDLE BLOCK ON CHANNEL')
+      // console.debug('CALL HANDLE BLOCK ON CHANNEL')
       let events = channel.onBlock(self.currentBlock)
       for (let i = 0; i < events.length; i++) {
         self.handleEvent.apply(events[i])
@@ -515,14 +519,13 @@ export class Engine extends events.EventEmitter {
     let self = this
     let _channelAddress = channelAddress
 
-    debugger
     return this.blockchain.close({ to: channelAddress }, {
       nonce: proof.nonce,
       transferred_amount: proof.transferredAmount,
       extra_hash: proof.messageHash,
-      signature: proof.signature,
+      signature: serializeSignature(proof.signature),
       locksroot: proof.locksRoot
-    } as any).then(function (closingAddress) {
+    }).then(function (closingAddress) {
       // channelAddress,closingAddress,block
       // TODO: @Artur, only call this after the transaction is mined i.e. txMulitplexer
       // return self.onChannelClose(_channelAddress,closingAddress);
@@ -725,6 +728,9 @@ export class Engine extends events.EventEmitter {
    */
   onChannelNew (channelAddress: Address, addressOne: Address, addressTwo: Address, settleTimeout: BN) {
     let peerAddress: Address
+
+    // const [a,b,c] = addToStr([channelAddress, addressOne, addressTwo])
+    // debugger
 
     if (addressOne.compare(this.address) === 0) {
       peerAddress = addressTwo

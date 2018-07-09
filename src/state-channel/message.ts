@@ -42,7 +42,8 @@ export function serialize (msg: SignedMessage) {
     // this is crazy but BN .parse .stringify is broken: https://github.com/indutny/bn.js/issues/191
     // another problem is with JSON.stringify itself - seems that BN.isBN(value) returns false
     // TODO: implement proper (de)serialization - this is rather a temporary hack
-    if (key === 'transferredAmount' || key === 'nonce' || key === 'msgID') {
+    if (key === 'transferredAmount' || key === 'nonce' || key === 'msgID' ||
+      key === 'amount' || key === 'expiration' || key === 'depositBalance') {
       return new BN(value, 16).toString(10)
     }
     return value
