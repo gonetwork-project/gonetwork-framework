@@ -430,15 +430,12 @@ describe('test engine - mediated transfer', () => {
       let acct1 = pkAddr[0].address
       let acct4 = pkAddr[1].address
 
-      let channelAddress = util.toBuffer('0x8bf6a4702d37b7055bc5495ac302fe77dae5243b') as Address
       let { engine, engine2, currentBlock, sendQueue } = setup(false)
 
-      engine.onChannelNewBalance(channelAddress, util.toBuffer(acct1), new util.BN(27))
-      engine2.onChannelNewBalance(channelAddress, util.toBuffer(acct1), new util.BN(27))
+      engine.onChannelNewBalance(channelAddress, acct1, new util.BN(27))
+      engine2.onChannelNewBalance(channelAddress, acct1, new util.BN(27))
 
-      // END SETUP
-
-      currentBlock = currentBlock.add(new util.BN(1)) as BlockNumber
+      currentBlock = add1(currentBlock)
 
       // START  A DIRECT TRANSFER FROM ENGINE(0) to ENGINE(1)
 
@@ -470,7 +467,7 @@ describe('test engine - mediated transfer', () => {
       let secretToProof = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
       engine2.onMessage(secretToProof as any)
 
-      sendQueue = []
+      sendQueue.splice(0)
 
       secretHashPair = message.GenerateRandomSecretHashPair()
 
@@ -500,7 +497,7 @@ describe('test engine - mediated transfer', () => {
       engine.onMessage(secretToProof as any)
 
       // SEND new lock half open
-      sendQueue = [] as any[]
+      sendQueue.splice(0)
 
       secretHashPair = message.GenerateRandomSecretHashPair()
 
@@ -523,7 +520,7 @@ describe('test engine - mediated transfer', () => {
 
       engine.onMessage(revealSecretInitiator as any)
 
-      sendQueue = []
+      sendQueue.splice(0)
 
       secretHashPair = message.GenerateRandomSecretHashPair()
 
@@ -545,7 +542,7 @@ describe('test engine - mediated transfer', () => {
 
       engine.onMessage(revealSecretInitiator as any)
 
-      sendQueue = [] as any[]
+      sendQueue.splice(0)
 
       secretHashPair = message.GenerateRandomSecretHashPair()
 
@@ -668,6 +665,7 @@ describe('test engine - mediated transfer', () => {
       this.cmdQueue.push('closeChannel')
       let self = this
       let args = arguments
+      // FIXME it is not tested
       return new Promise(function (resolve, reject) {
         self.blockchainQueue.push(args)
         setTimeout(function () {

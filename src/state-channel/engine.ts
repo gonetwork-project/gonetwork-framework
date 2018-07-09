@@ -278,9 +278,6 @@ export class Engine extends events.EventEmitter {
    * @throws 'Invalid Channel State:state channel is not open'
    */
   sendMediatedTransfer (to: Address, target: Address, amount: BN, expiration: BlockNumber, secret: Buffer, hashLock: Buffer) {
-    // const [t1, t2] = addToStr([to, target])
-    // console.log(t1, t2)
-    // debugger
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
@@ -778,12 +775,18 @@ export class Engine extends events.EventEmitter {
 
   // FIXME - investigate why strings were used in docs @Amit
   /** Callback when a channel has tokens deposited into it on-chain
-   * @param {String} channelAddress - ethereum address hexString
-   * @param {String} address - the particpants ethereum address in hexString who deposited the funds
+   * @param {Address} channelAddress - ethereum address hexString
+   * @param {Address} address - the particpants ethereum address in hexString who deposited the funds
    * @param {String} balance - the new deposited balance for the participant in the channel
    */
-  onChannelNewBalance (channelAddress: Buffer, address: Buffer, balance: BN) {
-    this.channels[channelAddress.toString('hex')].onChannelNewBalance(address, balance)
+  onChannelNewBalance (channelAddress: Address, address: Address, balance: BN) {
+    // console.log(channelAddress.toString('hex'), address.toString('hex'))
+    try {
+      this.channels[channelAddress.toString('hex')].onChannelNewBalance(address, balance)
+    } catch (e) {
+      // console.log(this.channels, channelAddress.toString('hex'))
+      throw e
+    }
     return true // todo
   }
 
