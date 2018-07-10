@@ -60,4 +60,5 @@ test('e2e::happy-path', () =>
     .then(() => expect(() => flowsOff.sendDirect(c1, c2, as.Wei(81))()).toThrow())
     .then(flowsOff.sendDirect(c1, c2, as.Wei(80)))
     .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true))
+    .then(() => flowsOn.closeChannel(c1, c2))
   , minutes(2))

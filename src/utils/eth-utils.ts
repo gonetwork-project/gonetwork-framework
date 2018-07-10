@@ -111,7 +111,6 @@ export const serializeRpcParam = (p: E.TxDataType): string | string[] => {
 export const serializeRpcParams = (ps: object) =>
   Object.keys(ps)
     .reduce((acc, k) => {
-      // const p = ps[k]
       acc[k] = serializeRpcParam(ps[k])
       return acc
     }, {} as { [K: string]: string | string[] })

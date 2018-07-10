@@ -514,21 +514,11 @@ export class Engine extends events.EventEmitter {
 
     let proof = channel.issueClose(this.currentBlock) as messageLib.Proof
     let self = this
-    let _channelAddress = channelAddress
 
-    return this.blockchain.close({ to: channelAddress }, {
-      nonce: proof.nonce,
-      transferred_amount: proof.transferredAmount,
-      extra_hash: proof.messageHash,
-      signature: serializeSignature(proof.signature),
-      locksroot: proof.locksRoot
-    }).then(function (closingAddress) {
-      // channelAddress,closingAddress,block
-      // TODO: @Artur, only call this after the transaction is mined i.e. txMulitplexer
-      // return self.onChannelClose(_channelAddress,closingAddress);
-    }).catch(function (err) {
-      return self.onChannelCloseError(_channelAddress, err)
-    })
+    return this.blockchain.close({ to: channelAddress },
+      messageLib.proofToTxData(proof)).catch(function (err) {
+        return self.onChannelCloseError(channelAddress, err)
+      })
   }
 
   /** Update the proof after you learn a channel has been closed by the channel counter party
@@ -544,15 +534,13 @@ export class Engine extends events.EventEmitter {
     if (channel.isOpen()) {
       throw new Error('Invalid TransferUpdate: Cannot issue update on open channel')
     }
-    let proof = channel.issueTransferUpdate(this.currentBlock)
-    let self = this
-    let _channelAddress = channelAddress
+    let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.Proof
+    const self = this
 
-    return this.blockchain.updateTransfer({ to: channelAddress }, proof).then(function (nodeAddress) {
-      // self.onTransferUpdated(nodeAddress)
-    }).catch(function (err) {
-      self.onTransferUpdatedError(_channelAddress, err)
-    })
+    return this.blockchain.updateTransfer({ to: channelAddress }, messageLib.proofToTxData(proof))
+      .catch(function (err) {
+        self.onTransferUpdatedError(channelAddress, err)
+      })
   }
 
   /** Issue withdraw proofs on-chain for locks that have had their corresponding secret revealed.  Locks can be settled on chain once a proof has been sent on-chain.

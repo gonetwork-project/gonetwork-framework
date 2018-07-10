@@ -30,3 +30,15 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
     .then(ch => deposit(from, from.contracts.hsToken, ch, amount)
       .then(() => ({ channel: ch })))
     .then(log('DEPOSITED'))
+
+export const closeChannel = (init: Client, other: Client) =>
+  Promise.all([
+    // initiator
+    init.engine.closeChannel(init.engine.channelByPeer[other.owner.addressStr].channelAddress)
+     .then(log('INIT-CLOSE')),
+    // other
+    other.blockchain.monitoring.asStream('ChannelClosed')
+      .take(1)
+      .toPromise()
+      .then(log('OTHER-CLOSE'))
+  ])

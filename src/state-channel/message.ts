@@ -2,9 +2,9 @@ import * as util from 'ethereumjs-util'
 import * as sjcl from 'sjcl'
 import * as abi from 'ethereumjs-abi'
 import { BN } from 'bn.js'
-import { Address, Nonce, BlockNumber } from 'eth-types'
+import { Address, Nonce, BlockNumber, Signature } from 'eth-types'
 
-import { as, castNum } from '../utils'
+import { as, castNum, serializeSignature } from '../utils'
 
 /**
  * @namespace message
@@ -119,16 +119,13 @@ export function deserializeAndDecode (data: string) {
   throw new Error('Invalid Message: not a recoginized GOT message type')
 }
 
-/**
- * Signature Type defintion from ethereumjs
- * @typedef {Object} Signature
- * @property {Buffer} r
- * @property {Buffer} s
- * @property {int} v
- */
-export interface Signature {
-  r: Buffer, s: Buffer, v: number
-}
+export const proofToTxData = (proof: Proof) => ({
+  nonce: proof.nonce,
+  transferred_amount: proof.transferredAmount,
+  extra_hash: proof.messageHash,
+  signature: serializeSignature(proof.signature),
+  locksroot: proof.locksRoot
+})
 
 /** @class Signed message base class that generates a keccak256 hash and signs using ECDSA
  * @property {string} classType - base class type used for reflection

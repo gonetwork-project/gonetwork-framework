@@ -31,6 +31,8 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
   const names = abiInSpec.map(o => o[0])
   const types = abiInSpec.map(o => o[1])
   return (data: E.TxData) => {
+    // console.log(data, names)
+    // console.log(new Error().stack)
     return util.toBuffer([
       '0x',
       abi.methodID(name, types).toString('hex'),
