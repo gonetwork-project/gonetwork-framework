@@ -155,9 +155,9 @@ export const setup = (withTransactions = true) => {
   engine.send = mockSendFn(sendQueue)
   engine2.send = mockSendFn(sendQueue)
 
-  let mockBlockChain = new MockBlockchain(blockchainQueue)
-  engine.blockchain = mockBlockChain as any
-  engine2.blockchain = mockBlockChain as any
+  let mockBlockChain = new MockBlockchain(blockchainQueue);
+  (engine as any).blockchain = mockBlockChain as any
+  (engine2 as any).blockchain = mockBlockChain as any
 
   engine.onChannelNew(channelAddress,
     pkAddr[0].address,

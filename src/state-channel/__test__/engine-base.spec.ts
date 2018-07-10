@@ -19,8 +19,8 @@ describe('test engine - base', () => {
   test(`component test: create new channel with 0x ${pkAddr[1].address.toString('hex')}, depositBalance 501,327`,
     () => {
       let currentBlock = new util.BN(0)
-      let engine = createEngine(0)
-      engine.blockchain = new MockBlockchain([]) as any
+      let engine = createEngine(0);
+      (engine as any).blockchain = new MockBlockchain([]) as any
       engine.newChannel(pkAddr[1].address)
 
       assert.equal(engine.pendingChannels.hasOwnProperty(pkAddr[1].address.toString('hex')), true)
