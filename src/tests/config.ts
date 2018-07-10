@@ -34,6 +34,9 @@ export const monitoringConfig: Partial<MonitoringConfig> = {
   startBlock: 'latest'
 }
 
+export const settleTimeout = as.BlockNumber(6)
+export const revealTimeout = as.BlockNumber(3)
+
 export const mnemonic = 'dignity upset visa worry warrior donate record enforce time pledge ladder drop'
 
 export const pks: string[] = [

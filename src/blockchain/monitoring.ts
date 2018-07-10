@@ -6,7 +6,7 @@ import { EventEmitter } from 'events'
 import { as, add } from '../utils'
 
 import * as C from '../types/contracts'
-import { BlockchainEventType, BlockchainEvent, EventTypeToEvent, Milliseconds, Storage } from '../types'
+import { BlockchainEventType, BlockchainEvent, EventTypeToEvent, Millisecond, Storage } from '../types'
 import * as E from 'eth-types'
 import { RPC } from './rpc'
 
@@ -18,14 +18,14 @@ export type MonitoringEmitCb<Ev extends BlockchainEventType = BlockchainEventTyp
   (e: Ev, listener: (args: EventTypeToEvent<Ev>) => void): void
 }
 export type WaitForConfig = {
-  interval: Milliseconds
-  timeout: Milliseconds
+  interval: Millisecond
+  timeout: Millisecond
 }
 
 export type StartBlock = Exclude<E.DefaultBlock, 'pending'>
 
 export interface MonitoringConfig {
-  logsInterval: Milliseconds
+  logsInterval: Millisecond
   channelManagerAddress: E.Address
   tokenAddresses: E.Address[]
   storage: Storage

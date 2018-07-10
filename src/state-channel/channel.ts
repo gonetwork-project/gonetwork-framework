@@ -24,12 +24,12 @@ export const CHANNEL_STATE_OPEN = 'opened'
 export const CHANNEL_STATE_SETTLED = 'settled'
 
 /** @memberof channel */
-export const SETTLE_TIMEOUT = new BN(100)
+export const SETTLE_TIMEOUT = new BN(100) as E.BlockNumber
 // the minimum amount of time we need from the expiration of a lock to safely unlock
 // this property should be negotiable by the users based on their level of conservantiveness
 // in addition to expection of settled locks
 /** @memberof channel */
-export const REVEAL_TIMEOUT = new BN(15)
+export const REVEAL_TIMEOUT = new BN(15) as E.BlockNumber
 
 /** @class Channel represents the states between two participants.  State synchronization occurs against channel endpoints.
  * Channels rely on monotonically increasing simplex channels to track net value transfer flux. Rather then leveraging Poon-Dryja style
@@ -75,9 +75,10 @@ export class Channel {
    * @param {ChannelState} peerState - The initialized ChannelState object representing a peer.
    * @param {ChannelState} myState - The initialized ChannelState object representing my state.
    * @param {Address} channelAddress - The on chain netting channel ethereum contract address.
-   * @param {BN} currentBlock - The current block number on ethereum.
+   * @param {BlockNumber} currentBlock - The current block number on ethereum.
+   * @param {BlockNumber} revealTimeout - Reveal timeout for calculating safe block.
    */
-  constructor (peerState, myState, channelAddress: E.Address, currentBlock: E.BlockNumber) {
+  constructor (peerState, myState, channelAddress: E.Address, currentBlock: E.BlockNumber, readonly revealTimeout = REVEAL_TIMEOUT) {
     this.peerState = peerState // channelState.ChannelStateSync
     this.myState = myState// channelState.ChannelStateSync
     this.channelAddress = channelAddress || as.Address(message.EMPTY_20BYTE_BUFFER)
@@ -95,7 +96,7 @@ export class Channel {
   transferrableFromTo (from: ChannelState, to: ChannelState, currentBlock?: E.BlockNumber) {
     let safeBlock: E.BlockNumber | undefined = undefined
     if (currentBlock) {
-      safeBlock = add(currentBlock, as.BlockNumber(REVEAL_TIMEOUT))
+      safeBlock = add(currentBlock, as.BlockNumber(this.revealTimeout))
     }
     return from.depositBalance
       .sub((from.transferredAmount.add(from.lockedAmount(safeBlock)).add(from.unlockedAmount())))

@@ -1,4 +1,4 @@
-import { as, BN } from '../utils'
+import { as } from '../utils'
 
 import { setupClient, Client, wait, minutes } from './setup'
 import { init } from './init-contracts'
@@ -29,6 +29,9 @@ beforeAll(() => {
 
   c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
   c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
+
+  // c1.blockchain.monitoring.on('*', msg => console.log('C1 -->   ', msg))
+  // c2.blockchain.monitoring.on('*', msg => console.log('   --> C2', msg))
 
   c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
   c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
@@ -61,4 +64,5 @@ test('e2e::happy-path', () =>
     .then(flowsOff.sendDirect(c1, c2, as.Wei(80)))
     .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true))
     .then(() => flowsOn.closeChannel(c1, c2))
-  , minutes(2))
+    .then(() => wait(3000)) // todo: remove it
+  , minutes(1))

@@ -10,7 +10,6 @@ import * as stateMachineLib from './state-machine'
 import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
-import { serializeSignature } from '../utils'
 
 // helper method for debugging - will be removed once stabilized
 const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? string : string[]) =>
@@ -27,6 +26,8 @@ export type Config = {
   sign: SignFn
   send: SendFn
   blockchain: IBlockchainService
+  settleTimeout?: BlockNumber
+  revealTimeout?: BlockNumber
 }
 
 /**
@@ -48,12 +49,12 @@ export type Config = {
  */
 export class Engine extends events.EventEmitter {
   // dictionary of channels[peerAddress] that are pending mining
-  pendingChannels = {}
-  channels: { [k: string]: channelLib.Channel } = {}
+  readonly pendingChannels = {}
+  readonly channels: { [k: string]: channelLib.Channel } = {}
   // dictionary of channels[peerState.address.toString('hex')];
-  channelByPeer: { [k: string]: channelLib.Channel } = {}
+  readonly channelByPeer: { [k: string]: channelLib.Channel } = {}
   // dictionary of messages[msgID] = statemachine.*
-  messageState = {}
+  readonly messageState = {}
 
   currentBlock = new util.BN(0) as BlockNumber
   msgID = new util.BN(0)
@@ -62,9 +63,12 @@ export class Engine extends events.EventEmitter {
   initiatorStateMachine = stateMachineLib.InitiatorFactory()
   targetStateMachine = stateMachineLib.TargetFactory()
 
-  address: Address
-  signature: SignFn
-  blockchain: IBlockchainService
+  readonly address: Address
+  readonly signature: SignFn
+  readonly blockchain: IBlockchainService
+  readonly settleTimeout: BlockNumber
+  readonly revealTimeout: BlockNumber
+
   private _send: SendFn
 
   /**
@@ -73,18 +77,22 @@ export class Engine extends events.EventEmitter {
    * @param {Function} signatureService - the callback that requests the privatekey for signing of messages.  This allows the user to store the private key in a secure store or other means
    * @param {BlockchainService} blockchainService - a class extending the BlockchainService class to monitor and propogate transactions on chain. Override for different Blockchains
    */
-  constructor ({ address, sign, send, blockchain }: Config) {
+  constructor (readonly cfg: Config) {
     super()
 
-    // sanity check
-    if (!channelLib.SETTLE_TIMEOUT.gt(channelLib.REVEAL_TIMEOUT)) {
-      throw new Error('SETTLE_TIMEOUT must be strictly and much larger then REVEAL_TIMEOUT')
-    }
+    const { address, sign, send, blockchain } = cfg
 
     this.address = address
     this.signature = sign
     this.blockchain = blockchain
     this._send = send
+
+    this.settleTimeout = cfg.settleTimeout || channelLib.SETTLE_TIMEOUT
+    this.revealTimeout = cfg.revealTimeout || channelLib.REVEAL_TIMEOUT
+
+    if (!this.settleTimeout.gt(this.revealTimeout)) {
+      throw new Error('settleTimeout must be strictly and much larger then revealTimeout')
+    }
 
     const self = this
 
@@ -103,6 +111,7 @@ export class Engine extends events.EventEmitter {
   }
 
   onBlockchainEvent = (e: BlockchainEvent) => {
+    console.warn(e._type)
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
@@ -286,7 +295,6 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Channel State:state channel is not open')
     }
 
-    // var expiration = this.currentBlock.add(channel.SETTLE_TIMEOUT);
     let msgID = this.incrementedMsgID()
     let mediatedTransferState = ({
       msgID: msgID,
@@ -485,7 +493,7 @@ export class Engine extends events.EventEmitter {
     let _peerAddress = peerAddress
 
     return this.blockchain.newChannel({ to: this.blockchain.config.manager },
-      { partner: peerAddress, settle_timeout: channelLib.SETTLE_TIMEOUT }).then(function (vals) {
+      { partner: peerAddress, settle_timeout: this.settleTimeout }).then(function (vals) {
         // ChannelNew(address netting_channel,address participant1,address participant2,uint settle_timeout);
         // var channelAddress = vals[0];
         // var addressOne = vals[1];
@@ -598,14 +606,11 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Settle: cannot issue settle on open channel')
     }
 
-    let _channelAddress = channelAddress
     let self = this
     channel.issueSettle(this.currentBlock)
 
-    return self.blockchain.settle({ to: _channelAddress }).then(function () {
-      // return self.onChannelSettled(_channelAddress);
-    }).catch(function (err) {
-      return self.onChannelSettledError(_channelAddress, err)
+    return self.blockchain.settle({ to: channelAddress }).catch(function (err) {
+      return self.onChannelSettledError(channelAddress, err)
     })
   }
 
@@ -741,7 +746,7 @@ export class Engine extends events.EventEmitter {
 
     // constructor(peerState,myState,channelAddress,settleTimeout,revealTimeout,currentBlock){
     let channel = new channelLib.Channel(stateTwo, stateOne, channelAddress,
-      this.currentBlock)
+      this.currentBlock, this.revealTimeout)
     this.channels[util.toBuffer(channel.channelAddress).toString('hex')] = channel
     this.channelByPeer[channel.peerState.address.toString('hex')] = channel
 

@@ -215,11 +215,6 @@ function run () {
     })
   };
 
-  // monitorSettle(util.toBuffer("0x56C920248434e780C20EB617741a45CEd0ce076A"),util.toBuffer(acct2)).then(function(contractData){
-  //   console.log("SETTLING CHANNEL");
-  //                     bc2.settle(acct2Nonce++,25000000000,util.toBuffer("0x56C920248434e780C20EB617741a45CEd0ce076A")).then(console.log).catch(console.log);
-  // });
-
   function runSimulatorAndCloseAndSettle () {
     var blockchainQueue = []
 
@@ -277,12 +272,4 @@ function run () {
     })
   }
   setupNewChannelAndDeposit()
-  // var  q = [];
-  // simulator.simulate(q, util.toBuffer("0x3d5cd93a20cea6da5ab23afb16bb43e80652dc0b"), acct1, pk1, acct2, pk2, new util.BN(4076192));
-  // // console.log(q.length);
-  // console.log(q[0][1]);
-  // console.log(q[1][1]);
-  // console.log(util.sha3(q[2][3]).toString("hex"));
-  // console.log(q[2][1].toString("hex"));
-  // console.log(q[4][3].toString("hex"));
-}// end function run
+}

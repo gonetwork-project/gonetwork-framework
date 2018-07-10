@@ -1,5 +1,6 @@
 // could be made pseudo opaque, but not much needed now
-export type Milliseconds = number
+export type Millisecond = number
+export type Second = number
 export type DateMs = number
 
 export interface Storage {

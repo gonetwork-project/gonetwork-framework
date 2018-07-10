@@ -7,9 +7,9 @@ import { Payload } from '../p2p/p2p-types'
 import { readFromDisk as c } from './init-contracts'
 
 import * as cfgBase from './config'
-import { Milliseconds } from '../types'
+import { Millisecond, Second } from '../types'
 
-export const wait = (ms: Milliseconds) => new Promise(resolve => setTimeout(resolve, ms))
+export const wait = (ms: Millisecond) => new Promise(resolve => setTimeout(resolve, ms))
 export const minutes = n => n * 60 * 1000
 
 // TODO: not ideal mechanism - for test we increase block mining frequency
@@ -41,10 +41,14 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
     address: account.address,
     sign: (msg) => msg.sign(account.privateKey),
     send: (to, msg) => p2p.send(to.toString('hex'), serialize(msg) as Payload),
-    blockchain: blockchain
+    blockchain: blockchain,
+    settleTimeout: cfg.settleTimeout,
+    revealTimeout: cfg.revealTimeout
   })
 
   return { run, contracts, p2p, engine, blockchain, owner: account, txs: blockchain.txs }
 }
 
 export type Client = ReturnType<typeof setupClient>
+
+export const evmIncreaseTime = (n: Second) => null
