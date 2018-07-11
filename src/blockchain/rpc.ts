@@ -1,4 +1,4 @@
-import { as, serializeRpcParam, decodeLogs, nextId, util, abi } from '../utils'
+import { as, serializeRpcParam, decodeLogs, nextId, parseTxReceipt } from '../utils'
 
 import * as T from '../types'
 import * as E from 'eth-types'
@@ -30,7 +30,11 @@ export type SupportedCalls = {
 }
 
 // name, order, parse-result, defaults
-export type ImplementationSpec<Params extends ({} | null), Out> = [string, null | (keyof Params)[], ((r: any) => Out), null | Partial<Params>]
+export type ImplementationSpec<Params extends ({} | null), Out> = [
+  string,
+  null | (keyof Params)[],
+  ((r: any) => Out),
+  null | Partial<Params>]
 export type ImplementationSpecs = {
   [K in keyof SupportedCalls]: ImplementationSpec<SupportedCalls[K][0], SupportedCalls[K][1]>
 }
@@ -49,7 +53,7 @@ export const partialImplementation: ImplementationSpecs = {
   getLogs: ['eth_getLogs', [], decodeLogs, null], // warn decodeLogs is tailored to our needs
 
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'latest' }],
-  getTransactionReceipt: ['eth_getTransactionReceipt', [], x => x, null],
+  getTransactionReceipt: ['eth_getTransactionReceipt', [], parseTxReceipt, null],
   sendRawTransaction: ['eth_sendRawTransaction', [], x => x, null],
   call: ['eth_call', ['params', 'defaultBlock'], x => x, { defaultBlock: 'latest' }],
   estimateGas: ['eth_estimateGas', [], as.Gas, null],

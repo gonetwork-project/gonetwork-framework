@@ -11,7 +11,7 @@ import * as E from 'eth-types'
 
 import * as util from 'ethereumjs-util'
 
-import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs } from '../utils'
+import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs, parseTxReceipt } from '../utils'
 import { waitForValue, WaitForConfig } from './monitoring'
 
 import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
@@ -69,7 +69,8 @@ const paramsToEstimation = (order: GenOrders, cfg: ContractTxConfig) => {
             .then(r => ({
               estimatedGas: r,
               txParams: Object.assign({
-                gasLimit: r.add(r.div(new util.BN(2))) // adds ~50%
+                // gasLimit: r.add(r.div(new util.BN(2))) // adds ~50%
+                gasLimit: r.add(r).add(r) // add 100%
               } as Partial<E.TxParams>, txRaw)
             }))
         })(encodeTxData(k, order[k][0]))
@@ -115,7 +116,10 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
       (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData, waitCfg?: WaitForConfig) =>
         Promise.all([est[k](params, data), params.nonce ? Promise.resolve(params.nonce) : cfg.rpc.getTransactionCount({ address: cfg.owner })])
           .then(([x, nonce]) => (raw[k] as any)(Object.assign({ nonce }, x.txParams), data) as Promise<E.TxHash>)
-          .then(txHash => waitForValue((t: E.TxHash) => cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
+          .then(txHash => waitForValue((t: E.TxHash) =>
+            cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
+          .then(r => r.status === '0x1' ? Promise.resolve(r) : Promise.reject(r))
+          .catch(r => { console.warn('FAILED', k, r); return Promise.reject(r) })
           .then(txReceipt => decodeLogs(txReceipt.logs))
       return acc
     }, {} as {} as TxFull<IO, any>)

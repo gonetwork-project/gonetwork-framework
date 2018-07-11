@@ -111,7 +111,7 @@ export class Engine extends events.EventEmitter {
   }
 
   onBlockchainEvent = (e: BlockchainEvent) => {
-    console.warn(e._type)
+    // console.warn(e._type)
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
@@ -546,13 +546,15 @@ export class Engine extends events.EventEmitter {
     let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.Proof
     const self = this
 
+    console.log('TR-UP', this.currentBlock, proof, proof && messageLib.proofToTxData(proof))
+
     return this.blockchain.updateTransfer({ to: channelAddress },
       // FIXME: the check is needed to make the old tests pass, but it should not be needed
       // it should throw instead most likely
       proof && messageLib.proofToTxData(proof))
-      .catch(function (err) {
-        self.onTransferUpdatedError(channelAddress, err)
-      })
+      // .catch(function (err) {
+      //   self.onTransferUpdatedError(channelAddress, err)
+      // })
   }
 
   /** Issue withdraw proofs on-chain for locks that have had their corresponding secret revealed.  Locks can be settled on chain once a proof has been sent on-chain.

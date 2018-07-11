@@ -123,14 +123,20 @@ declare module 'eth-types' {
     // todo: fill
   }
 
+  export type TxSuccess = '0x1'
+  export type TxFail = '0x0'
+
+  export type TxStatus = TxSuccess | TxFail
+
   export interface TxReceipt {
     blockNumber: BlockNumber
     from: Address
     to: Address
     gasUsed: Gas
     contractAddress: Address | null
-    logs: Log[]
+    logs: string[] // Log[]
     transactionHash: TxHash
+    status: TxStatus
   }
 
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md

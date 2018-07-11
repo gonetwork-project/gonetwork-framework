@@ -138,3 +138,20 @@ export const serializeSignature = (sig: E.Signature) => {
   }
   return packed
 }
+
+export const addressFromString = (a: string) => util.toBuffer(util.stripHexPrefix(a)) as E.Address
+
+type AsString<T> = {
+  [K in keyof T]: T[K] extends any[] ? string[] : string
+}
+
+export const parseTxReceipt = (r: AsString<E.TxReceipt>): E.TxReceipt => ({
+  blockNumber: as.BlockNumber(r.blockNumber),
+  contractAddress: addressFromString(r.contractAddress),
+  from: addressFromString(r.from),
+  to: addressFromString(r.to),
+  gasUsed: as.Gas(r.gasUsed),
+  transactionHash: r.transactionHash,
+  status: r.status as E.TxStatus,
+  logs: r.logs as any
+})
