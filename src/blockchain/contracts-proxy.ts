@@ -11,11 +11,13 @@ import * as E from 'eth-types'
 
 import * as util from 'ethereumjs-util'
 
-import { as, serializeRpcParams, abi, serializeRpcParam, decodeLogs, parseTxReceipt } from '../utils'
+import { as, serializeRpcParams, abi, BN, decodeLogs } from '../utils'
 import { waitForValue, WaitForConfig } from './monitoring'
 
-import { GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
-  ChannelEventsMap, ManagerEventsMap, TokenEventsMap } from '../types/contracts'
+import {
+  GenOrder, GenOrders, TxEstimation, TxCall, TxSendRaw, TxFull,
+  ChannelEventsMap, ManagerEventsMap, TokenEventsMap
+} from '../types/contracts'
 import { RPC } from './rpc'
 
 export interface ContractTxConfig {
@@ -31,12 +33,14 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
   const names = abiInSpec.map(o => o[0])
   const types = abiInSpec.map(o => o[1])
   return (data: E.TxData) => {
-    // console.log(data, names)
-    // console.log(new Error().stack)
+    const values = names.map((o, i) =>
+      // abi.rawEncode does not support addresses as Buffers
+      Buffer.isBuffer(data[o]) && types[i] !== 'bytes' ?
+        `0x${data[o].toString('hex')}` : data[o])
     return util.toBuffer([
       '0x',
       abi.methodID(name, types).toString('hex'),
-      types.length === 0 ? '' : abi.rawEncode(types, names.map(o => serializeRpcParam(data[o]))).toString('hex')
+      types.length === 0 ? '' : abi.rawEncode(types, values).toString('hex')
     ].join(''))
   }
 }
@@ -119,7 +123,7 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
           .then(txHash => waitForValue((t: E.TxHash) =>
             cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(r => r.status === '0x1' ? Promise.resolve(r) : Promise.reject(r))
-          .catch(r => { console.warn('FAILED', k, r); return Promise.reject(r) })
+          // .catch(r => { console.warn('FAILED', k, r); return Promise.reject(r) })
           .then(txReceipt => decodeLogs(txReceipt.logs))
       return acc
     }, {} as {} as TxFull<IO, any>)

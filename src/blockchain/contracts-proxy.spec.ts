@@ -110,7 +110,7 @@ if (base.isInEnv('local')) {
     return rpc.gasPrice()
       .then(gasPrice => {
         return cTx.txFull.token.approve({ gasPrice, to: cfg.hsToken }, cData)
-          .then(x => console.log('APPROVE-HS', x))
+        //  .then(x => console.log('APPROVE-HS', x))
       })
   })
 
@@ -119,7 +119,7 @@ if (base.isInEnv('local')) {
     return rpc.gasPrice()
       .then(gasPrice => {
         return cTx.txFull.channel.deposit({ gasPrice, to: netChannel }, { amount: HSAllow })
-          .then(x => console.log('DEPOSIT-HS', x))
+        //  .then(x => console.log('DEPOSIT-HS', x))
       })
   })
 } else {
