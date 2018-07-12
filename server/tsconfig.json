@@ -1,0 +1,22 @@
+{
+  "include": [
+    "./src/**/*"
+  ],
+  "files": [
+    "./node_modules/@types/node/index.d.ts",
+    "./node_modules/@machinomy/types-truffle-contract/index.d.ts",
+    "./node_modules/web3-typescript-typings/index.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "skipLibCheck": true /* NOT IDEAL, but rxjs types are broken */
+  }
+}
