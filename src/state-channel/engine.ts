@@ -129,7 +129,13 @@ export class Engine extends events.EventEmitter {
       case 'FeesCollected': return () => null // FIXME -- add handler
       case 'OwnershipTransferred': return () => null // FIXME -- add handler
       default:
-        ((e: never) => { throw new Error('UNREACHABLE') })(e)
+        ((e: never) => {
+          // event from NettingChannelLibrary - the misspelling due to contract's misspelling
+          if (e && (e as any)._type === 'UpdatedTranser') {
+            return null
+          }
+          throw new Error('UNREACHABLE')
+        })(e)
     }
   }
 
@@ -524,7 +530,9 @@ export class Engine extends events.EventEmitter {
     let self = this
 
     return this.blockchain.close({ to: channelAddress },
-      messageLib.proofToTxData(proof)).catch(function (err) {
+      messageLib.proofToTxData(proof))
+      // FIXME: it swallows the error
+      .catch(function (err) {
         return self.onChannelCloseError(channelAddress, err)
       })
   }
@@ -543,18 +551,16 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid TransferUpdate: Cannot issue update on open channel')
     }
 
-    let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.Proof
+    let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.ProofMessage
     const self = this
 
-    console.log('TR-UP', this.currentBlock, proof, proof && messageLib.proofToTxData(proof))
-
+    // console.log('TR-UP', this.currentBlock, proof, proof && messageLib.proofToTxData(proof))
     return this.blockchain.updateTransfer({ to: channelAddress },
-      // FIXME: the check is needed to make the old tests pass, but it should not be needed
-      // it should throw instead most likely
-      proof && messageLib.proofToTxData(proof))
-      // .catch(function (err) {
-      //   self.onTransferUpdatedError(channelAddress, err)
-      // })
+      messageLib.proofToTxData(proof))
+    // FIXME: it swallows the error
+    .catch(function (err) {
+      self.onTransferUpdatedError(channelAddress, err)
+    })
   }
 
   /** Issue withdraw proofs on-chain for locks that have had their corresponding secret revealed.  Locks can be settled on chain once a proof has been sent on-chain.
@@ -803,7 +809,7 @@ export class Engine extends events.EventEmitter {
     if (closingAddress.compare(this.address) !== 0) {
       return this.transferUpdate(channelAddress)
     }
-    return Promise.resolve()
+    return Promise.resolve([])
   }
 
   onChannelCloseError (channelAddress: Address, err?) {

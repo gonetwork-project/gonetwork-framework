@@ -1,8 +1,5 @@
-import * as T from '../types'
-
 import * as abi from 'ethereumjs-abi'
 import * as util from 'ethereumjs-util'
-import { as } from './eth-utils'
 
 export default class GenericLogDecoder {
   private eventMap: any
@@ -50,6 +47,8 @@ export default class GenericLogDecoder {
       result._contract = util.toBuffer(log.address)
       return result
     }
+
+    console.log(log)
     // Throwing since we only want to decode known logs
     throw new Error('UNKNOWN_LOG')
   }

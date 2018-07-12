@@ -119,13 +119,21 @@ export function deserializeAndDecode (data: string) {
   throw new Error('Invalid Message: not a recoginized GOT message type')
 }
 
-export const proofToTxData = (proof: Proof) => ({
+const emptyProof = () => ({
+  nonce: as.Nonce(0),
+  transferred_amount: as.Wei(0),
+  extra_hash: util.toBuffer('0'),
+  signature: util.toBuffer('0'),
+  locksroot: util.toBuffer('0')
+})
+
+export const proofToTxData = (proof: Proof | null) => proof ? ({
   nonce: proof.nonce,
   transferred_amount: proof.transferredAmount,
   extra_hash: proof.messageHash,
   signature: serializeSignature(proof.signature),
   locksroot: proof.locksRoot
-})
+}) : emptyProof()
 
 /** @class Signed message base class that generates a keccak256 hash and signs using ECDSA
  * @property {string} classType - base class type used for reflection

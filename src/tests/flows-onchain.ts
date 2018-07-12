@@ -35,7 +35,7 @@ export const closeChannel = (init: Client, other: Client,
   channel = init.engine.channelByPeer[other.owner.addressStr].channelAddress) =>
   Promise.all([
     init.engine.closeChannel(channel)
-      .then(log('INIT-CLOSE')),
+      .then(log('INIT-CLOSE'))
     // other.blockchain.monitoring.asStream('ChannelClosed')
     //   .take(1)
     //   .toPromise()

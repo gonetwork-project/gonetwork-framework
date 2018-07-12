@@ -118,9 +118,10 @@ export const serializeRpcParams = (ps: object) =>
 // todo: remove it and use generated stuff
 const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
 const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
+const NettingChannelLibrary = require('../../smart-contracts/build/contracts/nettingChannelLibrary.json')
 const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
-const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelContract, HumanStandardTokenContract])
+const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelContract, NettingChannelLibrary, HumanStandardTokenContract])
 export const decodeLogs = (logs: any[]) => logs.map(decoder.decode.bind(decoder)) as T.BlockchainEvent[]
 
 let id = 0
@@ -145,7 +146,7 @@ type AsString<T> = {
   [K in keyof T]: T[K] extends any[] ? string[] : string
 }
 
-export const parseTxReceipt = (r: AsString<E.TxReceipt>): E.TxReceipt => ({
+export const parseTxReceipt = (r: AsString<E.TxReceipt> | null): E.TxReceipt | null => r && ({
   blockNumber: as.BlockNumber(r.blockNumber),
   contractAddress: addressFromString(r.contractAddress),
   from: addressFromString(r.from),
