@@ -35,24 +35,17 @@ export const closeChannel = (init: Client, other: Client,
   channel = init.engine.channelByPeer[other.owner.addressStr].channelAddress) =>
   Promise.all([
     init.engine.closeChannel(channel)
-      .then(log('INIT-CLOSE'))
-    // other.blockchain.monitoring.asStream('ChannelClosed')
-    //   .take(1)
-    //   .toPromise()
-    //   .then(log('OTHER-ChannelClosed'))
-    //   .then(() => other.engine.transferUpdate(channel))
-    //   .then(log('OTHER-UP', true)),
-    // other.blockchain.monitoring.asStream('ChannelClosed')
-    //   .mergeMapTo(other.blockchain.monitoring.blockNumbers())
-    //   .take(1)
-    //   .switchMap(start =>
-    //     other.blockchain.monitoring.blockNumbers()
-    //       .do(x => console.warn(start, x))
-    //       .filter(bn => bn.gt(start.add(other.engine.settleTimeout)))
-    //   )
-    //   .take(1)
-    //   .toPromise()
-    //   .then(log('OTHER-SettleBefore', true))
-    //   .then(() => other.engine.settleChannel(channel))
-    //   .then(log('OTHER-ChannelSettled', true))
+      .then(log('CHANNEL-CLOSED')),
+    other.blockchain.monitoring.asStream('TransferUpdated')
+      .mergeMapTo(other.blockchain.monitoring.blockNumbers())
+      .skip(1)
+      .take(1)
+      .switchMap(start =>
+        other.blockchain.monitoring.blockNumbers()
+          .filter(bn => bn.gt(start.add(other.engine.settleTimeout)))
+      )
+      .take(1)
+      .toPromise()
+      .then(() => other.engine.settleChannel(channel))
+      .then(log('CHANNEL-SETTLED'))
   ])

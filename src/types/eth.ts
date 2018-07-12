@@ -71,7 +71,7 @@ declare module 'eth-types' {
     GasPrice: GasPrice
   }
 
-  // non-critical types - not much need with making them opaque
+  // non-critical types - not much need making them opaque
   export type TxHash = string
   export type Topic = Buffer
   // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getfilterchanges
@@ -98,7 +98,7 @@ declare module 'eth-types' {
   }
 
   export interface Signature {
-    v: number // todo: int8
+    v: number
     r: Buffer
     s: Buffer
   }
@@ -110,12 +110,12 @@ declare module 'eth-types' {
 
   export interface TxParamsWithGas {
     value: Wei // defaults to 0
-    gasLimit: Gas // will be estimated automatically
-    gasPrice: GasPrice // will be estimated automatically
-    nonce: Nonce
+    gasLimit: Gas // if not set will be estimated automatically
+    gasPrice: GasPrice // if not set will be estimated automatically
+    nonce: Nonce // if not set will be obtained automatically
+    from: Address // only needed for estimatiation - real transactions are signed and from is recovered
   }
 
-  // todo: discuss defaults
   export interface TxParams extends TxConstParams, TxParamsWithGas { }
 
   export interface TxResult<T = any> {

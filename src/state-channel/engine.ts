@@ -554,13 +554,15 @@ export class Engine extends events.EventEmitter {
     let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.ProofMessage
     const self = this
 
-    // console.log('TR-UP', this.currentBlock, proof, proof && messageLib.proofToTxData(proof))
-    return this.blockchain.updateTransfer({ to: channelAddress },
+    // console.log('transfer-update', this.address.toString('hex'), messageLib.proofToTxData(proof))
+
+    return this.blockchain.updateTransfer({ to: channelAddress, from: this.address },
       messageLib.proofToTxData(proof))
     // FIXME: it swallows the error
-    .catch(function (err) {
-      self.onTransferUpdatedError(channelAddress, err)
-    })
+    // .catch(function (err) {
+    //   console.warn(err)
+    //   self.onTransferUpdatedError(channelAddress, err)
+    // })
   }
 
   /** Issue withdraw proofs on-chain for locks that have had their corresponding secret revealed.  Locks can be settled on chain once a proof has been sent on-chain.

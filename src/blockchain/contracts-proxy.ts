@@ -37,6 +37,7 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
       // abi.rawEncode does not support addresses as Buffers
       Buffer.isBuffer(data[o]) && types[i] !== 'bytes' ?
         `0x${data[o].toString('hex')}` : data[o])
+
     return util.toBuffer([
       '0x',
       abi.methodID(name, types).toString('hex'),
@@ -73,8 +74,8 @@ const paramsToEstimation = (order: GenOrders, cfg: ContractTxConfig) => {
             .then(r => ({
               estimatedGas: r,
               txParams: Object.assign({
-                // gasLimit: r.add(r.div(new util.BN(2))) // adds ~50%
-                gasLimit: r.add(r).add(r) // add 100%
+                gasLimit: r.add(r.div(new util.BN(2))) // adds ~50%
+                // gasLimit: r.add(r).add(r) // add 100%
               } as Partial<E.TxParams>, txRaw)
             }))
         })(encodeTxData(k, order[k][0]))
@@ -91,7 +92,7 @@ const paramsToRawTx = (order: GenOrders, cfg: ContractTxConfig) => {
           const enc = serializeRpcParams(txRaw)
           const tx = new Tx(enc as any)
           cfg.signatureCb(pk => tx.sign(pk))
-          // todo: make sure gasLimit and gasPrice are properly set
+          // console.warn(tx.from.toString('hex'), '--->', k)
           return cfg.rpc.sendRawTransaction(`0x${tx.serialize().toString('hex')}`)
         })(encodeTxData(k, order[k][0]))
       return acc
