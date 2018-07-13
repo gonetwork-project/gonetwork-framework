@@ -37,7 +37,7 @@ export const castNum = <O extends BN, N extends BN> (v: O | number | string) => 
     if (v[1] === 'x') {
       return new BN(util.stripHexPrefix(v as string), 16) as N
     }
-    return new BN(v, 16) as N
+    return new BN(v, 10) as N
   }
 }
 

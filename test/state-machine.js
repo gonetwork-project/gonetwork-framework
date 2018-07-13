@@ -144,7 +144,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
     Target.handle(receivedMT, 'init', currentBlock)
     assertState(assert, receivedMT, 'awaitRevealSecret')
     assertEmit('GOT.sendRequestSecret')
@@ -157,7 +157,7 @@ test('test stateMachine transfers', function (t) {
     })
     requestSecret.sign(target.pk)
 
-    var receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    var receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRevealSecret')
     assertEmit('GOT.sendRevealSecret')
@@ -197,7 +197,7 @@ test('test stateMachine transfers', function (t) {
       initiatorEvents[initiatorEvents.length - 1].secret)
     secretToProof.sign(initiator.pk)
 
-    var receivedSTP = new message.SecretToProof(JSON.parse(JSON.stringify(secretToProof), message.jsonReviver))
+    var receivedSTP = new message.SecretToProof(JSON.parse(message.serialize(secretToProof), message.jsonReviver))
     Target.handle(receivedMT, 'receiveSecretToProof', receivedSTP)
     assertState(assert, receivedMT, 'completedTransfer')
 
@@ -215,7 +215,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock)
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -230,7 +230,7 @@ test('test stateMachine transfers', function (t) {
     })
     requestSecret.sign(target.pk)
 
-    var receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    var receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRequestSecret')
 
@@ -241,7 +241,7 @@ test('test stateMachine transfers', function (t) {
     //   amount:new util.BN(123123123123)});
     // requestSecret.sign(target.pk);
 
-    // receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret),message.jsonReviver));
+    // receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret),message.jsonReviver));
     // Initiator.handle(mediatedTransferState,'receiveRequestSecret',receivedRS);
     // assertState(assert,mediatedTransferState, 'awaitRequestSecret');
 
@@ -253,7 +253,7 @@ test('test stateMachine transfers', function (t) {
       amount: targetEvents[targetEvents.length - 1].client.lock.amount
     })
     requestSecret.sign(target.pk)
-    receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRequestSecret')
 
@@ -265,7 +265,7 @@ test('test stateMachine transfers', function (t) {
       amount: targetEvents[targetEvents.length - 1].client.lock.amount
     })
     requestSecret.sign(pkAddr[2].pk)
-    receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRequestSecret')
 
@@ -282,7 +282,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock)
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -296,7 +296,7 @@ test('test stateMachine transfers', function (t) {
     })
     requestSecret.sign(target.pk)
 
-    var receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    var receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRevealSecret')
     assertEmit('GOT.sendRevealSecret')
@@ -326,7 +326,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock)
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -340,7 +340,7 @@ test('test stateMachine transfers', function (t) {
     })
     requestSecret.sign(target.pk)
 
-    var receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    var receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRevealSecret')
     assertEmit('GOT.sendRevealSecret')
@@ -383,7 +383,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock)
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -397,7 +397,7 @@ test('test stateMachine transfers', function (t) {
     })
     requestSecret.sign(target.pk)
 
-    var receivedRS = new message.RequestSecret(JSON.parse(JSON.stringify(requestSecret), message.jsonReviver))
+    var receivedRS = new message.RequestSecret(JSON.parse(message.serialize(requestSecret), message.jsonReviver))
     Initiator.handle(mediatedTransferState, 'receiveRequestSecret', receivedRS)
     assertState(assert, mediatedTransferState, 'awaitRevealSecret')
     assertEmit('GOT.sendRevealSecret')
@@ -437,7 +437,7 @@ test('test stateMachine transfers', function (t) {
       initiatorEvents[initiatorEvents.length - 1].secret)
     secretToProof.sign(pkAddr[2].pk)
 
-    var receivedSTP = new message.SecretToProof(JSON.parse(JSON.stringify(secretToProof), message.jsonReviver))
+    var receivedSTP = new message.SecretToProof(JSON.parse(message.serialize(secretToProof), message.jsonReviver))
     Target.handle(receivedMT, 'receiveSecretToProof', receivedSTP)
     assertState(assert, receivedMT, 'awaitSecretToProof')
 
@@ -467,7 +467,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[0].client)
     mediatedTransfer.sign(privateKey)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     // current block moved ahead, should not accept mediated transfer
     Target.handle(receivedMT, 'init', currentBlock.add(new util.BN(2)))
@@ -503,7 +503,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock.add(new util.BN(4)))
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -560,7 +560,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock.add(new util.BN(1)))
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -616,7 +616,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock.add(new util.BN(1)))
     assertState(assert, receivedMT, 'awaitRevealSecret')
@@ -676,7 +676,7 @@ test('test stateMachine transfers', function (t) {
 
     var mediatedTransfer = new message.MediatedTransfer(initiatorEvents[initiatorEvents.length - 1].client)
     mediatedTransfer.sign(initiator.pk)
-    var receivedMT = new message.MediatedTransfer(JSON.parse(JSON.stringify(mediatedTransfer), message.jsonReviver))
+    var receivedMT = new message.MediatedTransfer(JSON.parse(message.serialize(mediatedTransfer), message.jsonReviver))
 
     Target.handle(receivedMT, 'init', currentBlock.add(new util.BN(1)))
     assertState(assert, receivedMT, 'awaitRevealSecret')
