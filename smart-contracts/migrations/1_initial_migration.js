@@ -51,7 +51,7 @@ module.exports = function(deployer,network) {
       await deployer.link(NettingChannelLibrary, ChannelManagerLibrary);   
       await deployer.deploy(ChannelManagerLibrary);
       await deployer.link(ChannelManagerLibrary, ChannelManagerContract);
-      const manager = await deployer.deploy(ChannelManagerContract, gotToken.address, testToken.address);
+      const manager = await ChannelManagerContract.new(gotToken.address, testToken.address);
     
       console.log(JSON.stringify({
         __GONETWORK_RESULT__: true, // to easily extract from logs
