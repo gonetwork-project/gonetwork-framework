@@ -107,7 +107,7 @@ function computeMerkleTree (lockElements) {
 }
 
 function assertProof (assert, transfer, nonce, channelAddress, transferredAmount, locksRoot, from) {
-  assert.equals(transfer.nonce.eq(message.TO_BN(nonce)), true, 'correct nonce in transfer')
+  assert.equals(transfer.nonce.eq(new util.BN(nonce)), true, 'correct nonce in transfer')
   assert.equals(transfer.transferredAmount.eq(new util.BN(transferredAmount)), true, 'correct transferredAmount in transfer')
   assert.equals(transfer.channelAddress.compare(util.toBuffer(channelAddress)), 0, 'correct channelAddress in transfer')
   assert.equals(transfer.locksRoot.compare(util.toBuffer(locksRoot)), 0, 'correct locksRoot in transfer')
@@ -122,10 +122,10 @@ function assertDirectTransfer (assert, directTransfer, from, nonce, channelAddre
 }
 
 function assertChannel (assert, channel, transferrableAtoB, transferrableBtoA, nonceA, nonceB, currentBlock) {
-  assert.equals(channel.transferrableFromTo(channel.myState, channel.peerState).eq(message.TO_BN(transferrableAtoB)), true)
-  assert.equals(channel.transferrableFromTo(channel.peerState, channel.myState).eq(message.TO_BN(transferrableBtoA)), true)
-  assert.equals(channel.myState.nonce.eq(message.TO_BN(nonceA)), true)
-  assert.equals(channel.peerState.nonce.eq(message.TO_BN(nonceB)), true)
+  assert.equals(channel.transferrableFromTo(channel.myState, channel.peerState).eq(new util.BN(transferrableAtoB)), true)
+  assert.equals(channel.transferrableFromTo(channel.peerState, channel.myState).eq(new util.BN(transferrableBtoA)), true)
+  assert.equals(channel.myState.nonce.eq(new util.BN(nonceA)), true)
+  assert.equals(channel.peerState.nonce.eq(new util.BN(nonceB)), true)
 }
 
 function assertMediatedTransfer (assert, transfer, from, nonce, channelAddress, transferredAmount, locksRoot, to, target, initiator) {
@@ -170,10 +170,10 @@ test('test channel', function (t) {
 
     // constructor(peerState,myState,channelAddress,settleTimeout,revealTimeout,currentBlock){
     channel = new channelLib.Channel(peerState, myState, address,
-      10)
+      new util.BN(10))
 
     peerChannel = new channelLib.Channel(myState, peerState, address,
-      10)
+      new util.BN(10))
 
     locks = [{ secret: util.toBuffer('SECRET1'), amount: 10, expiration: 20 }, // normal
     { secret: util.toBuffer('SECRET2'), amount: 20, expiration: 40 }, // normal
@@ -189,6 +189,7 @@ test('test channel', function (t) {
     })
 
     // ENSURE everything was setup properly
+    console.log(channel.openedBlock)
     assert.equals(channel.openedBlock.eq(new util.BN(10)), true)
     assert.equals(myState.address.compare(pkAddr[0].address), 0)
     assertStateBN(assert, myState, 0, 123, 0, 0, 0)
