@@ -61,9 +61,8 @@ test('test messages', function (t) {
 
   t.test('can serialize and deserialise message proof', function (assert) {
     var serialized = JSON.stringify(proofMessage)
-    var recoveredProofMessage = new message.ProofMessage(JSON.parse(serialized, message.JSON_REVIVER_FUNC))
+    var recoveredProofMessage = new message.ProofMessage(JSON.parse(serialized, message.jsonReviver))
 
-    console.log(JSON.stringify(recoveredProofMessage))
 
     recoveredProofMessage.getMessageHash = function () {
       return message.EMPTY_32BYTE_BUFFER
@@ -77,7 +76,7 @@ test('test messages', function (t) {
 
   t.test('unsigned message should throw error when recovering from', function (assert) {
     var serialized = JSON.stringify(proofMessage)
-    var recoveredProofMessage = new message.ProofMessage(JSON.parse(serialized, message.JSON_REVIVER_FUNC))
+    var recoveredProofMessage = new message.ProofMessage(JSON.parse(serialized, message.jsonReviver))
 
     console.log(JSON.stringify(recoveredProofMessage))
 
@@ -114,9 +113,7 @@ test('test messages', function (t) {
     assert.equals(lockedTransfer.from.compare(address), 0)
     var serialized = JSON.stringify(lockedTransfer)
 
-    var recoverdLockTransfer = new message.LockedTransfer(JSON.parse(serialized, message.JSON_REVIVER_FUNC))
-
-    console.log(JSON.stringify(recoverdLockTransfer))
+    var recoverdLockTransfer = new message.LockedTransfer(JSON.parse(serialized, message.jsonReviver))
     assert.equals(recoverdLockTransfer.nonce.eq(new util.BN(1)), true)
     assert.equals(recoverdLockTransfer.msgID.eq(new util.BN(17)), true)
     assert.equals(recoverdLockTransfer.lock.amount.eq(new util.BN(50)), true)
