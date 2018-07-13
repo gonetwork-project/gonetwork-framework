@@ -32,22 +32,33 @@ export class Hashable {
   }
 }
 
+// this is crazy but BN .parse .stringify is broken: https://github.com/indutny/bn.js/issues/191
+// another problem is with JSON.stringify itself - seems that BN.isBN(value) returns false
+// below function maybe have some edge cases not covered, but anyway we only use it internally
+const serializeFixBN = (v: any) => {
+  if (BN.isBN(v)) return `0x${v.toString(16)}`
+  else if (v && v.toJSON) return v.toJSON()
+  else if (Array.isArray(v)) {
+    return v.map(x => serializeFixBN(x))
+  } else if (typeof v === 'object') {
+    return Object.keys(v).reduce((acc, k) => {
+      if (typeof v[k] !== 'function') {
+        acc[k] = serializeFixBN(v[k])
+      }
+      return acc
+    }, {})
+  } else {
+    return v
+  }
+}
+
 /** Serialize message object
  * @param {SignedMessage} msg - message.SignedMessage base class type
  * @returns {string} - serialized value
  * @memberof message
  */
 export function serialize (msg: SignedMessage) {
-  return JSON.stringify(msg, (key, value) => {
-    // this is crazy but BN .parse .stringify is broken: https://github.com/indutny/bn.js/issues/191
-    // another problem is with JSON.stringify itself - seems that BN.isBN(value) returns false
-    // TODO: implement proper (de)serialization - this is rather a temporary hack
-    if (key === 'transferredAmount' || key === 'nonce' || key === 'msgID' ||
-      key === 'amount' || key === 'expiration' || key === 'depositBalance') {
-      return new BN(value, 16).toString(10)
-    }
-    return value
-  })
+  return JSON.stringify(serializeFixBN(msg))
 }
 
 /** A reviver function to be sent to JSON.parse to handle buffer serialization and deserialization
