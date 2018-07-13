@@ -1,7 +1,9 @@
 import { Observable } from 'rxjs'
 
 import { Client } from './setup'
-import { Wei } from 'eth-types'
+import { Wei, BlockNumber } from 'eth-types'
+import { GenerateRandomSecretHashPair } from '../state-channel/message'
+import { BN } from '../utils'
 
 export const transferredAmounts = (from: Client, to: Client) => [
   from.engine.channelByPeer[to.owner.addressStr].myState.transferredAmount,
@@ -29,5 +31,23 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
   return Observable.fromEvent(to.p2p, 'message-received')
     .take(1)
     .delay(5) // small delay to allow processing by engine
+    .toPromise()
+}
+
+export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
+  const secretHashPair = GenerateRandomSecretHashPair()
+  return from.blockchain.monitoring.blockNumbers()
+    .take(1)
+    .do((currentBlock) => {
+      from.engine.sendMediatedTransfer(
+        to.owner.address,
+        to.owner.address,
+        amount,
+        currentBlock.add(from.engine.revealTimeout).add(new BN(1)) as BlockNumber,
+        secretHashPair.secret as any, // FIXME
+        secretHashPair.hash
+      )
+    })
+    .delay(2000)
     .toPromise()
 }

@@ -103,7 +103,8 @@ export class P2P implements T.P2P {
   }
 
   send (to: string, payload: T.Payload) {
-    if (!to || !payload || to === this._address) {
+    if (!to || !payload /* || to === this._address */) {
+      console.log(to, this._address, payload)
       return Promise.reject('WRONG_PARAMS')
     }
 

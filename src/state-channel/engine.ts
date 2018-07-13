@@ -371,7 +371,7 @@ export class Engine extends events.EventEmitter {
             if (!channel.isOpen()) {
               throw new Error('Channel is not open')
             }
-
+            // console.log(event, state)
             // msgID,hashLock,amount,expiration,target,initiator,currentBlock
             let mediatedTransfer = channel.createMediatedTransfer(state.msgID,
               state.lock.hashLock,
@@ -381,7 +381,10 @@ export class Engine extends events.EventEmitter {
               state.initiator,
               state.currentBlock)
             this.signature(mediatedTransfer)
+            // if (this.address.compare(state.to) !== 0) {
+            // console.log('SENDING', this.address.toString('hex'), state.to.toString('hex'))
             this.send(state.to, mediatedTransfer)
+            // }
             channel.handleTransfer(mediatedTransfer)
             break
           case 'GOT.sendRequestSecret':
@@ -393,7 +396,9 @@ export class Engine extends events.EventEmitter {
               amount: state.lock.amount
             })
             this.signature(requestSecret)
+            // if (this.address.compare(state.to) !== 0) {
             this.send(state.to, requestSecret)
+            // }
             break
           case 'GOT.sendRevealSecret':
             channel = this.channelByPeer[state.to.toString('hex')]
@@ -402,7 +407,9 @@ export class Engine extends events.EventEmitter {
             // send this secret (backwards and forwards maybe)
             let revealSecret = new messageLib.RevealSecret({ to: state.revealTo, secret: state.secret })
             this.signature(revealSecret)
+            // if (this.address.compare(state.to) !== 0) {
             this.send(state.to, revealSecret)
+            // }
             // we dont register the secret, we wait for the echo Reveal
             break
           case 'GOT.sendSecretToProof':
@@ -417,7 +424,9 @@ export class Engine extends events.EventEmitter {
             let secretToProof = channel.createSecretToProof(state.msgID, state.secret)
             this.signature(secretToProof)
             channel.handleTransfer(secretToProof)
+            // if (this.address.compare(state.to) !== 0) {
             this.send(state.to, secretToProof)
+            // }
             // TODO: in the future, wait to apply secret to proof locally. We basically locked the state up now
             // It makes sense, in a sense.  With this implementation, when a lock secret is revealed and echoed back
             // the peer MUST accept a valid SecretToProof or no more new transfers can take place as the states are unsynced
@@ -531,10 +540,10 @@ export class Engine extends events.EventEmitter {
 
     return this.blockchain.close({ to: channelAddress },
       messageLib.proofToTxData(proof))
-      // FIXME: it swallows the error
-      // .catch(function (err) {
-      //   return self.onChannelCloseError(channelAddress, err)
-      // })
+    // FIXME: it swallows the error
+    // .catch(function (err) {
+    //   return self.onChannelCloseError(channelAddress, err)
+    // })
   }
 
   /** Update the proof after you learn a channel has been closed by the channel counter party

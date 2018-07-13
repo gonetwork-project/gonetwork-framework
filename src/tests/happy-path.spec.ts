@@ -29,12 +29,13 @@ beforeAll(() => {
 
   c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
   c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
-
-  // c1.blockchain.monitoring.on('*', msg => console.log('C1 -->   ', msg))
+  // c1.blockchain.monitoring.on('*', msg => console.log('C1 <--   ', msg))
   // c2.blockchain.monitoring.on('*', msg => console.log('   --> C2', msg))
 
   c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
   c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
+  c1.p2p.on('message-received', msg => console.log('C1 <--   ', msg))
+  c2.p2p.on('message-received', msg => console.log('   -->  C2', msg))
 })
 
 afterAll(() => {
@@ -49,7 +50,7 @@ afterAll(() => {
   }
 })
 
-test('e2e::happy-path', () =>
+test('e2e::happy-path -- direct', () =>
   flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
     .then(() => wait(500))
     .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
@@ -65,5 +66,12 @@ test('e2e::happy-path', () =>
     .then(() =>
       expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true)
     )
+    .then(() => flowsOn.closeChannel(c1, c2))
+  , minutes(1))
+
+test.only('e2e::happy-path -- mediated', () =>
+  flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
+    .then(() => wait(500))
+    .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
     .then(() => flowsOn.closeChannel(c1, c2))
   , minutes(1))
