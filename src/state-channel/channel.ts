@@ -337,12 +337,28 @@ export class Channel {
   createDirectTransfer (msgID: BN, transferredAmount: BN, currentBlock: E.BlockNumber) {
     let transferrable = this.transferrableFromTo(this.myState, this.peerState, currentBlock)
 
+    let deltaAmount = this.myState.depositBalance
+      .sub(
+        transferredAmount
+          .add(this.myState.lockedAmount(currentBlock))
+          .add(this.myState.unlockedAmount())
+      )
+      .add(this.peerState.transferredAmount)
+      .add(this.peerState.unlockedAmount())
+
     if (transferredAmount.lte(this.myState.transferredAmount) ||
-      transferredAmount.sub(this.myState.transferredAmount).gt(transferrable)) {
+      deltaAmount.gt(transferrable)) {
       throw new Error('Insufficient funds: direct transfer cannot be completed:' +
         transferredAmount.toString() + ' - ' + this.myState.transferredAmount.toString() + ' > ' +
         transferrable.toString(10))
     }
+
+    // if (transferredAmount.lte(this.myState.transferredAmount) ||
+    //   transferredAmount.sub(this.myState.transferredAmount).gt(transferrable)) {
+    //   throw new Error('Insufficient funds: direct transfer cannot be completed:' +
+    //     transferredAmount.toString() + ' - ' + this.myState.transferredAmount.toString() + ' > ' +
+    //     transferrable.toString(10))
+    // }
 
     return new message.DirectTransfer({
       msgID: msgID,
@@ -413,7 +429,7 @@ export class Channel {
    */
   onBlock (currentBlock: E.BlockNumber) {
     // we use to auto issue settle but now we leave it to the user.
-    let events: [string,Buffer][] = []
+    let events: [string, Buffer][] = []
     if (this.canIssueSettle(currentBlock)) {
       events.push(['GOT.issueSettle', this.channelAddress])
     }

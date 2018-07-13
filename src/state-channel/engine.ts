@@ -339,8 +339,8 @@ export class Engine extends events.EventEmitter {
     let msgID = this.incrementedMsgID()
     let directTransfer = channel.createDirectTransfer(msgID, transferredAmount, this.currentBlock)
     this.signature(directTransfer)
-    this.send(to, directTransfer)
     channel.handleTransfer(directTransfer, this.currentBlock)
+    this.send(to, directTransfer)
   }
 
   incrementedMsgID () {
