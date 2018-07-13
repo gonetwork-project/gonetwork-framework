@@ -1,21 +1,20 @@
 import * as util from 'ethereumjs-util'
-import * as assert from 'assert'
 
 import { channel, message, merkletree } from '..'
-import { Address, BlockNumber } from 'eth-types'
+import { BlockNumber, Address } from 'eth-types'
 
 import { setup, pkAddr, channelAddress, TestEventBus } from './engine-setup'
-import { assertChannelState, assertProof } from './engine-assert'
+import { assertChannelState, assertProof, assert } from './engine-assert'
 import { add1, as } from '../../utils'
 
 describe('test engine - mediated transfer', () => {
   test('component test: #1) e2e engine mediated transfer #2)engine 1 responds with transferUpdate when it receives a channelClose event as it did not issue close',
-    () => {
+    (done) => {
       let { engine, engine2, currentBlock, sendQueue, mockBlockChain, blockchainQueue } = setup()
 
       currentBlock = add1(currentBlock)
 
-      assert.equal(sendQueue.length, 0, 'send direct transfer')
+      assert.equal(sendQueue.length, 0, 'send mediated transfer')
 
       // to,target,amount,expiration,secret,hashLock
       let secretHashPair = message.GenerateRandomSecretHashPair()
@@ -119,6 +118,7 @@ describe('test engine - mediated transfer', () => {
           assert.equal(mockBlockChain.cmdQueue.length, 2)
           assert.equal(mockBlockChain.cmdQueue[0], 'closeChannel')
           assert.equal(mockBlockChain.cmdQueue[1], 'updateTransfer')
+          done()
         })
     })
 
@@ -126,7 +126,7 @@ describe('test engine - mediated transfer', () => {
     assert.equal(state.__machina__['mediated-transfer'].state, expectedState)
   }
 
-  test('lock expires on engine handleBlock', () => {
+  test('lock expires on engine handleBlock', (done) => {
     let { engine, engine2, currentBlock } = setup()
 
     let secretHashPair = message.GenerateRandomSecretHashPair()
@@ -186,6 +186,7 @@ describe('test engine - mediated transfer', () => {
         assertState(engine.messageState['1'].state, 'awaitRevealSecret')
         engine.onBlock(currentBlock.add(new util.BN(1)) as BlockNumber)
         assertState(engine.messageState['1'].state, 'expiredTransfer')
+        done()
       })
       secretHashPair = message.GenerateRandomSecretHashPair()
 
@@ -200,7 +201,7 @@ describe('test engine - mediated transfer', () => {
     })
   })
 
-  test('multiple unopened locks expire on engine handleBlock', () => {
+  test('multiple unopened locks expire on engine handleBlock', (done) => {
     let { engine, engine2, currentBlock, blockchainQueue } = setup()
 
     let secretHashPair = message.GenerateRandomSecretHashPair()
@@ -275,6 +276,7 @@ describe('test engine - mediated transfer', () => {
         assertState(engine.messageState['1'].state, 'expiredTransfer')
         assertState(engine.messageState['2'].state, 'expiredTransfer')
         assert.equal(blockchainQueue.length, 0, 'No Blockchain Messages generated as none of the locks are open')
+        done()
       })
 
       secretHashPair = message.GenerateRandomSecretHashPair()
@@ -301,7 +303,7 @@ describe('test engine - mediated transfer', () => {
     })
   })
 
-  test('should emit GOT.closeChannel if a lock is open and the currentBlock <= lock.expiration + reveal_timeout', () => {
+  test('should emit GOT.closeChannel if a lock is open and the currentBlock <= lock.expiration + reveal_timeout', (done) => {
     let { engine, engine2, currentBlock, mockBlockChain, blockchainQueue } = setup()
 
     let secretHashPair = message.GenerateRandomSecretHashPair()
@@ -377,7 +379,8 @@ describe('test engine - mediated transfer', () => {
         assertState(engine.messageState['1'].state, 'completedTransfer')
 
         assert.equal(mockBlockChain.cmdQueue[0], 'closeChannel', 'first command should be close channel')
-        assertProof(blockchainQueue[0][1], as.Nonce(1), channelAddress, as.Wei(0),
+
+        assertProof(blockchainQueue[0], as.Nonce(1), channelAddress, as.Wei(0),
           engine.channels[channelAddress.toString('hex')].peerState.proof.locksRoot, engine2.address)
 
         // now we have to manually execute withdrawLocks onchain
@@ -402,14 +405,15 @@ describe('test engine - mediated transfer', () => {
 
       testEventBus.on('beforeReceiving-10', (msg) => {
         testEventBus.byPass = true
-        assert.throws(function () {
+        expect(function () {
           try {
             engine.onMessage(msg)
           } catch (err) {
             assert.equal(err.message, 'Invalid transfer: cannot update a closing channel')
             throw new Error()
           }
-        }, 'applying message to closing channel throws error')
+        }).toThrow()
+        done()
       })
 
       secretHashPair = message.GenerateRandomSecretHashPair()
@@ -426,7 +430,7 @@ describe('test engine - mediated transfer', () => {
   })
 
   test('engine component test: can handle sending multiple mediated transfers without revealing secret to initiator',
-    () => {
+    (done) => {
       let acct1 = pkAddr[0].address
       let acct4 = pkAddr[1].address
 
@@ -570,9 +574,10 @@ describe('test engine - mediated transfer', () => {
       assert.equal(channelOne.transferrableFromTo(channelOne.peerState, channelOne.myState, currentBlock).eq(new util.BN(1)), true)
       channelOne = engine2.channels[channelAddress.toString('hex')]
       assert.equal(channelOne.transferrableFromTo(channelOne.myState, channelOne.peerState, currentBlock).eq(new util.BN(1)), true)
+      done()
     })
 
-  test('should fail and revert channel state to open when close channel errors out', () => {
+  test('should fail and revert channel state to open when close channel errors out', (done) => {
     let { engine, engine2, currentBlock, mockBlockChain, sendQueue } = setup()
 
     currentBlock = add1(currentBlock)
@@ -660,23 +665,29 @@ describe('test engine - mediated transfer', () => {
     // MAIN PART OF TEST
     assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)
     assert.equal(engine2.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN);
-    (mockBlockChain as any).closeChannel = function (channelAddress, proof, success, error) {
-      assert.equal(engine2.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_IS_CLOSING)
+
+    (mockBlockChain as any).close = function ({ to }: { to: Address }) {
+      assert.equal(engine2.channels[to.toString('hex')].state, channel.CHANNEL_STATE_IS_CLOSING)
       this.cmdQueue.push('closeChannel')
       let self = this
       let args = arguments
-      // FIXME it is not tested
+
       return new Promise(function (resolve, reject) {
         self.blockchainQueue.push(args)
         setTimeout(function () {
-          reject(channelAddress)
-        }, 1000)
+          reject('CLOSE_FAIL')
+        }, 1)
       })
     }
 
     // REVERT
-    engine2.closeChannel(channelAddress).then(function () {
-      assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)
-    })
+    engine2.closeChannel(channelAddress)
+      // .then(function () {
+      // assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)
+      // })
+      .catch(err => {
+        expect(err).toBe('CLOSE_FAIL')
+        done()
+      })
   })
 })

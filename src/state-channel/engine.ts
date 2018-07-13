@@ -532,9 +532,9 @@ export class Engine extends events.EventEmitter {
     return this.blockchain.close({ to: channelAddress },
       messageLib.proofToTxData(proof))
       // FIXME: it swallows the error
-      .catch(function (err) {
-        return self.onChannelCloseError(channelAddress, err)
-      })
+      // .catch(function (err) {
+      //   return self.onChannelCloseError(channelAddress, err)
+      // })
   }
 
   /** Update the proof after you learn a channel has been closed by the channel counter party

@@ -1,9 +1,14 @@
 import * as util from 'ethereumjs-util'
-import * as assert from 'assert'
 import { Nonce, Wei, Address } from 'eth-types'
 import { ChannelIO } from '../../__GEN__/NettingChannelContract'
 
-export { assert }
+export const assert = {
+  // test were moved to jest from tape
+  // since jest does not support custom messages we force the message to be included in the assertion itself
+  equal: (v1: any, v2: any, msg = 'ASSERT FAILED') => {
+    expect({ msg, value: v1 }).toEqual({ msg, value: v2 })
+  }
+}
 
 type Transfer = [{to: Address, from?: Address}, ChannelIO['close'][0]]
 
@@ -24,14 +29,14 @@ export function assertProof (transfer: Transfer, nonce: Nonce, channelAddress: A
   assert.equal(transfer[1].transferred_amount.eq(transferredAmount), true, 'correct transferredAmount in transfer')
   assert.equal(transfer[1].locksroot.compare(util.toBuffer(locksRoot)), 0, 'correct locksRoot in transfer')
 
-  // todo: revisit
+  // TODO: revisit
   // if (from) {
-  //   assert.equal(transfer[0].from.compare(from), 0, 'correct from recovery in transfer')
+  //   assert.equal(transfer[0].from!.compare(from), 0, 'correct from recovery in transfer')
   // }
 }
 
 function assertStateBN (state, nonce, depositBalance, transferredAmount, lockedAmount, unlockedAmount, currentBlock) {
-  assert.equal(state.nonce.eq(new util.BN(nonce)), true, 'correect nonce in state')
+  assert.equal(state.nonce.eq(new util.BN(nonce)), true, 'correct nonce in state')
   assert.equal(state.proof.transferredAmount.eq(new util.BN(transferredAmount)), true, 'correct transferredAmount in state')
   if (!currentBlock) {
     currentBlock = new util.BN(0)

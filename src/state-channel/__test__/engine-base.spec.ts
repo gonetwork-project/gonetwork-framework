@@ -1,11 +1,10 @@
 import * as util from 'ethereumjs-util'
-import * as assert from 'assert'
 
 import { channel, message } from '..'
 
 import { setup, createEngine, pkAddr, MockBlockchain, channelAddress } from './engine-setup'
-import { assertChannelState } from './engine-assert'
-import { add, add1 } from '../../utils'
+import { assertChannelState, assert } from './engine-assert'
+import { add1 } from '../../utils'
 
 describe('test engine - base', () => {
   test('can initialize engine', () => {
@@ -115,14 +114,14 @@ describe('test engine - base', () => {
       new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
 
     // engine2 has no more money left!
-    assert.throws(function () {
+    expect(function () {
       try {
         engine2.sendDirectTransfer(pkAddr[0].address, new util.BN(377))
       } catch (err) {
         assert.equal(err.message, 'Insufficient funds: direct transfer cannot be completed:377 - 377 > 0')
         throw new Error()
       }
-    }, 'Insufficient funds: direct transfer cannot be completed:377 - 377 > 0')
+    }).toThrow()
 
     assertChannelState(
       engine, channelAddress,
@@ -134,14 +133,14 @@ describe('test engine - base', () => {
       new util.BN(1), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
 
     // now engine(0) tries to send more money then it has
-    assert.throws(function () {
+    expect(function () {
       try {
         engine.sendDirectTransfer(pkAddr[1].address, new util.BN(879))
       } catch (err) {
         assert.equal(err.message, 'Insufficient funds: direct transfer cannot be completed:879 - 50 > 828')
         throw new Error()
       }
-    })
+    }).toThrow()
 
     assertChannelState(
       engine, channelAddress,
