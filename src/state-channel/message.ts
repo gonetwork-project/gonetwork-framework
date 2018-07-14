@@ -468,8 +468,8 @@ export class LockedTransfer extends DirectTransfer {
  * @memberof message
  */
 export class MediatedTransfer extends LockedTransfer {
-  initiator: Buffer
-  target: Buffer
+  initiator: Address
+  target: Address
 
   constructor (options) {
     super(options)
@@ -506,7 +506,7 @@ export class MediatedTransfer extends LockedTransfer {
  */
 export class RequestSecret extends SignedMessage {
   msgID: BN
-  to: Buffer
+  to: Address
   hashLock: Buffer
   amount: BN
 
@@ -570,7 +570,7 @@ export class RevealSecret extends SignedMessage {
  */
 export class SecretToProof extends ProofMessage {
   msgID: BN
-  to: Buffer
+  to: Address
   secret: Buffer
 
   constructor (options) {
@@ -608,7 +608,7 @@ export class SecretToProof extends ProofMessage {
  * @memberof message
  */
 export class Ack {
-  to: Buffer
+  to: Address
   messageHash: Buffer
   msgID: BN
 
