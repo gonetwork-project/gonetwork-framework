@@ -340,7 +340,7 @@ export class Engine extends events.EventEmitter {
     let directTransfer = channel.createDirectTransfer(msgID, transferredAmount, this.currentBlock)
     this.signature(directTransfer)
     channel.handleTransfer(directTransfer, this.currentBlock)
-    this.send(to, directTransfer)
+    this.send(directTransfer.to, directTransfer)
   }
 
   incrementedMsgID () {
@@ -383,7 +383,7 @@ export class Engine extends events.EventEmitter {
             this.signature(mediatedTransfer)
             // if (this.address.compare(state.to) !== 0) {
             // console.log('SENDING', this.address.toString('hex'), state.to.toString('hex'))
-            this.send(state.to, mediatedTransfer)
+            this.send(mediatedTransfer.to, mediatedTransfer)
             // }
             channel.handleTransfer(mediatedTransfer)
             break
@@ -397,7 +397,7 @@ export class Engine extends events.EventEmitter {
             })
             this.signature(requestSecret)
             // if (this.address.compare(state.to) !== 0) {
-            this.send(state.to, requestSecret)
+            this.send(requestSecret.to, requestSecret)
             // }
             break
           case 'GOT.sendRevealSecret':
@@ -408,7 +408,7 @@ export class Engine extends events.EventEmitter {
             let revealSecret = new messageLib.RevealSecret({ to: state.revealTo, secret: state.secret })
             this.signature(revealSecret)
             // if (this.address.compare(state.to) !== 0) {
-            this.send(state.to, revealSecret)
+            this.send(revealSecret.to, revealSecret)
             // }
             // we dont register the secret, we wait for the echo Reveal
             break
@@ -425,7 +425,7 @@ export class Engine extends events.EventEmitter {
             this.signature(secretToProof)
             channel.handleTransfer(secretToProof)
             // if (this.address.compare(state.to) !== 0) {
-            this.send(state.to, secretToProof)
+            this.send(secretToProof.to, secretToProof)
             // }
             // TODO: in the future, wait to apply secret to proof locally. We basically locked the state up now
             // It makes sense, in a sense.  With this implementation, when a lock secret is revealed and echoed back
