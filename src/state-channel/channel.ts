@@ -337,20 +337,18 @@ export class Channel {
   createDirectTransfer (msgID: BN, transferredAmount: BN, currentBlock: E.BlockNumber) {
     let transferrable = this.transferrableFromTo(this.myState, this.peerState, currentBlock)
 
-    let deltaAmount = this.myState.depositBalance
-      .sub(
-        transferredAmount
-          .add(this.myState.lockedAmount(currentBlock))
-          .add(this.myState.unlockedAmount())
-      )
-      .add(this.peerState.transferredAmount)
-      .add(this.peerState.unlockedAmount())
+    //fix: the monotonically increasing transferredAmount encapsulates all the lock and unlock semantics
+    //all we have to do is find the difference between the final state of transferred amount and previous state
+    //then we can determine if it is valid given the current block.  I.E we dont need to worry about all the 
+    //lock semantics etc, that is encompassed in the transferrable call
+    let deltaAmount = transferredAmount.sub(this.myState.transferredAmount);
 
-    if (transferredAmount.lte(this.myState.transferredAmount) ||
+    if (deltaAmount.lte(new util.BN(0)) ||
+	transferredAmount.lte(this.myState.transferredAmount) ||
       deltaAmount.gt(transferrable)) {
-      throw new Error('Insufficient funds: direct transfer cannot be completed:' +
+	throw new Error('Insufficient funds: direct transfer cannot be completed:' +
         transferredAmount.toString() + ' - ' + this.myState.transferredAmount.toString() + ' > ' +
-        transferrable.toString(10))
+        transferrable.toString())
     }
 
     // if (transferredAmount.lte(this.myState.transferredAmount) ||
