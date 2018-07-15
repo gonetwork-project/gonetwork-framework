@@ -69,11 +69,11 @@ describe('integration::happy-path -- direct transfer', () => {
       .then(flowsOff.sendDirect(c1, c2, as.Wei(20)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(20), c2, as.Wei(0))).toBe(true))
       .then(() => expect(() => flowsOff.sendDirect(c1, c2, as.Wei(51))()).toThrow())
-      .then(flowsOff.sendDirect(c1, c2, as.Wei(50)))
+      .then(flowsOff.sendDirect(c1, c2, as.Wei(40)))
       .then(() =>
-        expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true)
+        expect(flowsOff.transferredEqual(c1, as.Wei(40), c2, as.Wei(0))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
+      .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(40)))
       .then(() => wait(111))
     , minutes(1))
 

@@ -51,7 +51,7 @@ export const infura: () => InfuraConfig = () => ({
 
   manager: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
   gotToken: as.Address(new Buffer('a28a7a43bc389064ab5d16c0338968482b4e02bd', 'hex')),
-  hsToken: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
+  testToken: as.Address(new Buffer('de8a6a2445c793db9af9ab6e6eaacf880859df01', 'hex')),
 
   nettingChannel: as.Address(new Buffer('335648c615c692c25d8d9de5e6068d876b88e5ee', 'hex')),
 

@@ -41,7 +41,7 @@ if (base.isInEnv('local')) {
 
   test('call - token.balanceOf', () =>
     cTx.call.token.balanceOf({
-      to: cfg.hsToken
+      to: cfg.testToken
     },
       {
         _owner: acc1.address
@@ -109,7 +109,7 @@ if (base.isInEnv('local')) {
     }
     return rpc.gasPrice()
       .then(gasPrice => {
-        return cTx.txFull.token.approve({ gasPrice, to: cfg.hsToken }, cData)
+        return cTx.txFull.token.approve({ gasPrice, to: cfg.testToken }, cData)
         //  .then(x => console.log('APPROVE-HS', x))
       })
   })

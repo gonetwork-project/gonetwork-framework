@@ -28,18 +28,19 @@ export const deposit = (from: Client, token: Address, channel: Address, amount: 
 export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =>
   createChannel(from, to.owner.address, amount)
     .then(log('CHANNEL_CREATED'))
-    .then(ch => deposit(from, from.contracts.hsToken, ch, amount)
+    .then(ch => deposit(from, from.contracts.testToken, ch, amount)
       .then(() => ({ channel: ch })))
     .then(log('DEPOSITED'))
 
 export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei | 0, otherAmount?: Wei | 0,
-  channel = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) =>
-  Promise.all([
+  channel = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) => {
+  const expected = [openerAmount, otherAmount].filter(Boolean)
+  return Promise.all([
     other.blockchain.monitoring.asStream('Transfer')
-      .do(x => console.warn(x))
-      .take([openerAmount, otherAmount].filter(Boolean).length)
+      .take(expected.length === 0 ? 0 : 1) // 1 for Got Token, seems no other Transfers reported here
+      // .takeUntil(Observable.timer(3333))
       .toArray()
-      .do(x => console.warn(x))
+      // .do(x => console.warn('TRANSFERS', x))
       .toPromise(),
     opener.engine.closeChannel(channel)
       .then(log('CHANNEL-CLOSED')),
@@ -55,4 +56,34 @@ export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei |
       .toPromise()
       .then(() => other.engine.settleChannel(channel))
       .then(log('CHANNEL-SETTLED'))
+    // other.blockchain.monitoring.asStream('ChannelSettled')
+    //   .do(x => console.log('SETTLED', x))
+    //   .take(0) // seems no ChannelSettled reported here
+    //   .mergeMap(() =>
+    //     Observable.zip(
+    //       opener.blockchain.contractsProxy.call.token.balanceOf({
+    //         to: opener.blockchain.config.testToken
+    //       }, { _owner: opener.owner.address }),
+    //       other.blockchain.contractsProxy.call.token.balanceOf({
+    //         to: other.blockchain.config.testToken
+    //       }, { _owner: other.owner.address })
+    //     )
+    //       .do(x => console.warn('BALANCES', x))
+    //   )
+    //   .toPromise()
   ])
+    .then(() =>
+      Observable.timer(2000) // to be 100% sure all state transition done
+        .mergeMapTo(
+          Observable.zip(
+            opener.blockchain.contractsProxy.call.token.balanceOf({
+              to: opener.blockchain.config.testToken
+            }, { _owner: opener.owner.address }),
+            other.blockchain.contractsProxy.call.token.balanceOf({
+              to: other.blockchain.config.testToken
+            }, { _owner: other.owner.address })
+          ))
+        .do(x => console.warn('BALANCES', x))
+        .toPromise()
+    )
+}

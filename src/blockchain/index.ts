@@ -21,7 +21,7 @@ export interface BlockchainServiceConfig {
 
   manager: E.Address
   gotToken: E.Address
-  hsToken: E.Address
+  testToken: E.Address
 
   chainId: E.ChainId
 
@@ -45,7 +45,7 @@ export const serviceCreate: BlockchainServiceCreate = config => {
   const monitoring = new Monitoring(Object.assign({
     rpc,
     channelManagerAddress: config.manager,
-    tokenAddresses: [config.gotToken, config.hsToken],
+    tokenAddresses: [config.gotToken, config.testToken],
     storage: fakeStorage(),
     logsInterval: 5000,
     startBlock: 'latest'

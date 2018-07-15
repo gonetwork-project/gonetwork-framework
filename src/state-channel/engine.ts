@@ -676,7 +676,7 @@ export class Engine extends events.EventEmitter {
     let channel = this.channels[channelAddress.toString('hex')]
     let _channelAddress = channel.channelAddress
 
-    return this.blockchain.approve({ to: this.blockchain.config.hsToken },
+    return this.blockchain.approve({ to: this.blockchain.config.testToken },
       { _spender: channel.channelAddress, _value: amount })
       .then(function (vals) {
         // event Approval(address indexed _owner, address indexed _spender, uint256 _value);

@@ -8,7 +8,7 @@ import { Address } from 'eth-types'
 import * as cfg from './config'
 
 export type ContractAddresses = {
-  manager: Address, hsToken: Address, gotToken: Address
+  manager: Address, testToken: Address, gotToken: Address
 }
 
 const toAdd = (s: string) => as.Address(new Buffer(s.substring(2), 'hex'))
@@ -126,7 +126,7 @@ export const readFromDisk = () => {
   return [{
     manager: toAdd(add.manager),
     gotToken: toAdd(add.gotToken),
-    hsToken: toAdd(add.testToken)
+    testToken: toAdd(add.testToken)
   }, add.run] as [ContractAddresses, number]
 }
 
