@@ -118,7 +118,7 @@ export const serializeRpcParams = (ps: object) =>
 // todo: remove it and use generated stuff
 const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
 const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
-const NettingChannelLibrary = require('../../smart-contracts/build/contracts/nettingChannelLibrary.json')
+const NettingChannelLibrary = require('../../smart-contracts/build/contracts/NettingChannelLibrary.json')
 const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
 const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelContract, NettingChannelLibrary, HumanStandardTokenContract])

@@ -30,7 +30,7 @@ export const account = (privateKeyStr: string,
   })
 
 export const monitoringConfig: Partial<MonitoringConfig> = {
-  logsInterval: 0.5 * 1000,
+  logsInterval: 0.025 * 1000,
   startBlock: 'latest'
 }
 

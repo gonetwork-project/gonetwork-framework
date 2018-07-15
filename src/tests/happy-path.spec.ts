@@ -15,9 +15,9 @@ let c2: NonNullable<Client>
 let sub: Subscription
 
 // minimize number of deployments to every other 9-th run
-beforeAll(() => {
+beforeEach(() => {
   const { run } = init()
-  console.log(`\n\nRUN: ${run}\n\n `)
+  console.log(`CLIENT-INDEX: ${run}\n`)
   c1 = setupClient(0)
   c2 = setupClient(run)
 
@@ -38,7 +38,7 @@ beforeAll(() => {
   c2.p2p.on('message-received', msg => console.log('   -->  C2', msg))
 })
 
-afterAll(() => {
+afterEach(() => {
   if (sub) {
     sub.unsubscribe()
     c1.blockchain.monitoring.dispose()
@@ -69,9 +69,10 @@ test('e2e::happy-path -- direct', () =>
     .then(() => flowsOn.closeChannel(c1, c2))
   , minutes(1))
 
-test.only('e2e::happy-path -- mediated', () =>
+test('e2e::happy-path -- mediated', () =>
   flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
     .then(() => wait(500))
     .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
     .then(() => flowsOn.closeChannel(c1, c2))
+    .then(() => wait(200))
   , minutes(1))

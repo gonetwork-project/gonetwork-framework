@@ -48,6 +48,6 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
         secretHashPair.hash
       )
     })
-    .delay(2000)
+    .delay(200)
     .toPromise()
 }
