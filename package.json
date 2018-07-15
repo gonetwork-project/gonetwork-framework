@@ -62,7 +62,7 @@
       "./src/tests",
       "./src/utils/mocks",
       "./src/observable-add",
-      "./src/state-channel"
+      "./src/state-channel/__test__"
     ],
     "rootDir": "./src",
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",

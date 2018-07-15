@@ -317,6 +317,7 @@ export class Engine extends events.EventEmitter {
     })
 
     const msgKey = msgID.toString()
+    // this is bit problematic - ideally if the transfer is invalid we throw here
     this.messageState[msgKey] = new stateMachineLib.MessageState(mediatedTransferState, this.initiatorStateMachine)
     this.messageState[msgKey].applyMessage('init')
   }

@@ -35,6 +35,7 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
 }
 
 export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
+  // console.log('MEDIATED', from.owner.addressStr, to.owner.addressStr, amount.toString())
   const secretHashPair = GenerateRandomSecretHashPair()
   return from.blockchain.monitoring.blockNumbers()
     .take(1)
@@ -48,6 +49,6 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
         secretHashPair.hash
       )
     })
-    .delay(200)
+    .delay(400)
     .toPromise()
 }
