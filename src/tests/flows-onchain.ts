@@ -1,8 +1,9 @@
 import { Client } from './setup'
 
 import { Wei, Address } from 'eth-types'
-import { BN } from '../utils'
+import { BN, as } from '../utils'
 import { ManagerEventsToArgs } from '../__GEN__/ChannelManagerContract'
+import { Observable } from 'rxjs'
 
 const log = <T> (msg: string, logValue = false, ...rest: any[]) => (p: T): Promise<T> => {
   logValue ? console.log(msg, p, ...rest) : console.log(msg, ...rest)
@@ -31,10 +32,16 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
       .then(() => ({ channel: ch })))
     .then(log('DEPOSITED'))
 
-export const closeChannel = (init: Client, other: Client,
-  channel = init.engine.channelByPeer[other.owner.addressStr].channelAddress) =>
+export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei | 0, otherAmount?: Wei | 0,
+  channel = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) =>
   Promise.all([
-    init.engine.closeChannel(channel)
+    other.blockchain.monitoring.asStream('Transfer')
+      .do(x => console.warn(x))
+      .take([openerAmount, otherAmount].filter(Boolean).length)
+      .toArray()
+      .do(x => console.warn(x))
+      .toPromise(),
+    opener.engine.closeChannel(channel)
       .then(log('CHANNEL-CLOSED')),
     other.blockchain.monitoring.asStream('TransferUpdated')
       .mergeMapTo(other.blockchain.monitoring.blockNumbers())
