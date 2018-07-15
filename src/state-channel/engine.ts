@@ -340,7 +340,7 @@ export class Engine extends events.EventEmitter {
     let directTransfer = channel.createDirectTransfer(msgID, transferredAmount, this.currentBlock)
     this.signature(directTransfer)
     channel.handleTransfer(directTransfer, this.currentBlock)
-    this.send(directTransfer.to, directTransfer)
+    this.send(directTransfer)
   }
 
   incrementedMsgID () {
@@ -354,7 +354,7 @@ export class Engine extends events.EventEmitter {
    * or implement webRTC p2p protocol for transport etc.
    * @param {message} msg - A message implementation in the message namespace
    */
-  send = (to: Address, msg: messageLib.SignedMessage) => this._send(to, msg)
+  send = (msg: messageLib.SignedMessage & { to: Address }) => this._send(msg.to, msg)
 
   /** Internal event handlers triggered by state-machine workflows and blockchain events
    * @param {string} event - the GOT.* namespaced event triggered asynchronously by external engine components i.e. stateMachine, on-chain event handlers,etc.
@@ -381,10 +381,7 @@ export class Engine extends events.EventEmitter {
               state.initiator,
               state.currentBlock)
             this.signature(mediatedTransfer)
-            // if (this.address.compare(state.to) !== 0) {
-            // console.log('SENDING', this.address.toString('hex'), state.to.toString('hex'))
-            this.send(mediatedTransfer.to, mediatedTransfer)
-            // }
+            this.send(mediatedTransfer)
             channel.handleTransfer(mediatedTransfer)
             break
           case 'GOT.sendRequestSecret':
@@ -396,9 +393,7 @@ export class Engine extends events.EventEmitter {
               amount: state.lock.amount
             })
             this.signature(requestSecret)
-            // if (this.address.compare(state.to) !== 0) {
-            this.send(requestSecret.to, requestSecret)
-            // }
+            this.send(requestSecret)
             break
           case 'GOT.sendRevealSecret':
             channel = this.channelByPeer[state.to.toString('hex')]
@@ -407,9 +402,7 @@ export class Engine extends events.EventEmitter {
             // send this secret (backwards and forwards maybe)
             let revealSecret = new messageLib.RevealSecret({ to: state.revealTo, secret: state.secret })
             this.signature(revealSecret)
-            // if (this.address.compare(state.to) !== 0) {
-            this.send(revealSecret.to, revealSecret)
-            // }
+            this.send(revealSecret)
             // we dont register the secret, we wait for the echo Reveal
             break
           case 'GOT.sendSecretToProof':
@@ -424,9 +417,7 @@ export class Engine extends events.EventEmitter {
             let secretToProof = channel.createSecretToProof(state.msgID, state.secret)
             this.signature(secretToProof)
             channel.handleTransfer(secretToProof)
-            // if (this.address.compare(state.to) !== 0) {
-            this.send(secretToProof.to, secretToProof)
-            // }
+            this.send(secretToProof)
             // TODO: in the future, wait to apply secret to proof locally. We basically locked the state up now
             // It makes sense, in a sense.  With this implementation, when a lock secret is revealed and echoed back
             // the peer MUST accept a valid SecretToProof or no more new transfers can take place as the states are unsynced

@@ -25,7 +25,7 @@ export const pkAddr = [
   }
 ]
 
-export const mockSendFn = (sendQueue: any[]) => (_: Address, msg: any) => {
+export const mockSendFn = (sendQueue: any[]) => (msg: any) => {
   sendQueue.push(message.serialize(msg))
   return Promise.resolve(true)
 }
@@ -44,8 +44,7 @@ export class TestEventBus extends events.EventEmitter {
     this.engine[engine.address.toString('hex')] = engine
 
     const self = this
-    engine.send = function (_, msg) {
-      // console.log('SENDING: ' + msg.from.toString('hex') + ' -> ' + msg.to.toString('hex') + ' of type:' + msg.classType)
+    engine.send = function (msg) {
       const emitter = self
       setTimeout(function () {
         emitter.emit('beforeSending-' + emitter.msgCount, msg)
