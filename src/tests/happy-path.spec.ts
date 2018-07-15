@@ -34,8 +34,8 @@ beforeEach(() => {
 
   c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
   c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
-  c1.p2p.on('message-received', msg => console.log('C1 <--   ', (deserializeAndDecode(msg) as any).classType))
-  c2.p2p.on('message-received', msg => console.log('   -->  C2', (deserializeAndDecode(msg) as any).classType))
+  // c1.p2p.on('message-received', msg => console.log('C1 <--   ', (deserializeAndDecode(msg) as any).classType))
+  // c2.p2p.on('message-received', msg => console.log('   -->  C2', (deserializeAndDecode(msg) as any).classType))
 })
 
 afterEach(() => {
@@ -125,7 +125,7 @@ describe('integration::happy-path -- mediated transfer', () => {
       .then(() => wait(111))
     , minutes(1))
 
-  test.only('back and forth', () =>
+  test('back and forth', () =>
     flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
       .then(() => wait(111))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))

@@ -29,13 +29,13 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
     throw e
   }
   return Observable.fromEvent(to.p2p, 'message-received')
-    .take(1)
-    .delay(5) // small delay to allow processing by engine
+    .take(1) // DirectTransfer
+    .delay(0) // allow processing by engine
     .toPromise()
 }
 
 export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
-  // console.log('MEDIATED', from.owner.addressStr, to.owner.addressStr, amount.toString())
+  // console.warn('MEDIATED', from.owner.addressStr, to.owner.addressStr, amount.toString())
   const secretHashPair = GenerateRandomSecretHashPair()
   return from.blockchain.monitoring.blockNumbers()
     .take(1)
@@ -49,6 +49,11 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
         secretHashPair.hash
       )
     })
-    .delay(400)
+    .delayWhen(() =>
+      Observable.fromEvent(to.p2p, 'message-received')
+        .skip(2) // MediatedTransfer, RevealSecret
+        .take(1) // SecretToProof
+        .delay(0) // allow processing by engine
+    )
     .toPromise()
 }
