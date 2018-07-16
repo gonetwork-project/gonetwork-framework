@@ -528,14 +528,12 @@ export class Engine extends events.EventEmitter {
     }
 
     let proof = channel.issueClose(this.currentBlock) as messageLib.Proof
-    let self = this
 
     return this.blockchain.close({ to: channelAddress },
-      messageLib.proofToTxData(proof))
-    // FIXME: it swallows the error
-    // .catch(function (err) {
-    //   return self.onChannelCloseError(channelAddress, err)
-    // })
+      messageLib.proofToTxData(proof)).catch((err) => {
+        this.onChannelCloseError(channelAddress, err)
+        return Promise.reject(err)
+      })
   }
 
   /** Update the proof after you learn a channel has been closed by the channel counter party
@@ -553,17 +551,12 @@ export class Engine extends events.EventEmitter {
     }
 
     let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.ProofMessage
-    const self = this
-
-    // console.log('transfer-update', this.address.toString('hex'), messageLib.proofToTxData(proof))
 
     return this.blockchain.updateTransfer({ to: channelAddress, from: this.address },
-      messageLib.proofToTxData(proof))
-    // FIXME: it swallows the error
-    // .catch(function (err) {
-    //   console.warn(err)
-    //   self.onTransferUpdatedError(channelAddress, err)
-    // })
+      messageLib.proofToTxData(proof)).catch((err) => {
+        this.onTransferUpdatedError(channelAddress, err)
+        return Promise.reject(err)
+      })
   }
 
   /** Issue withdraw proofs on-chain for locks that have had their corresponding secret revealed.  Locks can be settled on chain once a proof has been sent on-chain.
@@ -621,12 +614,13 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Settle: cannot issue settle on open channel')
     }
 
-    let self = this
     channel.issueSettle(this.currentBlock)
 
-    return self.blockchain.settle({ to: channelAddress }).catch(function (err) {
-      return self.onChannelSettledError(channelAddress, err)
-    })
+    return this.blockchain.settle({ to: channelAddress })
+      .catch((err) => {
+        this.onChannelSettledError(channelAddress, err)
+        return Promise.reject(err)
+      })
   }
 
   /** Deposit an amount of the ERC20 token into the channel on-chain.  After the transaction is mined successfully,
