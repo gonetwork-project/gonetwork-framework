@@ -56,7 +56,7 @@ describe('integration::happy-path -- base', () => {
     flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
       .then(() => wait(111))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
-      .then(() => flowsOn.closeChannel(c1, c2))
+      .then(() => flowsOn.closeChannel(c1, c2, 0))
       .then(() => wait(111))
     , minutes(1))
 })
@@ -73,7 +73,7 @@ describe('integration::happy-path -- direct transfer', () => {
       .then(() =>
         expect(flowsOff.transferredEqual(c1, as.Wei(40), c2, as.Wei(0))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(40)))
+      .then(() => flowsOn.closeChannel(c1, c2, 2))
       .then(flowsOn.checkBalances(as.Wei(40), as.Wei(50)))
     , minutes(1))
 
@@ -93,7 +93,7 @@ describe('integration::happy-path -- direct transfer', () => {
       .then(() =>
         expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
+      .then(() => flowsOn.closeChannel(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(1))
 })
@@ -108,7 +108,7 @@ describe('integration::happy-path -- mediated transfer', () => {
       // .then(() => expect(flowsOff.sendMediated(c1, c2, as.Wei(51))).toThrow())
       .then(flowsOff.sendMediated(c1, c2, as.Wei(30)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
-      .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
+      .then(() => flowsOn.closeChannel(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(1))
 
@@ -128,7 +128,53 @@ describe('integration::happy-path -- mediated transfer', () => {
       .then(() =>
         expect(flowsOff.transferredEqual(c1, as.Wei(100), c2, as.Wei(50))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
+      .then(() => flowsOn.closeChannel(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
+    , minutes(1))
+})
+
+describe('integration::happy-path -- mediated and direct transfer', () => {
+  test('only owner', () =>
+    flowsOn.createChannelAndDeposit(c1, c2, as.Wei(500))
+      .then(() => wait(111))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(200)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(200), c2, as.Wei(0))).toBe(true))
+      .then(flowsOff.sendDirect(c1, c2, as.Wei(400)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(400), c2, as.Wei(0))).toBe(true))
+      .then(() => flowsOn.closeChannel(c1, c2, 1))
+      .then(flowsOn.checkBalances(as.Wei(400), as.Wei(500)))
+    , minutes(1))
+
+  test('back and forth', () =>
+    flowsOn.createChannelAndDeposit(c1, c2, as.Wei(500))
+      .then(() => wait(111))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      .then(flowsOff.sendDirect(c1, c2, as.Wei(200)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(200), c2, as.Wei(0))).toBe(true))
+      .then(flowsOff.sendMediated(c2, c1, as.Wei(50)))
+      .then(flowsOff.sendMediated(c2, c1, as.Wei(50)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(200), c2, as.Wei(100))).toBe(true))
+      .then(() => expect(() => flowsOff.sendDirect(c2, c1, as.Wei(201))()).toThrow())
+      .then(flowsOff.sendDirect(c2, c1, as.Wei(150)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(200), c2, as.Wei(150))).toBe(true))
+      .then(flowsOff.sendMediated(c2, c1, as.Wei(50)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(200), c2, as.Wei(200))).toBe(true))
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(350), c2, as.Wei(200))).toBe(true))
+      .then(() => Promise.all([
+        flowsOff.sendMediated(c1, c2, as.Wei(100))(),
+        flowsOff.sendDirect(c2, c1, as.Wei(250))()
+      ]))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(450), c2, as.Wei(250))).toBe(true))
+      .then(() => Promise.all([
+        flowsOff.sendDirect(c1, c2, as.Wei(500))(),
+        flowsOff.sendMediated(c2, c1, as.Wei(50))()
+      ]))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(500), c2, as.Wei(300))).toBe(true))
+      .then(() => flowsOn.closeChannel(c1, c2, 2))
+      .then(flowsOn.checkBalances(as.Wei(200), as.Wei(500)))
     , minutes(1))
 })

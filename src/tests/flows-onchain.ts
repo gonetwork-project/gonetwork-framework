@@ -49,9 +49,8 @@ export const getBalances = (opener: Client, other: Client, channelAddress: Addre
       channel, opener, other
     }))
 
-export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei | 0, otherAmount?: Wei | 0,
+export const closeChannel = (opener: Client, other: Client, expectedTransfers: 0 | 1 | 2,
   channelAddress = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) => {
-  const expected = [openerAmount, otherAmount].filter(Boolean)
   const balances = getBalances(opener, other, channelAddress)
   return balances()
     .then(before =>
@@ -61,10 +60,10 @@ export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei |
           .mergeMap(balances)
           .toPromise(),
         other.blockchain.monitoring.asStream('Transfer')
-          .take(expected.length === 0 ? 0 : expected.length + 1) // 1 for Got Token, seems no other Transfers reported here
+          .take(expectedTransfers === 0 ? 0 : expectedTransfers + 1) // 1 for Got Token
           .toArray()
           .toPromise(),
-        opener.engine.closeChannel(channelAddress), // .then(log('CHANNEL-CLOSED')),
+        opener.engine.closeChannel(channelAddress),
         other.blockchain.monitoring.asStream('TransferUpdated')
           .mergeMapTo(other.blockchain.monitoring.blockNumbers())
           .skip(1)

@@ -367,7 +367,7 @@ describe('test engine - mediated transfer', () => {
 
         assert.equal(msg.from.compare(engine2.address), 0)
         // ==================================CORE OF THE TEST
-        // aftwer we apply the reveal secret, we are going to move currentBlock ahead and expire the transfer, this should
+        // after we apply the reveal secret, we are going to move currentBlock ahead and expire the transfer, this should
         // cause any blockchain events and further processing just moves one without failing
         // cause the lock to timeout
 
