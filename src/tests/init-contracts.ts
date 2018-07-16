@@ -60,7 +60,7 @@ const gen = () => {
   }
 
   try {
-    console.log('CONTRACTS DEPLOYED')
+    // console.log('CONTRACTS DEPLOYED')
 
     // todo: figure out what would be the best
     const cmd = `git co "${cfg.migrationBuildDir}"`
@@ -101,7 +101,7 @@ export const init: () => {
   if (i && (i.run < 9)) {
     // console.log(i)
     try {
-      const r = pr.execSync(`curl --data-binary '{"jsonrpc":"2.0","id":"curltext","method":"eth_getTransactionCount","params":["${i.manager}"]}' -H 'content-type:text/plain;' localhost:8546`)
+      const r = pr.execSync(`curl --data-binary '{"jsonrpc":"2.0","id":"curltext","method":"eth_getTransactionCount","params":["${i.manager}"]}' -H 'content-type:text/plain;' localhost:8546`, { stdio: 'pipe' })
       const s = JSON.parse(r.toString())
 
       if (!s.result || s.result === '0x0') {

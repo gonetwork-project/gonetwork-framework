@@ -17,7 +17,7 @@ let sub: Subscription
 // minimize number of deployments to every other 9-th run
 beforeEach(() => {
   const { run } = init()
-  console.log(`CLIENT-INDEX: ${run}\n`)
+  // console.log(`CLIENT-INDEX: ${run}\n`)
   c1 = setupClient(0)
   c2 = setupClient(run)
 
@@ -74,7 +74,7 @@ describe('integration::happy-path -- direct transfer', () => {
         expect(flowsOff.transferredEqual(c1, as.Wei(40), c2, as.Wei(0))).toBe(true)
       )
       .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(40)))
-      .then(() => wait(111))
+      .then(flowsOn.checkBalances(as.Wei(40), as.Wei(50)))
     , minutes(1))
 
   test('back and forth', () =>
@@ -94,7 +94,7 @@ describe('integration::happy-path -- direct transfer', () => {
         expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true)
       )
       .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
-      .then(() => wait(111))
+      .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(1))
 })
 
@@ -109,7 +109,7 @@ describe('integration::happy-path -- mediated transfer', () => {
       .then(flowsOff.sendMediated(c1, c2, as.Wei(30)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
       .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
-      .then(() => wait(111))
+      .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(1))
 
   test('back and forth', () =>
@@ -129,6 +129,6 @@ describe('integration::happy-path -- mediated transfer', () => {
         expect(flowsOff.transferredEqual(c1, as.Wei(100), c2, as.Wei(50))).toBe(true)
       )
       .then(() => flowsOn.closeChannel(c1, c2, 0, as.Wei(50)))
-      .then(() => wait(111))
+      .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(1))
 })
