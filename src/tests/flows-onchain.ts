@@ -33,16 +33,15 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
     .then(log('DEPOSITED'))
 
 export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei | 0, otherAmount?: Wei | 0,
-  channel = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) => {
+  channelAddress = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) => {
   const expected = [openerAmount, otherAmount].filter(Boolean)
   return Promise.all([
     other.blockchain.monitoring.asStream('Transfer')
-      .take(expected.length === 0 ? 0 : 1) // 1 for Got Token, seems no other Transfers reported here
-      // .takeUntil(Observable.timer(3333))
+      .take(expected.length === 0 ? 0 : expected.length + 1) // 1 for Got Token, seems no other Transfers reported here
       .toArray()
       // .do(x => console.warn('TRANSFERS', x))
       .toPromise(),
-    opener.engine.closeChannel(channel)
+    opener.engine.closeChannel(channelAddress)
       .then(log('CHANNEL-CLOSED')),
     other.blockchain.monitoring.asStream('TransferUpdated')
       .mergeMapTo(other.blockchain.monitoring.blockNumbers())
@@ -54,36 +53,24 @@ export const closeChannel = (opener: Client, other: Client, openerAmount?: Wei |
       )
       .take(1)
       .toPromise()
-      .then(() => other.engine.settleChannel(channel))
-      .then(log('CHANNEL-SETTLED'))
-    // other.blockchain.monitoring.asStream('ChannelSettled')
-    //   .do(x => console.log('SETTLED', x))
-    //   .take(0) // seems no ChannelSettled reported here
-    //   .mergeMap(() =>
-    //     Observable.zip(
-    //       opener.blockchain.contractsProxy.call.token.balanceOf({
-    //         to: opener.blockchain.config.testToken
-    //       }, { _owner: opener.owner.address }),
-    //       other.blockchain.contractsProxy.call.token.balanceOf({
-    //         to: other.blockchain.config.testToken
-    //       }, { _owner: other.owner.address })
-    //     )
-    //       .do(x => console.warn('BALANCES', x))
-    //   )
-    //   .toPromise()
+      .then(() => other.engine.settleChannel(channelAddress))
+      .then(log('CHANNEL-SETTLED')),
+    other.blockchain.monitoring.asStream('ChannelSettled')
+      // .do(x => console.warn('SETTLED', x))
+      .take(1) // seems no ChannelSettled reported here
+      .mergeMap(() =>
+        Observable.zip(
+          opener.blockchain.contractsProxy.call.token.balanceOf({
+            to: opener.blockchain.config.testToken
+          }, { _owner: opener.owner.address }),
+          other.blockchain.contractsProxy.call.token.balanceOf({
+            to: other.blockchain.config.testToken
+          }, { _owner: other.owner.address }),
+          opener.blockchain.contractsProxy.call.token.balanceOf({
+            to: opener.blockchain.config.testToken
+          }, { _owner: channelAddress })
+        ))
+      // .do(x => console.warn('BALANCES', x, '0x' + channelAddress.toString('hex')))
+      .toPromise()
   ])
-    .then(() =>
-      Observable.timer(2000) // to be 100% sure all state transition done
-        .mergeMapTo(
-          Observable.zip(
-            opener.blockchain.contractsProxy.call.token.balanceOf({
-              to: opener.blockchain.config.testToken
-            }, { _owner: opener.owner.address }),
-            other.blockchain.contractsProxy.call.token.balanceOf({
-              to: other.blockchain.config.testToken
-            }, { _owner: other.owner.address })
-          ))
-        .do(x => console.warn('BALANCES', x))
-        .toPromise()
-    )
 }
