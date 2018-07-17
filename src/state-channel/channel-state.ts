@@ -4,6 +4,7 @@ import * as message from './message'
 import * as merkletree from './merkletree'
 
 import * as E from 'eth-types'
+import { BN } from 'bn.js'
 
 /** @class channel state endpoint; each Channel is composed of two channel state represent both actors
  * @property {message.Proof} proof-the proof snapshot of this endpoint.  If this channel state represents the peer, this proof is submitted during
@@ -41,7 +42,7 @@ export class ChannelState {
 
   /** @property {BN} the nonce that ensures transfer ordering as retreived from the proof */
   get nonce () {
-    return this.proof.nonce as E.BN
+    return this.proof.nonce as BN
   }
 
   /** @property {BN} the monotonically increasing transferredAmount retrieved from the proof */
