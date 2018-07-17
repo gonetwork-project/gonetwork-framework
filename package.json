@@ -1,6 +1,6 @@
 {
   "name": "go-network-framework",
-  "version": "0.1.3",
+  "version": "0.2.1",
   "description": "blockchain-service & state-channel engine for react-native environments",
   "main": "lib/index.js",
   "scripts": {
