@@ -23,11 +23,18 @@ export const deposit = (from: Client, token: Address, channel: Address, amount: 
     .then(() => from.txs.deposit({ to: channel }, { amount: amount }))
 
 export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =>
-  createChannel(from, to.owner.address, amount)
-    .then(ch => deposit(from, from.contracts.testToken, ch, amount)
-      .then(() => ({ channel: ch }))
-      .then(log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${ch.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`))
-    )
+  Promise.all([
+    from.blockchain.monitoring.asStream('ChannelNewBalance')
+      .take(1)
+      .delay(0)
+      .toPromise(),
+    createChannel(from, to.owner.address, amount)
+      .then(ch => deposit(from, from.contracts.testToken, ch, amount)
+        .then(() => ({ channel: ch }))
+        .then(log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${ch.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`))
+      )
+  ])
+    .then(([_, x]) => x)
 
 export type Balances = { channel: Wei, opener: Wei, other: Wei }
 export const checkBalances = (openerToOtherNet: Wei, openerDeposit: Wei) =>

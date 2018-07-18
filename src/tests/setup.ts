@@ -13,7 +13,7 @@ export const wait = (ms: Millisecond) => new Promise(resolve => setTimeout(resol
 export const minutes = n => n * 60 * 1000
 
 // TODO: not ideal mechanism - for test we increase block mining frequency
-setWaitForDefault({ timeout: 15 * 1000, interval: 25 })
+setWaitForDefault({ timeout: 3000, interval: 25 })
 
 export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBase>) => {
   const cfg = Object.assign({}, cfgBase, config)
