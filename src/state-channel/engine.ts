@@ -56,8 +56,8 @@ export class Engine extends events.EventEmitter {
   // dictionary of messages[msgID] = statemachine.*
   readonly messageState = {}
 
-  currentBlock = new util.BN(0) as BlockNumber
-  msgID = new util.BN(0)
+  currentBlock = new BN(0) as BlockNumber
+  msgID = new BN(0)
 
   publicKey = undefined // fixme
   initiatorStateMachine = stateMachineLib.InitiatorFactory()
@@ -345,7 +345,7 @@ export class Engine extends events.EventEmitter {
   }
 
   incrementedMsgID () {
-    this.msgID = this.msgID.add(new util.BN(1))
+    this.msgID = this.msgID.add(new BN(1))
     return this.msgID
   }
 

@@ -1,6 +1,7 @@
 import * as util from 'ethereumjs-util'
 import { Nonce, Wei, Address } from 'eth-types'
 import { ChannelIO } from '../../__GEN__/NettingChannelContract'
+import { BN } from '../../utils'
 
 export const assert = {
   // test were moved to jest from tape
@@ -36,12 +37,12 @@ export function assertProof (transfer: Transfer, nonce: Nonce, channelAddress: A
 }
 
 function assertStateBN (state, nonce, depositBalance, transferredAmount, lockedAmount, unlockedAmount, currentBlock) {
-  assert.equal(state.nonce.eq(new util.BN(nonce)), true, 'correct nonce in state')
-  assert.equal(state.proof.transferredAmount.eq(new util.BN(transferredAmount)), true, 'correct transferredAmount in state')
+  assert.equal(state.nonce.eq(new BN(nonce)), true, 'correct nonce in state')
+  assert.equal(state.proof.transferredAmount.eq(new BN(transferredAmount)), true, 'correct transferredAmount in state')
   if (!currentBlock) {
-    currentBlock = new util.BN(0)
+    currentBlock = new BN(0)
   }
-  assert.equal(state.lockedAmount(currentBlock).eq(new util.BN(lockedAmount)), true, 'correct lockedAmount calculated in state')
-  assert.equal(state.unlockedAmount().eq(new util.BN(unlockedAmount)), true, 'correct unlockedAmount calculated in state')
-  assert.equal(state.depositBalance.eq(new util.BN(depositBalance)), true, 'correct depositBalance in state')
+  assert.equal(state.lockedAmount(currentBlock).eq(new BN(lockedAmount)), true, 'correct lockedAmount calculated in state')
+  assert.equal(state.unlockedAmount().eq(new BN(unlockedAmount)), true, 'correct unlockedAmount calculated in state')
+  assert.equal(state.depositBalance.eq(new BN(depositBalance)), true, 'correct depositBalance in state')
 }

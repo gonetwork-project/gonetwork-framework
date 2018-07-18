@@ -63,7 +63,6 @@ test('test messages', function (t) {
     var serialized = message.serialize(proofMessage)
     var recoveredProofMessage = new message.ProofMessage(JSON.parse(serialized, message.jsonReviver))
 
-
     recoveredProofMessage.getMessageHash = function () {
       return message.EMPTY_32BYTE_BUFFER
     }

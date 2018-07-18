@@ -228,7 +228,7 @@ export class Proof extends SignedMessage {
 
   constructor (options) {
     super(options)
-    this.nonce = as.Nonce(options.nonce || new util.BN(0))
+    this.nonce = as.Nonce(options.nonce || new BN(0))
     this.transferredAmount = as.Wei(options.transferredAmount || 0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || EMPTY_20BYTE_BUFFER
@@ -280,7 +280,7 @@ export class ProofMessage extends SignedMessage {
   constructor (options: Partial<ProofMessageOptions>) {
     super(options)
 
-    this.nonce = as.Nonce(options.nonce || new util.BN(0))
+    this.nonce = as.Nonce(options.nonce || new BN(0))
     this.transferredAmount = as.Wei(options.transferredAmount || 0)
     this.locksRoot = options.locksRoot || EMPTY_32BYTE_BUFFER
     this.channelAddress = options.channelAddress || as.Address(EMPTY_20BYTE_BUFFER)
@@ -345,7 +345,7 @@ export class Lock extends Hashable {
     super()
 
     this.amount = as.Wei(options.amount || 0)
-    this.expiration = as.BlockNumber(options.expiration || new util.BN(0))
+    this.expiration = as.BlockNumber(options.expiration || new BN(0))
     this.hashLock = options.hashLock || EMPTY_32BYTE_BUFFER
   }
 
@@ -615,7 +615,7 @@ export class Ack {
   constructor (options) {
     this.to = options.to || EMPTY_20BYTE_BUFFER
     this.messageHash = options.messageHash || EMPTY_32BYTE_BUFFER
-    this.msgID = options.msgID || new util.BN(0)
+    this.msgID = options.msgID || new BN(0)
   }
 }
 

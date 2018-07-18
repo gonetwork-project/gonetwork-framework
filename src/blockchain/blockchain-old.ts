@@ -17,9 +17,8 @@ const ChannelManagerContract = require('../../smart-contracts/build/contracts/Ch
 const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
 const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
-import * as T from '../types'
 import * as E from 'eth-types'
-import { BN } from '../types'
+import { BN } from '../utils'
 
 
 const DEBUG = false
@@ -63,7 +62,7 @@ export class BlockchainServiceOld {
 
   /** Get current mined block number from your geth provider */
   getBlockNumber () {
-    return this.fetchSimple('eth_blockNumber', [], x => { return new util.BN(x) });
+    return this.fetchSimple('eth_blockNumber', [], x => { return new BN(x) });
   }
 
   /**These are the call functions*/
@@ -74,14 +73,14 @@ export class BlockchainServiceOld {
   getTransactionCount (address: Buffer) {
     return this.fetchSimple('eth_getTransactionCount', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { 
 
-      return new util.BN(util.toBuffer(x)) });
+      return new BN(util.toBuffer(x)) });
   }
 
   /** Get the nonce for an address 
   * @param {Buffer} address - the eth address to get the ETH Balance value for.  This can be a contract address as well
   */
   getBalance (address: Buffer) {
-    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { return new util.BN(util.toBuffer(x)) });
+    return this.fetchSimple('eth_getBalance', [util.addHexPrefix(address.toString('hex')), 'latest'], x => { return new BN(util.toBuffer(x)) });
   }
 
   /** fetch with a post request one of the "primitive" geth commands i.e. eth_blockNumber, eth_getTransactionCount,eth_getBalance, etc  

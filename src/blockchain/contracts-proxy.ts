@@ -60,7 +60,7 @@ export const decodeTxData = (order: GenOrder[1], data: Buffer): any => {
 const toTxRaw = (chainId: E.ChainId, params: Partial<E.TxParams>, data: Buffer) => Object.assign({
   data,
   value: as.Wei(0),
-  chainId: new util.BN(chainId)
+  chainId: new BN(chainId)
 }, params)
 
 const paramsToEstimation = (order: GenOrders, cfg: ContractTxConfig) => {

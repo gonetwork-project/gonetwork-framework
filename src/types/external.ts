@@ -64,11 +64,6 @@ declare module 'ethereumjs-util' {
 
   import { Signature, PrivateKey } from 'eth-types'
 
-  export {
-    BN,
-    Buffer
-  }
-
   export const MAX_INTEGER: BN
 
   export const TWO_POW256: BN

@@ -36,7 +36,7 @@ export class ChannelState {
 
     this.merkleTree = options.merkleTree || new merkletree.MerkleTree([])
     // the amount the user has put into the channel
-    this.depositBalance = options.depositBalance || new util.BN(0)
+    this.depositBalance = options.depositBalance || new BN(0)
     this.address = options.address || message.EMPTY_20BYTE_BUFFER
   }
 
@@ -238,7 +238,7 @@ export class ChannelState {
     //     return lock.expiration
     //   }
     //   return expiration
-    // }, new util.BN(0))
+    // }, new BN(0))
   }
 
   // TODO: figure out safeBlock
@@ -273,11 +273,11 @@ export class ChannelState {
           return sum.add(lock.amount)
         }
         return sum
-      }, new util.BN(0))
+      }, new BN(0))
     } else {
       return locksArray.reduce(function (sum, lock) {
         return sum.add(lock.amount)
-      }, new util.BN(0))
+      }, new BN(0))
     }
   }
 

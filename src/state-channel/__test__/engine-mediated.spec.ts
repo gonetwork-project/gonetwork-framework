@@ -5,7 +5,7 @@ import { BlockNumber, Address } from 'eth-types'
 
 import { setup, pkAddr, channelAddress, TestEventBus } from './engine-setup'
 import { assertChannelState, assertProof, assert } from './engine-assert'
-import { add1, as } from '../../utils'
+import { add1, as, BN } from '../../utils'
 
 describe('test engine - mediated transfer', () => {
   test('component test: #1) e2e engine mediated transfer #2)engine 1 responds with transferUpdate when it receives a channelClose event as it did not issue close',
@@ -22,8 +22,8 @@ describe('test engine - mediated transfer', () => {
       engine.sendMediatedTransfer(
         pkAddr[1].address,
         pkAddr[1].address,
-        new util.BN(50),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(50),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -31,13 +31,13 @@ describe('test engine - mediated transfer', () => {
       assert.equal(sendQueue.length, 1, 'mediated transfer in send queue')
       assertChannelState(
         engine, channelAddress,
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(1), new BN(501), new BN(0), new BN(50), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(0), new BN(501), new BN(0), new BN(0), new BN(0), currentBlock)
 
       let mediatedTransfer = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
 
@@ -46,13 +46,13 @@ describe('test engine - mediated transfer', () => {
 
       assertChannelState(
         engine, channelAddress,
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(1), new BN(501), new BN(0), new BN(50), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(1), new BN(501), new BN(0), new BN(50), new BN(0), currentBlock)
 
       let requestSecret = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
       engine.onMessage(requestSecret as any)
@@ -70,13 +70,13 @@ describe('test engine - mediated transfer', () => {
       // TEST #1 states should be synced
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(50), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(1), new BN(501), new BN(0), new BN(0), new BN(50), currentBlock)
 
       assert.equal(sendQueue.length, 5, 'reveal secret in send queue from target -> initiator')
       let secretToProof = message.deserializeAndDecode(sendQueue[sendQueue.length - 1]) as any
@@ -85,13 +85,13 @@ describe('test engine - mediated transfer', () => {
 
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0), currentBlock)
 
       // TEST #2 Engine 2 initiates close, Engine 1 responds to onChannelClose with updateTransfer request to blockchain
       assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)
@@ -137,8 +137,8 @@ describe('test engine - mediated transfer', () => {
     engine.sendMediatedTransfer(
       pkAddr[1].address,
       pkAddr[1].address,
-      new util.BN(50),
-      currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+      new BN(50),
+      currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
       secretHashPair.secret as any, // FIXME
       secretHashPair.hash
     )
@@ -156,25 +156,25 @@ describe('test engine - mediated transfer', () => {
       // to sync
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(50), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(1), new BN(501), new BN(0), new BN(0), new BN(50), currentBlock)
     })
     testEventBus.on('afterReceiving-5', function () {
       // One Secret Completed, Second Secret will timeout before reveal sent
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0), currentBlock)
 
       testEventBus.on('beforeReceiving-8', function (msg) {
         // before we apply the reveal secret, we are going to move this ahead and expire the transfer, this should not
@@ -184,7 +184,7 @@ describe('test engine - mediated transfer', () => {
         // cause the lock to timeout
 
         assertState(engine.messageState['1'].state, 'awaitRevealSecret')
-        engine.onBlock(currentBlock.add(new util.BN(1)) as BlockNumber)
+        engine.onBlock(currentBlock.add(new BN(1)) as BlockNumber)
         assertState(engine.messageState['1'].state, 'expiredTransfer')
         done()
       })
@@ -193,8 +193,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         pkAddr[0].address,
         pkAddr[0].address,
-        new util.BN(120),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(120),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -212,8 +212,8 @@ describe('test engine - mediated transfer', () => {
     engine.sendMediatedTransfer(
       pkAddr[1].address,
       pkAddr[1].address,
-      new util.BN(50),
-      currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+      new BN(50),
+      currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
       secretHashPair.secret as any,
       secretHashPair.hash
     )
@@ -231,26 +231,26 @@ describe('test engine - mediated transfer', () => {
       // to sync
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(50), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(1), new BN(501), new BN(0), new BN(0), new BN(50), currentBlock)
     })
     testEventBus.on('afterReceiving-5', function () {
       // One Secret Completed, Second Secret will timeout before reveal sent
 
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0), currentBlock)
 
       testEventBus.on('beforeReceiving-10', function (msg) {
         // before we apply the reveal secret, we are going to move this ahead and expire the transfer, this should not
@@ -264,7 +264,7 @@ describe('test engine - mediated transfer', () => {
 
         assertState(engine.messageState['1'].state, 'awaitRevealSecret')
         assertState(engine.messageState['2'].state, 'awaitRevealSecret')
-        engine.onBlock(currentBlock.add(new util.BN(1)) as BlockNumber)
+        engine.onBlock(currentBlock.add(new BN(1)) as BlockNumber)
         assert.equal(blockchainQueue.length, 0)
 
         assertState(engine.messageState['1'].state, 'expiredTransfer')
@@ -272,7 +272,7 @@ describe('test engine - mediated transfer', () => {
 
         assert.equal(blockchainQueue.length, 0)
 
-        engine.onBlock(currentBlock.add(new util.BN(5)) as BlockNumber)
+        engine.onBlock(currentBlock.add(new BN(5)) as BlockNumber)
         assertState(engine.messageState['1'].state, 'expiredTransfer')
         assertState(engine.messageState['2'].state, 'expiredTransfer')
         assert.equal(blockchainQueue.length, 0, 'No Blockchain Messages generated as none of the locks are open')
@@ -284,8 +284,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         pkAddr[0].address,
         pkAddr[0].address,
-        new util.BN(50),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(50),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -295,8 +295,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         pkAddr[0].address,
         pkAddr[0].address,
-        new util.BN(27),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(5)) as BlockNumber,
+        new BN(27),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(5)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -314,8 +314,8 @@ describe('test engine - mediated transfer', () => {
     engine.sendMediatedTransfer(
       pkAddr[1].address,
       pkAddr[1].address,
-      new util.BN(50),
-      currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+      new BN(50),
+      currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
       secretHashPair.secret as any, // FIXME
       secretHashPair.hash
     )
@@ -333,37 +333,37 @@ describe('test engine - mediated transfer', () => {
       // to sync
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(50), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(1), new BN(501), new BN(0), new BN(0), new BN(50), currentBlock)
     })
     testEventBus.on('afterReceiving-5', function () {
       // One Secret Completed, Second Secret will timeout before reveal sent
       assertChannelState(
         engine, channelAddress,
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
       assertChannelState(
         engine2, channelAddress,
-        new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-        new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
+        new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+        new BN(2), new BN(501), new BN(50), new BN(0), new BN(0), currentBlock)
 
       testEventBus.on('afterReceiving-8', function (msg) {
         // engine.onMessage(msg);
         assertChannelState(
           engine, channelAddress,
-          new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-          new util.BN(1), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(120), currentBlock)
+          new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+          new BN(1), new BN(327), new BN(0), new BN(0), new BN(120), currentBlock)
 
         assertChannelState(
           engine2, channelAddress,
-          new util.BN(1), new util.BN(327), new util.BN(0), new util.BN(120), new util.BN(0),
-          new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
+          new BN(1), new BN(327), new BN(0), new BN(120), new BN(0),
+          new BN(2), new BN(501), new BN(50), new BN(0), new BN(0), currentBlock)
 
         assert.equal(msg.from.compare(engine2.address), 0)
         // ==================================CORE OF THE TEST
@@ -374,7 +374,7 @@ describe('test engine - mediated transfer', () => {
         assert.equal(blockchainQueue.length, 0)
         assertState(engine.messageState['1'].state, 'awaitSecretToProof')
 
-        engine.onBlock(currentBlock.add(new util.BN(1)) as BlockNumber)
+        engine.onBlock(currentBlock.add(new BN(1)) as BlockNumber)
         assert.equal(blockchainQueue.length, 1)
         assertState(engine.messageState['1'].state, 'completedTransfer')
 
@@ -421,8 +421,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         pkAddr[0].address,
         pkAddr[0].address,
-        new util.BN(120),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(120),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -436,8 +436,8 @@ describe('test engine - mediated transfer', () => {
 
       let { engine, engine2, currentBlock, sendQueue } = setup(false)
 
-      engine.onChannelNewBalance(channelAddress, acct1, new util.BN(27))
-      engine2.onChannelNewBalance(channelAddress, acct1, new util.BN(27))
+      engine.onChannelNewBalance(channelAddress, acct1, new BN(27))
+      engine2.onChannelNewBalance(channelAddress, acct1, new BN(27))
 
       currentBlock = add1(currentBlock)
 
@@ -449,8 +449,8 @@ describe('test engine - mediated transfer', () => {
       engine.sendMediatedTransfer(
         acct4,
         acct4,
-        new util.BN(15),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(15),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -478,8 +478,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         acct1,
         acct1,
-        new util.BN(7),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(7),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -508,8 +508,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         acct1,
         acct1,
-        new util.BN(3),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(3),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any,
         secretHashPair.hash
       )
@@ -531,8 +531,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         acct1,
         acct1,
-        new util.BN(2),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(2),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -553,8 +553,8 @@ describe('test engine - mediated transfer', () => {
       engine2.sendMediatedTransfer(
         acct1,
         acct1,
-        new util.BN(2),
-        currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+        new BN(2),
+        currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
@@ -571,9 +571,9 @@ describe('test engine - mediated transfer', () => {
       // ACTUAL TEST, make sure transferrable correct on both sides even if secret is not revealed to initiator
       let channelOne = engine.channels[channelAddress.toString('hex')]
 
-      assert.equal(channelOne.transferrableFromTo(channelOne.peerState, channelOne.myState, currentBlock).eq(new util.BN(1)), true)
+      assert.equal(channelOne.transferrableFromTo(channelOne.peerState, channelOne.myState, currentBlock).eq(new BN(1)), true)
       channelOne = engine2.channels[channelAddress.toString('hex')]
-      assert.equal(channelOne.transferrableFromTo(channelOne.myState, channelOne.peerState, currentBlock).eq(new util.BN(1)), true)
+      assert.equal(channelOne.transferrableFromTo(channelOne.myState, channelOne.peerState, currentBlock).eq(new BN(1)), true)
       done()
     })
 
@@ -592,8 +592,8 @@ describe('test engine - mediated transfer', () => {
     engine.sendMediatedTransfer(
       pkAddr[1].address,
       pkAddr[1].address,
-      new util.BN(50),
-      currentBlock.add(channel.REVEAL_TIMEOUT).add(new util.BN(1)) as BlockNumber,
+      new BN(50),
+      currentBlock.add(channel.REVEAL_TIMEOUT).add(new BN(1)) as BlockNumber,
       secretHashPair.secret as any, // FIXME
       secretHashPair.hash
     )
@@ -601,13 +601,13 @@ describe('test engine - mediated transfer', () => {
     assert.equal(sendQueue.length, 1, 'mediated transfer in send queue')
     assertChannelState(
       engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(1), new BN(501), new BN(0), new BN(50), new BN(0),
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
     assertChannelState(
       engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+      new BN(0), new BN(501), new BN(0), new BN(0), new BN(0), currentBlock)
     let mediatedTransfer = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
 
     engine2.onMessage(mediatedTransfer as any)
@@ -615,13 +615,13 @@ describe('test engine - mediated transfer', () => {
 
     assertChannelState(
       engine, channelAddress,
-      new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(1), new BN(501), new BN(0), new BN(50), new BN(0),
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
     assertChannelState(
       engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(50), new util.BN(0), currentBlock)
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+      new BN(1), new BN(501), new BN(0), new BN(50), new BN(0), currentBlock)
 
     let requestSecret = message.deserializeAndDecode(sendQueue[sendQueue.length - 1])
     engine.onMessage(requestSecret as any)
@@ -638,13 +638,13 @@ describe('test engine - mediated transfer', () => {
 
     assertChannelState(
       engine, channelAddress,
-      new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
     assertChannelState(
       engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(1), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(50), currentBlock)
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+      new BN(1), new BN(501), new BN(0), new BN(0), new BN(50), currentBlock)
 
     assert.equal(sendQueue.length, 5, 'reveal secret in send queue from target -> initiator')
     let secretToProof = message.deserializeAndDecode(sendQueue[sendQueue.length - 1]) as any
@@ -654,13 +654,13 @@ describe('test engine - mediated transfer', () => {
     // final states synchronized
     assertChannelState(
       engine, channelAddress,
-      new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(2), new BN(501), new BN(50), new BN(0), new BN(0),
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
 
     assertChannelState(
       engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(2), new util.BN(501), new util.BN(50), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+      new BN(2), new BN(501), new BN(50), new BN(0), new BN(0), currentBlock)
 
     // MAIN PART OF TEST
     assert.equal(engine.channels[channelAddress.toString('hex')].state, channel.CHANNEL_STATE_OPEN)

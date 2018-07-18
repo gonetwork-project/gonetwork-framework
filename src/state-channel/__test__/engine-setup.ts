@@ -1,8 +1,9 @@
 import * as util from 'ethereumjs-util'
 
-import { Engine, channel, message, merkletree } from '..'
+import { Engine, channel, message } from '..'
 import { Address, PrivateKey, BlockNumber } from 'eth-types'
 import { assert, assertChannelState } from './engine-assert'
+import { BN } from '../../utils'
 
 const privateKey = util.toBuffer('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109') as PrivateKey
 const publicKey = util.privateToPublic(privateKey)
@@ -146,7 +147,7 @@ export function createEngine (pkIndex, blockchainService?) {
 export const setup = (withTransactions = true) => {
   let sendQueue = [] as any[]
   let blockchainQueue = [] as any[]
-  let currentBlock = new util.BN(0) as BlockNumber
+  let currentBlock = new BN(0) as BlockNumber
   let engine = createEngine(0)
   let engine2 = createEngine(1)
 
@@ -168,20 +169,20 @@ export const setup = (withTransactions = true) => {
     channel.SETTLE_TIMEOUT)
 
   if (withTransactions) {
-    engine.onChannelNewBalance(channelAddress, pkAddr[0].address, new util.BN(501))
-    engine2.onChannelNewBalance(channelAddress, pkAddr[0].address, new util.BN(501))
-    engine.onChannelNewBalance(channelAddress, pkAddr[1].address, new util.BN(327))
-    engine2.onChannelNewBalance(channelAddress, pkAddr[1].address, new util.BN(327))
+    engine.onChannelNewBalance(channelAddress, pkAddr[0].address, new BN(501))
+    engine2.onChannelNewBalance(channelAddress, pkAddr[0].address, new BN(501))
+    engine.onChannelNewBalance(channelAddress, pkAddr[1].address, new BN(327))
+    engine2.onChannelNewBalance(channelAddress, pkAddr[1].address, new BN(327))
 
     assertChannelState(
       engine, channelAddress,
-      new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(0), new BN(501), new BN(0), new BN(0), new BN(0),
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0), currentBlock)
     assert.equal(engine.channelByPeer.hasOwnProperty(pkAddr[1].address.toString('hex')), true)
     assertChannelState(
       engine2, channelAddress,
-      new util.BN(0), new util.BN(327), new util.BN(0), new util.BN(0), new util.BN(0),
-      new util.BN(0), new util.BN(501), new util.BN(0), new util.BN(0), new util.BN(0), currentBlock)
+      new BN(0), new BN(327), new BN(0), new BN(0), new BN(0),
+      new BN(0), new BN(501), new BN(0), new BN(0), new BN(0), currentBlock)
   }
 
   return { engine, engine2, sendQueue, blockchainQueue, mockBlockChain, currentBlock }
