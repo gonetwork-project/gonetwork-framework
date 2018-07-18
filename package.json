@@ -21,7 +21,7 @@
     "@types/node": "^9.6.21",
     "@types/sjcl": "^1.0.28",
     "ethereumjs-wallet": "^0.6.0",
-    "ganache-core": "https://github.com/unao/ganache-core#master",
+    "ganache-core": "^2.1.5",
     "jest": "^23.1.0",
     "jsdocs": "^1.0.0",
     "node-fetch": "^2.1.2",
