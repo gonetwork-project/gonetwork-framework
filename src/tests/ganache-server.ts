@@ -1,5 +1,6 @@
 import * as G from 'ganache-core'
 import * as cfg from './config'
+import { exec } from 'child_process'
 
 export const serve = () => {
   const options = {
@@ -17,7 +18,9 @@ export const serve = () => {
       console.error(err)
       return
     }
+
     console.log(`ganache server listening on ${options.hostname}:${options.port}`)
+    exec(`node ${__dirname}/init-contracts.js`)
   })
 
   process.on('uncaughtException', function (e) {
