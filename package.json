@@ -12,7 +12,9 @@
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
     "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration",
     "abi-to-ts": "cd scripts && rm abi-to-ts.js && (tsc abi-to-ts.ts || echo) && node abi-to-ts.js && cd ..",
-    "ganache": "yarn compile && node lib/tests/ganache-server.js"
+    "ganache": "yarn compile && node lib/tests/ganache-server.js",
+    "compile-dev": "rm -rf dev/__JS__ && node_modules/.bin/tsc dev/*.ts --outDir dev/__JS__",
+    "run-dev": "node dev/__JS__"
   },
   "author": "Amit Shah",
   "license": "MIT",
@@ -24,6 +26,7 @@
     "ganache-core": "^2.1.5",
     "jest": "^23.1.0",
     "jsdocs": "^1.0.0",
+    "mqtt-connection": "^4.0.0",
     "node-fetch": "^2.1.2",
     "node-persist": "^2.1.0",
     "solc": "^0.4.21",
@@ -36,7 +39,9 @@
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
     "typescript": "^2.9.2",
-    "web3": "^1.0.0-beta.34"
+    "web3": "^1.0.0-beta.34",
+    "websocket-stream": "^5.1.2",
+    "ws": "^5.2.2"
   },
   "dependencies": {
     "bn.js": "^4.11.8",

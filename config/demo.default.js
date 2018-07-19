@@ -1,6 +1,6 @@
 module.exports = {
   // COMMUNICATION
-  MQTT_URL: 'mqtt://localhost:1883',
+  MQTT_URL: 'ws://localhost:1884',
 
   // MONITORING
   NETWORK: 'ropsten',

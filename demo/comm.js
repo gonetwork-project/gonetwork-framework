@@ -4,6 +4,7 @@ const readline = require('readline')
 const persist = require('node-persist')
 
 const Communication = require('../lib').P2P
+const fakeStorage = require('../lib').fakeStorage
 
 const cfg = require('../config/demo.default')
 
@@ -22,17 +23,18 @@ persist.initSync({
 const comm = new Communication({
   mqttUrl: cfg.MQTT_URL,
   address: address,
-  storage: {
-    getItem: (id) => persist.get(id),
-    setItem: (id, item) => persist.set(id, item),
-    getAllKeys: () => Promise.resolve(persist.keys()),
+  storage: fakeStorage()
+  // storage: {
+  //   getItem: (id) => persist.get(id),
+  //   setItem: (id, item) => persist.set(id, item),
+  //   getAllKeys: () => Promise.resolve(persist.keys()),
 
-    multiGet: (keys) => Promise.all(keys.map(k =>
-      persist.get(k).then(v => ([k, v])))),
-    multiSet: (xs) => Promise.all(
-      xs.map(x => persist.setItem(x[0], x[1]))
-    ).then(() => true).catch(() => false)
-  }
+  //   multiGet: (keys) => Promise.all(keys.map(k =>
+  //     persist.get(k).then(v => ([k, v])))),
+  //   multiSet: (xs) => Promise.all(
+  //     xs.map(x => persist.setItem(x[0], x[1]))
+  //   ).then(() => true).catch(() => false)
+  // }
 })
 
 const rl = readline.createInterface({
