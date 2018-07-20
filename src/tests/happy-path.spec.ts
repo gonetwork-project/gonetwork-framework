@@ -1,7 +1,7 @@
 import { as } from '../utils'
 
 import { setupClient, Client, wait, minutes } from './setup'
-import { init } from './init-contracts'
+import { deployContracts } from './addresses'
 import { Subscription } from 'rxjs/Subscription'
 import { Observable } from 'rxjs/Observable'
 import { deserializeAndDecode } from '../state-channel/message'
@@ -16,7 +16,7 @@ let sub: Subscription
 
 // minimize number of deployments to every other 9-th run
 beforeEach(() => {
-  const { run } = init()
+  const [_, run ] = deployContracts()
   // console.log(`CLIENT-INDEX: ${run}\n`)
   c1 = setupClient(0)
   c2 = setupClient(run)

@@ -19,10 +19,8 @@ const defaultConfig: Readonly<Config> = {
   blockTime: 50
 }
 
-const withDefault: (c?: Partial<Config>) => Config = c => {
-  console.log('C', c)
-  return Object.assign({}, defaultConfig, c)
-}
+const withDefault: (c?: Partial<Config>) => Config = c =>
+  Object.assign({}, defaultConfig, c)
 
 export const config = (name?: string) =>
   withDefault(name && require(`./${name}`).config)

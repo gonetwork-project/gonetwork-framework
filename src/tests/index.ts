@@ -1,2 +1,1 @@
-export * from './init-contracts'
-export * from './config'
+export * from './addresses'

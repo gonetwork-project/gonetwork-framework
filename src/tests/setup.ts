@@ -4,7 +4,7 @@ import { P2P } from '../p2p/p2p'
 import { serialize } from '../state-channel/message'
 import { fakeStorage, CHAIN_ID } from '../utils'
 import { Payload } from '../p2p/p2p-types'
-import { readFromDisk as c } from './init-contracts'
+import { readFromDisk as c, accounts } from './addresses'
 
 import * as cfgBase from './config'
 import { Millisecond, Second } from '../types'
@@ -17,7 +17,7 @@ setWaitForDefault({ timeout: 3000, interval: 25 })
 
 export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBase>) => {
   const cfg = Object.assign({}, cfgBase, config)
-  const account = cfg.accounts[accountIndex]
+  const account = accounts[accountIndex]
   if (!account) throw new Error('NO ACCOUNT FOUND')
 
   const p2p = new P2P({

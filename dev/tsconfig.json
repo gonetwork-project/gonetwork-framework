@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "lib": ["es2017"],
     "outDir": "../build-dev",
     "skipLibCheck": true,
     "strict": true

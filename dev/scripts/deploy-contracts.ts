@@ -110,18 +110,3 @@ export const deploy: () => {
 if (!module.parent) {
   deploy()
 }
-
-// export type ContractAddresses = {
-//   manager: Address, testToken: Address, gotToken: Address
-// }
-// const toAdd = (s: string) => as.Address(new Buffer(s.substring(2), 'hex'))
-
-// export const readFromDisk = () => {
-//   const add = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'temp', 'contract-addresses.json'), 'utf8'))
-
-//   return [{
-//     manager: toAdd(add.manager),
-//     gotToken: toAdd(add.gotToken),
-//     testToken: toAdd(add.testToken)
-//   }, add.run] as [ContractAddresses, number]
-// }
