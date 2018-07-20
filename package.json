@@ -13,7 +13,7 @@
     "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration",
     "abi-to-ts": "cd scripts && rm abi-to-ts.js && (tsc abi-to-ts.ts || echo) && node abi-to-ts.js && cd ..",
     "ganache": "yarn compile && node lib/tests/ganache-server.js",
-    "compile-dev": "rm -rf dev/__JS__ && node_modules/.bin/tsc dev/*.ts --outDir dev/__JS__",
+    "compile-dev": "rm -rf dev/__JS__ && node_modules/.bin/tsc -p dev/tsconfig.json",
     "run-dev": "node dev/__JS__"
   },
   "author": "Amit Shah",

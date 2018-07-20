@@ -17,9 +17,10 @@ export type Account = {
   addressStr: string
 }
 
-// todo: make it configurable - most likely just by providing ports via argv
-export const mqttUrl = 'ws://localhost:1883'
+export const mqttUrl = 'ws://localhost:1884'
 export const rpcUrl = 'http://localhost:8546'
+// export const mqttUrl = 'ws://192.168.1.48:1884'
+// export const rpcUrl = 'http://192.168.1.48:8546'
 
 export const account = (privateKeyStr: string,
   addressStr: string = util.privateToAddress(new Buffer(privateKeyStr, 'hex')).toString('hex')): Account => ({

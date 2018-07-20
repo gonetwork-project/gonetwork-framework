@@ -3,29 +3,34 @@ import * as websocket from 'websocket-stream'
 import * as ws from 'ws'
 import * as Connection from 'mqtt-connection'
 
-export const serve = (port = 1884, hostname = 'localhost') => {
-  const WebSocketServer = (ws as any).Server
+import { execIfScript } from './dev-utils'
+import { Config } from './config/config'
+
+export const serve = (c: Config) => {
+  const { hostname, mqttPort: port } = c
+
+  const WebSocketServer = ws.Server
 
   const server = http.createServer()
   const wss = new WebSocketServer({ server: server })
 
-  let subs = {}
+  let subs: { [K: string]: any } = {}
 
-  wss.on('connection', function (ws) {
+  wss.on('connection', function (ws: any) {
     const stream = websocket(ws)
     const connection = new Connection(stream)
 
     handle(connection)
   })
 
-  function handle (conn) {
-    conn.on('connect', function (packet) {
+  function handle (conn: any) {
+    conn.on('connect', function (packet: any) {
       // acknowledge the connect packet
       conn.connack({ returnCode: 0 })
     })
 
     // client published
-    conn.on('publish', function (packet) {
+    conn.on('publish', function (packet: any) {
       console.log('MSG', packet.topic, packet.payload.toString())
       const sub = subs[packet.topic]
       if (sub) {
@@ -43,8 +48,8 @@ export const serve = (port = 1884, hostname = 'localhost') => {
     })
 
     // client subscribed
-    conn.on('subscribe', function (packet) {
-      packet.subscriptions.forEach(s => subs[s.topic] = conn)
+    conn.on('subscribe', function (packet: any) {
+      packet.subscriptions.forEach((s: any) => subs[s.topic] = conn)
 
       if (packet.qos > 0) {
         conn.suback({ granted: [packet.qos], messageId: packet.messageId })
@@ -58,7 +63,7 @@ export const serve = (port = 1884, hostname = 'localhost') => {
         if (subs[s] === conn) delete (subs[s])
       })
     })
-    conn.on('error', function (e) { console.error('\n\nMQTT-ERROR\n\n', e); conn.destroy() })
+    conn.on('error', function (e: any) { console.error('\n\nMQTT-ERROR\n\n', e); conn.destroy() })
     conn.on('disconnect', function () { conn.destroy() })
   }
 
@@ -71,13 +76,4 @@ export const serve = (port = 1884, hostname = 'localhost') => {
   }
 }
 
-if (!module.parent) {
-  const port = parseInt(process.argv[2] || '1884', 10)
-  const hostname = process.argv[3]
-  const dispose = serve(port, hostname)
-
-  process.on('SIGINT', () => {
-    dispose()
-    process.exit()
-  })
-}
+execIfScript(serve, !module.parent)
