@@ -3,7 +3,7 @@ import { resolve } from 'path'
 
 import * as ganache from 'ganache-core'
 import { execIfScript } from './dev-utils'
-import { Config } from './config/config'
+import { Config } from './config'
 
 export const serve = (c: Config) => {
   const options = {
@@ -25,7 +25,7 @@ export const serve = (c: Config) => {
     }
 
     console.log(`Ganache listening on http://${options.hostname}:${options.port}`)
-    exec(`node ${resolve(__dirname, '..', '..', 'lib/tests/init-contracts.js')}`)
+    exec(`node ${resolve(__dirname, '../build-dev/scripts/deploy-contracts.js')}`)
   })
 
   return () => srv.close()

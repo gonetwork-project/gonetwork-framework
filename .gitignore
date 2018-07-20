@@ -72,5 +72,4 @@ demo/v3_wallet.json
 test-manual/temp
 
 temp/
-scripts/*.js
-dev/__JS__
+build-dev/

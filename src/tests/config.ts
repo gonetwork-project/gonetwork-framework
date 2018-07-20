@@ -54,15 +54,3 @@ export const pks: string[] = [
 ]
 
 export const accounts: Account[] = pks.map(pk => account(pk))
-
-export const tmpDir = path.resolve(__dirname, '..', '..', 'temp')
-export const contractAddressesPath = path.resolve(tmpDir, 'contract-addresses.json')
-
-export const migrationDir = path.resolve(__dirname, '..', '..', 'smart-contracts')
-export const migrationBuildDir = path.resolve(migrationDir, 'build')
-
-export const serverScript = path.resolve(__dirname, '..', '..', 'lib', 'tests', 'ganache-server.js')
-
-if (!fs.existsSync(tmpDir)) {
-  fs.mkdirSync(tmpDir)
-}

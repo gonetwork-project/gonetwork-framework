@@ -4,7 +4,7 @@ import * as ws from 'ws'
 import * as Connection from 'mqtt-connection'
 
 import { execIfScript } from './dev-utils'
-import { Config } from './config/config'
+import { Config } from './config'
 
 export const serve = (c: Config) => {
   const { hostname, mqttPort: port } = c

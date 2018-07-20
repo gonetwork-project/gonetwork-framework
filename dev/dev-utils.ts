@@ -1,5 +1,5 @@
 import * as os from 'os'
-import { Config, configFromArgv } from './config/config'
+import { Config, configFromArgv } from './config'
 
 // very simple mechanism to get address of ip in local network
 // based on: https://stackoverflow.com/questions/3653065/get-local-ip-address-in-node-js

@@ -1,5 +1,5 @@
 import { localIP } from '../dev-utils'
-import { Config } from './config'
+import { Config } from '.'
 
 const hostname = localIP()
 

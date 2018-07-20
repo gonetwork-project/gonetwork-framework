@@ -26,7 +26,7 @@ type AbiFunction = {
 
 const $ = Observable
 
-const DEFAULT_ROOT = path.join(__dirname, '..')
+const DEFAULT_ROOT = path.join(__dirname, '..', '..')
 const contractsDir = path.join(DEFAULT_ROOT, 'smart-contracts', 'build', 'contracts')
 const outDir = path.join(DEFAULT_ROOT, 'src', '__GEN__')
 
@@ -85,7 +85,7 @@ const reduceFunctions = (fns: AbiFunction[]) =>
 
     // this is matched with decoding transactions result (eth_call and eth_getTransactionReceipt)
     let out: any = 'void'
-    if (f.outputs!.length === 1) out = abiTypesToTs[f.outputs[0].type]
+    if (f.outputs!.length === 1) out = abiTypesToTs[f.outputs![0].type]
     else if (f.outputs!.length > 1) out = reduceIO(f.outputs)
 
     acc.inOut[f.name] = [params || 'null', out || 'void']
@@ -94,7 +94,7 @@ const reduceFunctions = (fns: AbiFunction[]) =>
       (f.outputs || []).map(x => [`'${x.name}'`, `'${x.type}'`])
     ]
     return acc
-  }, { inOut: {}, order: {} })
+  }, { inOut: {} as any, order: {} as any })
 
 const handleFunctions = (fns: AbiFunction[], shortName: string) => {
   // const p = reduceFunctions(fns.filter(fn => fn.payable))

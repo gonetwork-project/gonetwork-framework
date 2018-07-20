@@ -3,7 +3,7 @@
     "target": "es6",
     "module": "commonjs",
     "lib": ["es2017"],
-    "outDir": "./__JS__",
+    "outDir": "../build-dev",
     "skipLibCheck": true,
     "strict": true
   }

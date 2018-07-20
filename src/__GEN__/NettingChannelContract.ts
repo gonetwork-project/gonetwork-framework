@@ -209,14 +209,14 @@ export type ChannelConstIO = {
       anon_2: Buffer
     }
   ],
-  computeMerkleRootTest: [
+  computeMerkleRoot: [
     {
       lock: Buffer,
       merkle_proof: Buffer
     },
     Buffer
   ],
-  computeLockHashTest: [
+  computeLockHash: [
     {
       lock: Buffer
     },
@@ -403,7 +403,7 @@ export const ChannelConstOrdIO = {
       ]
     ]
   ],
-  computeMerkleRootTest: [
+  computeMerkleRoot: [
     [
       [
         'lock',
@@ -421,7 +421,7 @@ export const ChannelConstOrdIO = {
       ]
     ]
   ],
-  computeLockHashTest: [
+  computeLockHash: [
     [
       [
         'lock',

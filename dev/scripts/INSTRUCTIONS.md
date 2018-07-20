@@ -12,4 +12,8 @@ The output will be present under `./src/__GEN__`.
 ## Just run
 
 `yarn abi-to-ts` from root dir.
+
+# deploy-contracts.ts
+
+[todo]
  
