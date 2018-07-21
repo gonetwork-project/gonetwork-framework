@@ -61,7 +61,7 @@ export const infura: () => InfuraConfig = () => ({
 })
 
 export const local = () => {
-  const [contracts, run] = tests.readFromDisk()
+  const { contracts, run } = tests.fromDisk()
 
   return {
     run,

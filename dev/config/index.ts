@@ -4,8 +4,7 @@ export type Config = {
   hostname: string
   mqttPort: number
   ethPort: number
-  masterPort: number
-  autoDeployContracts: boolean
+  coordinatorPort: number // todo
   blockTime: number // in Milliseconds, ganache-core allows undefined as well
 }
 
@@ -14,8 +13,7 @@ const defaultConfig: Readonly<Config> = {
   hostname: 'localhost',
   mqttPort: 1884,
   ethPort: 8546,
-  masterPort: 5215,
-  autoDeployContracts: true,
+  coordinatorPort: 5215,
   blockTime: 50
 }
 

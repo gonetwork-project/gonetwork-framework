@@ -6,12 +6,12 @@ import { as } from '../utils'
 import { MonitoringConfig } from '../blockchain'
 
 export const mqttUrl = 'ws://localhost:1884'
-export const rpcUrl = 'http://localhost:8546'
+export const ethUrl = 'http://localhost:8546'
 // export const mqttUrl = 'ws://192.168.1.48:1884'
 // export const rpcUrl = 'http://192.168.1.48:8546'
 
 export const monitoringConfig: Partial<MonitoringConfig> = {
-  logsInterval: 0.025 * 1000,
+  logsInterval: 25,
   startBlock: 'latest'
 }
 

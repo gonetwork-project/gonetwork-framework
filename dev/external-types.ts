@@ -1,4 +1,9 @@
 declare module 'ganache-core' {
+  export const provider: any
+  export const server: any
+}
+
+declare module 'truffle-contract' {
   const e: any
   export = e
 }

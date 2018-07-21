@@ -41,6 +41,15 @@ export const castNum = <O extends BN, N extends BN> (v: O | number | string) => 
   }
 }
 
+export const castToAddress = <O extends Buffer, N extends Buffer> (v: O | string | Buffer) => {
+  if (!v) { throw new Error('NOT_V') }
+  if (Buffer.isBuffer(v)) {
+    return v as N
+  } else {
+    return new Buffer(util.stripHexPrefix(v), 'hex') as N
+  }
+}
+
 export const castToHex = <O extends (Buffer | string), N extends O> (
   isValid: (x: string) => boolean,
   message = 'Cannot convert to hex'

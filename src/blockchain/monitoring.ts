@@ -62,7 +62,6 @@ export class Monitoring {
   private _forceMonitoring = new Subject<boolean>()
 
   constructor (readonly cfg: MonitoringConfig) {
-    // console.warn('MONITORING-CFG', cfg)
     this._state = Observable.zip(
       cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress),
       startToBlockNumber(cfg.startBlock || 'latest', this.blockNumbers())

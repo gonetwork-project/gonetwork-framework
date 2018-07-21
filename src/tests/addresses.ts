@@ -1,31 +1,60 @@
-import { readFileSync } from 'fs'
+import * as fs from 'fs'
 import { resolve } from 'path'
-import { as, util } from '../utils'
-
-import { Address, PrivateKey } from 'eth-types'
 import { execSync } from 'child_process'
 
+import { as, util, castToAddress } from '../utils'
+import { ethUrl } from './config'
+import { Address, PrivateKey } from 'eth-types'
+
 // #region CONTRACTS
-export type ContractAddresses = {
-  manager: Address, testToken: Address, gotToken: Address
-}
-const toAdd = (s: string) => new Buffer(s.substring(2), 'hex') as Address
-
-export const readFromDisk = () => {
-  const add = JSON.parse(readFileSync(resolve(__dirname, '..', '..', 'temp', 'contract-addresses.json'), 'utf8'))
-
-  return [{
-    manager: toAdd(add.manager),
-    gotToken: toAdd(add.gotToken),
-    testToken: toAdd(add.testToken)
-  }, add.run] as [ContractAddresses, number]
+type State = {
+  run: number,
+  contracts: {
+    manager: Address, testToken: Address, gotToken: Address
+  }
 }
 
-export const deployContracts = () => {
-  execSync(`node ${resolve(__dirname, '../../build-dev/scripts/deploy-contracts.js')}`)
-  return readFromDisk()
+const tmpDir = resolve(__dirname, '..', '..', 'temp')
+const testsPersitentPath = resolve(tmpDir, 'contract-addresses.json')
+
+if (!fs.existsSync(tmpDir)) {
+  fs.mkdirSync(tmpDir)
 }
 
+export const serialize = (s: State) => JSON.stringify({
+  run: s.run,
+  contracts: {
+    manager: '0x' + s.contracts.manager.toString('hex'),
+    gotToken: '0x' + s.contracts.gotToken.toString('hex'),
+    testToken: '0x' + s.contracts.testToken.toString('hex')
+  }
+})
+
+export const deserialize = (json: string, parsed = JSON.parse(json)) => ({
+  run: parsed.run,
+  contracts: {
+    manager: castToAddress(parsed.contracts.manager),
+    gotToken: castToAddress(parsed.contracts.gotToken),
+    testToken: castToAddress(parsed.contracts.testToken)
+  }
+} as State)
+
+export const fromDisk = () => deserialize(fs.readFileSync(testsPersitentPath, 'utf8'))
+export const toDisk = (s: State) => fs.writeFileSync(testsPersitentPath, serialize(s), 'utf8')
+
+export const nextRun = (u = ethUrl) => {
+  let c: State | undefined
+  try {
+    c = fromDisk()
+  } catch (e) { c = undefined }
+  if (!c || c.run >= 10) {
+    const raw = execSync(`node ${resolve(__dirname, '../../build-dev/scripts/deploy-contracts.js')} ${u}`)
+    c = deserialize('', { run: 0, contracts: JSON.parse(raw.toString()) })
+  }
+  c.run += 1
+  toDisk(c)
+  return c
+}
 // #endregion CONTRACTS
 
 // #region ACCOUNTS

@@ -4,7 +4,7 @@ import { P2P } from '../p2p/p2p'
 import { serialize } from '../state-channel/message'
 import { fakeStorage, CHAIN_ID } from '../utils'
 import { Payload } from '../p2p/p2p-types'
-import { readFromDisk as c, accounts } from './addresses'
+import { fromDisk as c, accounts } from './addresses'
 
 import * as cfgBase from './config'
 import { Millisecond, Second } from '../types'
@@ -26,14 +26,14 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
     storage: fakeStorage()
   })
 
-  const [contracts, run] = c()
+  const { contracts, run } = c()
 
   const blockchain = serviceCreate({
     ...contracts,
     chainId: CHAIN_ID.GETH_PRIVATE_CHAINS,
     owner: account.address,
     signatureCb: (cb) => cb(account.privateKey),
-    providerUrl: cfg.rpcUrl,
+    providerUrl: cfg.ethUrl,
     monitoringConfig: cfg.monitoringConfig
   })
 

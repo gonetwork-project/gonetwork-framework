@@ -3,7 +3,7 @@ import { as, BN } from '../utils'
 
 import createContracts from './contracts-proxy'
 import * as base from './spec.base'
-import { deployContracts } from '../tests'
+import { nextRun } from '../tests'
 import * as E from 'eth-types'
 import { RPC } from '.'
 
@@ -20,7 +20,7 @@ if (base.isInEnv('local')) {
   let cTx: ReturnType<typeof createContracts>
 
   beforeAll(() => {
-    deployContracts()
+    nextRun()
     cfg = base.local()
     console.log('\n\RUN\n\n', cfg.run)
     acc1 = cfg.accounts[0]
