@@ -5,5 +5,8 @@
     "outDir": "../build-dev",
     "skipLibCheck": true,
     "strict": true
-  }
+  },
+  // "include": [
+  //   "../src/types/eth.ts"
+  // ]
 }

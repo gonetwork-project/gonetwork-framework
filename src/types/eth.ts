@@ -1,3 +1,5 @@
+/// <reference path="external.ts" />
+
 /*
   All ethereum related types.
 

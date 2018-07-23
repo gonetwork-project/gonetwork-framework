@@ -58,6 +58,7 @@ const deploy = async (ethUrl = 'http://localhost:8546', account = '7582C707b9990
 
 if (!module.parent) {
   const [hostname, account] = process.argv.slice(2)
+
   deploy(hostname, account)
     .then(r => console.log(JSON.stringify(r)))
 } else {

@@ -1,6 +1,3 @@
-import { exec } from 'child_process'
-import { resolve } from 'path'
-
 import { server } from 'ganache-core'
 import { execIfScript } from './dev-utils'
 import { Config } from './config'
@@ -14,7 +11,7 @@ export const serve = (c: Config) => {
 
     locked: false,
     mnemonic: 'dignity upset visa worry warrior donate record enforce time pledge ladder drop',
-    default_balance_ether: 10000,
+    default_balance_ether: 1000000,
     gasPrice: 200,
     logger: console
   }
@@ -25,9 +22,7 @@ export const serve = (c: Config) => {
       return
     }
 
-    const host = `${options.hostname}:${options.port}`
-
-    console.log(`Ganache listening on http://${host}`)
+    console.log(`Ganache listening on http://${options.hostname}:${options.port}`)
   })
 
   return () => srv.close()
