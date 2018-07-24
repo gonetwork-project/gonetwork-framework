@@ -1,6 +1,7 @@
 import * as http from 'http'
 import * as qs from 'querystring'
-import { exec } from 'child_process'
+import * as util from 'util'
+import * as cp from 'child_process'
 
 import * as qr from 'qrcode'
 import * as wallet from 'ethereumjs-wallet'
@@ -10,6 +11,8 @@ import { execIfScript } from './dev-utils'
 import { Config } from './config'
 
 (global as any).fetch = require('node-fetch')
+
+const exec = util.promisify(cp.exec)
 
 const etherAccount = '0x7582C707b9990a5BB3Ca23f8F7b61B6209829A6e'
 
@@ -57,11 +60,17 @@ const account = (ethUrl: string, w3: any) => {
 }
 
 export const serve = (c: Config) => {
-  const host = `http://${c.hostname}:${c.coordinatorPort}`
-  const ethUrl = `http://${c.hostname}:${c.ethPort}`
-  const w3 = new (Web3 as any)(ethUrl)
+  const urls = {
+    coordinator: `http://${c.hostname}:${c.coordinatorPort}`,
+    eth: `http://${c.hostname}:${c.ethPort}`,
+    mqtt: `ws://${c.hostname}:${c.mqttPort}`
+  }
 
-  qr.toString(JSON.stringify(c), { type: 'terminal' }, (_: any, s: string) =>
+  const config = Object.assign({ urls }, c)
+
+  const w3 = new (Web3 as any)(urls.eth)
+
+  qr.toString(JSON.stringify(config), { type: 'terminal' }, (_: any, s: string) =>
     console.log(s))
 
   const server = http.createServer((req, res) => {
@@ -78,21 +87,25 @@ export const serve = (c: Config) => {
     switch (command) {
       case 'favicon.ico':
         return response(res)
+      case 'config':
+        return response(res, JSON.stringify(config))
       case 'account': {
-        return account(ethUrl, w3)
+        return account(urls.eth, w3)
           .then(acc => response(res, JSON.stringify(acc)))
           .catch(e => response(res, e, 400))
       }
       case 'account-with-contracts': {
-        return account(ethUrl, w3)
-          .then(acc => {
-            console.log(`node ${__dirname}/scripts/deploy-contracts.js ${ethUrl} ${acc.address.substring(2)}`)
-            exec(`node ${__dirname}/scripts/deploy-contracts.js ${ethUrl} ${acc.address.substring(2)}`, (e, r) => {
-              if (e) return Promise.reject(e)
-              console.log(acc, r)
-              response(res, JSON.stringify(acc))
-            })
-          })
+        return account(urls.eth, w3)
+          .then(account => {
+            console.log(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${account.address.substring(2)}`)
+            exec(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${account.address.substring(2)}`)
+              .then(r => JSON.parse(r.stdout))
+              .then(contracts => response(res, JSON.stringify({
+                contracts,
+                ...account
+              })))
+          }
+          )
           .catch(e => {
             console.log('ERROR', e)
             response(res, e.stack, 400)
@@ -104,7 +117,7 @@ export const serve = (c: Config) => {
     }
   })
 
-  server.listen(c.coordinatorPort, c.hostname, () => console.log(`Coordinator listening on: ${host}`))
+  server.listen(c.coordinatorPort, c.hostname, () => console.log(`Coordinator listening on: ${urls.coordinator}`))
 
   return () => server.close()
 }

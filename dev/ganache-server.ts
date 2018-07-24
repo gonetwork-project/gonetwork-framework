@@ -1,4 +1,6 @@
 import { server } from 'ganache-core'
+import memdown from 'memdown'
+
 import { execIfScript } from './dev-utils'
 import { Config } from './config'
 
@@ -9,6 +11,7 @@ export const serve = (c: Config) => {
 
     blockTime: c.blockTime / 1000,
 
+    db: (memdown as any)(), // todo: allow other options then in-memory, but make sure we do no run out of disk space
     locked: false,
     mnemonic: 'dignity upset visa worry warrior donate record enforce time pledge ladder drop',
     default_balance_ether: 1000000,

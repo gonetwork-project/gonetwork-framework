@@ -9,5 +9,6 @@ if (!hostname) {
 }
 
 export const config = {
-  hostname
+  hostname,
+  blockTime: 200
 } as Partial<Config>

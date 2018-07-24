@@ -1,11 +1,12 @@
-// this is very minimal - only what we needed right now
+import { resolve } from 'path'
 
+// this is very minimal - only what we needed right now
 export type Config = {
   hostname: string
   mqttPort: number
   ethPort: number
-  coordinatorPort: number // todo
-  blockTime: number // in Milliseconds, ganache-core allows undefined as well
+  coordinatorPort: number
+  blockTime: number // in Milliseconds, ganache-core allows undefined as well, but we do not use it
 }
 
 // it is used for tests running on local machine
