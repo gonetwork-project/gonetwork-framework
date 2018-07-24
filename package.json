@@ -4,7 +4,7 @@
   "description": "blockchain-service & state-channel engine for react-native environments",
   "main": "lib/index.js",
   "scripts": {
-    "test-clear": "rm temp/contract-addresses.json",
+    "test-clear": "rm temp/contract-addresses.json || true",
     "test-unit": "yarn test-clear && GONET_TEST_ENV=local,infura jest src/blockchain src/state-channel --coverage",
     "test-unit-dev": "yarn test-clear && GONET_TEST_ENV=local jest --watch",
     "test-inte": "yarn test-clear && jest src/tests",
@@ -15,6 +15,7 @@
     "ganache": "yarn compile && node lib/tests/ganache-server.js",
     "compile-dev": "rm -rf build-dev && node_modules/.bin/tsc -p dev/tsconfig.json",
     "run-dev": "node build-dev",
+    "dev": "yarn compile-dev && yarn run-dev",
     "abi-to-ts": "yarn compile-dev && node build-dev/scripts/abi-to-ts.js"
   },
   "author": "Amit Shah",

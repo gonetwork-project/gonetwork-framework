@@ -100,7 +100,7 @@ describe('integration::happy-path -- mediated transfer', () => {
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
       .then(flowsOff.sendMediated(c1, c2, as.Wei(20)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(20), c2, as.Wei(0))).toBe(true))
-      // .then(() => expect(flowsOff.sendMediated(c1, c2, as.Wei(51))).toThrow())
+      // .then(() => expect(flowsOff.sendMediated(c1, c2, as.Wei(51))).toThrow()) error but via callback
       .then(flowsOff.sendMediated(c1, c2, as.Wei(30)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
       .then(() => flowsOn.closeChannel(c1, c2, 1))
