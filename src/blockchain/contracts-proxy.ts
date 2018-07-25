@@ -69,6 +69,7 @@ const paramsToEstimation = (order: GenOrders, cfg: ContractTxConfig) => {
       (acc[k] as any) = ((encodeData: EncodeData) =>
         (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData) => {
           const txRaw = toTxRaw(cfg.chainId, params, encodeData(data))
+          txRaw.from = txRaw.from || cfg.owner
           const txParams = serializeRpcParams(txRaw)
           return cfg.rpc.estimateGas(txParams as any)
             .then(r => ({
