@@ -7,8 +7,6 @@ import { MonitoringConfig } from '../blockchain'
 
 export const mqttUrl = 'ws://localhost:1884'
 export const ethUrl = 'http://localhost:8546'
-// export const mqttUrl = 'ws://192.168.1.48:1884'
-// export const rpcUrl = 'http://192.168.1.48:8546'
 
 export const monitoringConfig: Partial<MonitoringConfig> = {
   logsInterval: 25,
