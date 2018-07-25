@@ -59,18 +59,21 @@ const account = (ethUrl: string, w3: any) => {
       .then(() => acc))
 }
 
-export const serve = (c: Config) => {
+export const serve = (cfg: Config) => {
   const urls = {
-    coordinator: `http://${c.hostname}:${c.coordinatorPort}`,
-    eth: `http://${c.hostname}:${c.ethPort}`,
-    mqtt: `ws://${c.hostname}:${c.mqttPort}`
+    coordinator: `http://${cfg.hostname}:${cfg.coordinatorPort}`,
+    eth: `http://${cfg.hostname}:${cfg.ethPort}`,
+    mqtt: `ws://${cfg.hostname}:${cfg.mqttPort}`
   }
 
-  const config = Object.assign({ urls }, c)
+  const config = Object.assign({ urls }, cfg)
+  const qrConfig = {
+    gonetworkUrl: urls.coordinator
+  }
 
   const w3 = new (Web3 as any)(urls.eth)
 
-  qr.toString(JSON.stringify(config), { type: 'terminal' }, (_: any, s: string) =>
+  qr.toString(JSON.stringify(qrConfig), { type: 'terminal' }, (_: any, s: string) =>
     console.log(s))
 
   const server = http.createServer((req, res) => {
@@ -117,7 +120,7 @@ export const serve = (c: Config) => {
     }
   })
 
-  server.listen(c.coordinatorPort, c.hostname, () => console.log(`Coordinator listening on: ${urls.coordinator}`))
+  server.listen(cfg.coordinatorPort, cfg.hostname, () => console.log(`Coordinator listening on: ${urls.coordinator}`))
 
   return () => server.close()
 }
