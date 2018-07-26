@@ -68,7 +68,11 @@ export const serve = (cfg: Config) => {
 
   const config = Object.assign({ urls }, cfg)
   const qrConfig = {
-    gonetworkUrl: urls.coordinator
+    gonetworkServer: {
+      protocol: 'http:',
+      hostname: cfg.hostname,
+      port: cfg.coordinatorPort
+    }
   }
 
   const w3 = new (Web3 as any)(urls.eth)
