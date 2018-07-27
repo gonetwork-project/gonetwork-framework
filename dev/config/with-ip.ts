@@ -9,6 +9,6 @@ if (!hostname) {
 }
 
 export const config = {
-  hostname
-  // blockTime: 50
+  hostname,
+  withContracts: true
 } as Partial<Config>

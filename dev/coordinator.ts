@@ -8,13 +8,13 @@ import * as wallet from 'ethereumjs-wallet'
 import * as Web3 from 'Web3'
 
 import { execIfScript } from './dev-utils'
-import { Config } from './config'
+import { Config, accounts } from './config'
 
 (global as any).fetch = require('node-fetch')
 
 const exec = util.promisify(cp.exec)
 
-const etherAccount = '0x7582C707b9990a5BB3Ca23f8F7b61B6209829A6e'
+const [etherAccount, contractsAccount] = accounts
 
 const headersFn = (other?: http.OutgoingHttpHeaders) => Object.assign({
   'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const account = (ethUrl: string, w3: any) => {
   return ethRequest(ethUrl, 'personal_importRawKey', [pk, ''])
     .then(address => ({ privateKey: pk, address }))
     .then(acc => ethRequest(ethUrl, 'personal_unlockAccount', [acc.address, '', '0xFFFFFFFFF'])
-      .then(() => w3.eth.sendTransaction({ from: etherAccount, to: acc.address, value: (Web3 as any).utils.toWei('1000', 'ether') }))
+      .then(() => w3.eth.sendTransaction({ from: `0x${etherAccount.address.toString('hex')}`, to: acc.address, value: (Web3 as any).utils.toWei('10000', 'ether') }))
       .then(() => acc))
 }
 
@@ -77,8 +77,19 @@ export const serve = (cfg: Config) => {
 
   const w3 = new (Web3 as any)(urls.eth)
 
-  qr.toString(JSON.stringify(qrConfig), { type: 'terminal' }, (_: any, s: string) =>
-    console.log(s))
+  const defaultContracts = cfg.withContracts ?
+    exec(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${contractsAccount.address.toString('hex')}`)
+      .then(r => JSON.parse(r.stdout)) : Promise.resolve(null)
+
+  defaultContracts.then((c) => {
+    if (c) {
+      console.log('\ncontracts deployed')
+      console.log(Object.keys(c).map(k => `${k}: ${c[k]}`).join(', '))
+    }
+    console.log('\nQR code for quick simulator setup:')
+    qr.toString(JSON.stringify(qrConfig), { type: 'terminal' }, (_: any, s: string) =>
+      console.log(s))
+  })
 
   const server = http.createServer((req, res) => {
     if (req.method === 'OPTIONS') {
@@ -96,15 +107,20 @@ export const serve = (cfg: Config) => {
         return response(res)
       case 'config':
         return response(res, JSON.stringify(config))
+      case 'default_account':
+        return defaultContracts
+          .then(cs => response(res, JSON.stringify({
+            privateKey: contractsAccount.privateKey.toString('hex'),
+            contracts: cs
+          })))
       case 'account': {
         return account(urls.eth, w3)
           .then(acc => response(res, JSON.stringify(acc)))
           .catch(e => response(res, e, 400))
       }
-      case 'account-with-contracts': {
+      case 'account_with_contracts': {
         return account(urls.eth, w3)
           .then(account => {
-            console.log(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${account.address.substring(2)}`)
             exec(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${account.address.substring(2)}`)
               .then(r => JSON.parse(r.stdout))
               .then(contracts => response(res, JSON.stringify({
@@ -117,6 +133,13 @@ export const serve = (cfg: Config) => {
             console.log('ERROR', e)
             response(res, e.stack, 400)
           })
+      }
+      case 'terminate': {
+        setTimeout(() => {
+          console.log('...terminating...')
+          process.kill(process.pid, 'SIGINT')
+        }, 200)
+        return response(res, '', 202)
       }
 
       default:
