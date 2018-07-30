@@ -84,9 +84,9 @@ export const serve = (cfg: Config) => {
   defaultContracts.then((c) => {
     if (c) {
       console.log('\ncontracts deployed')
-      console.log(Object.keys(c).map(k => `${k}: ${c[k]}`).join(', '))
+      console.log(Object.keys(c).map(k => `${k}: ${c[k]}`).join('\n'))
     }
-    console.log('\nQR code for quick simulator setup:')
+    console.log(`\nurl: ${urls.coordinator} -- scan for quick simulator setup:\n`)
     qr.toString(JSON.stringify(qrConfig), { type: 'terminal' }, (_: any, s: string) =>
       console.log(s))
   })
@@ -147,7 +147,8 @@ export const serve = (cfg: Config) => {
     }
   })
 
-  server.listen(cfg.coordinatorPort, cfg.hostname, () => console.log(`Coordinator listening on: ${urls.coordinator}`))
+  server.listen(cfg.coordinatorPort, cfg.hostname,
+    () => console.log(`Coordinator listening on: ${urls.coordinator}`))
 
   return () => server.close()
 }

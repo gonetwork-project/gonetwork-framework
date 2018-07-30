@@ -31,6 +31,7 @@
     "mqtt-connection": "^4.0.0",
     "node-fetch": "^2.1.2",
     "node-persist": "^2.1.0",
+    "qrcode": "^1.2.0",
     "solc": "^0.4.21",
     "standard": "^10.0.3",
     "tape": "^4.9.0",
