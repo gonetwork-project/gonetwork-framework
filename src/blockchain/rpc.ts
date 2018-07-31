@@ -16,8 +16,11 @@ export interface LogsParams {
 export type EthIOSpec<Params extends ({} | null), Out> = [Params, Out]
 export type SupportedCalls = {
   blockNumber: EthIOSpec<null, E.BlockNumber>
+  getBalance: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, E.Wei>
+
   // please mind only events of our interest and stripped from any add / if needed please make generic
   getLogs: EthIOSpec<LogsParams, T.BlockchainEvent[]>
+
   // Tx
   getTransactionCount: EthIOSpec<{ address: E.Address, defaultBlock?: E.DefaultBlock }, E.Nonce>
   getTransactionReceipt: EthIOSpec<E.TxHash, E.TxReceipt | null>
@@ -50,6 +53,8 @@ export type RPCCreate = (p: string) => RPC
 // in case of order: pass `null` if no params, `[]` if just one, proper order if 2 or more
 export const partialImplementation: ImplementationSpecs = {
   blockNumber: ['eth_blockNumber', null, as.BlockNumber, null],
+  getBalance: ['eth_getBalance', ['address', 'defaultBlock'], as.Wei, { defaultBlock: 'latest' }],
+
   getLogs: ['eth_getLogs', [], decodeLogs, null], // warn decodeLogs is tailored to our needs
 
   getTransactionCount: ['eth_getTransactionCount', ['address', 'defaultBlock'], as.Nonce, { defaultBlock: 'latest' }],

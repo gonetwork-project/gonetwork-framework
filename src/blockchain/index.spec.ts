@@ -18,6 +18,11 @@ if (isInEnv('infura')) {
       })
   )
 
+  test('service - rpc - getBalance', () =>
+    srv.rpc.getBalance({ address: srv.config.owner })
+      .then(x => expect(x.gte(0)).toBe(true))
+  )
+
   test('service - monitoring - blockNumbers', () =>
     srv.monitoring.blockNumbers()
       .take(1)
