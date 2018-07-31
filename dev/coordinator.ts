@@ -15,6 +15,10 @@ import { Config, accounts } from './config'
 const exec = util.promisify(cp.exec)
 
 const [etherAccount, contractsAccount] = accounts
+const accountsPool = accounts.slice(2)
+
+// there is no persistence right now, so on new start new clients need to re-initialize
+const runId = `run_${Date.now()}`
 
 const headersFn = (other?: http.OutgoingHttpHeaders) => Object.assign({
   'Content-Type': 'application/json',
@@ -50,6 +54,13 @@ const ethRequest = (ethUrl: string, method: string, params = null as any) => fet
     }) : Promise.reject(res))
 
 const account = (ethUrl: string, w3: any) => {
+  const acc = accountsPool.pop()
+  if (acc) {
+    return Promise.resolve({
+      privateKey: acc.secretKey,
+      address: acc.address.toString('hex')
+    })
+  }
   const wl = wallet.generate()
   const pk = `0x${wl.getPrivateKey().toString('hex')}`
   return ethRequest(ethUrl, 'personal_importRawKey', [pk, ''])
@@ -66,7 +77,7 @@ export const serve = (cfg: Config) => {
     mqtt: `ws://${cfg.hostname}:${cfg.mqttPort}`
   }
 
-  const config = Object.assign({ urls }, cfg)
+  const config = Object.assign({ urls, runId }, cfg)
   const qrConfig = {
     gonetworkServer: {
       protocol: 'http:',
@@ -77,7 +88,7 @@ export const serve = (cfg: Config) => {
 
   const w3 = new (Web3 as any)(urls.eth)
 
-  const defaultContracts = cfg.withContracts ?
+  const defaultContracts = cfg.autoSetup ?
     exec(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${contractsAccount.address.toString('hex')}`)
       .then(r => JSON.parse(r.stdout)) : Promise.resolve(null)
 
@@ -113,12 +124,11 @@ export const serve = (cfg: Config) => {
             privateKey: contractsAccount.privateKey.toString('hex'),
             contracts: cs
           })))
-      case 'account': {
+      case 'account':
         return account(urls.eth, w3)
           .then(acc => response(res, JSON.stringify(acc)))
           .catch(e => response(res, e, 400))
-      }
-      case 'account_with_contracts': {
+      case 'account_with_contracts':
         return account(urls.eth, w3)
           .then(account => {
             exec(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${account.address.substring(2)}`)
@@ -133,14 +143,14 @@ export const serve = (cfg: Config) => {
             console.log('ERROR', e)
             response(res, e.stack, 400)
           })
-      }
-      case 'terminate': {
+      case 'run_id':
+        return response(res, JSON.stringify(runId))
+      case 'terminate':
         setTimeout(() => {
           console.log('...terminating...')
           process.kill(process.pid, 'SIGINT')
         }, 200)
         return response(res, '', 202)
-      }
 
       default:
         response(res, '', 400)

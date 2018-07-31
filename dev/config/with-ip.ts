@@ -10,5 +10,5 @@ if (!hostname) {
 
 export const config = {
   hostname,
-  withContracts: true
+  autoSetup: true
 } as Partial<Config>
