@@ -67,7 +67,13 @@ export const serve = (c: Config) => {
     conn.on('disconnect', function () { conn.destroy() })
   }
 
-  server.listen(port, hostname, () => console.log(`MQTT listening on ws://${hostname}:${port}`))
+  server.listen(port, hostname, (err: any) => {
+    if (err) {
+      console.error(err)
+      process.exit(1)
+    }
+    console.log(`MQTT listening on ws://${hostname}:${port}`)
+  })
 
   return () => {
     Object.keys(subs).forEach(s => subs[s].close())

@@ -12,13 +12,9 @@ import { Config, accounts } from './config'
 
 (global as any).fetch = require('node-fetch')
 
-const exec = util.promisify(cp.exec)
-
 const [etherAccount, contractsAccount] = accounts
-const accountsPool = accounts.slice(2)
 
-// there is no persistence right now, so on new start new clients need to re-initialize
-const runId = `run_${Date.now()}`
+const exec = util.promisify(cp.exec)
 
 const headersFn = (other?: http.OutgoingHttpHeaders) => Object.assign({
   'Content-Type': 'application/json',
@@ -26,11 +22,6 @@ const headersFn = (other?: http.OutgoingHttpHeaders) => Object.assign({
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': '*'
 }, other)
-
-const response = (res: http.ServerResponse, body?: string, status = 200, headers: http.OutgoingHttpHeaders = headersFn()) => {
-  res.writeHead(status, headers)
-  res.end(body)
-}
 
 let id = 0
 const ethRequest = (ethUrl: string, method: string, params = null as any) => fetch(ethUrl, {
@@ -53,13 +44,9 @@ const ethRequest = (ethUrl: string, method: string, params = null as any) => fet
       return r.result
     }) : Promise.reject(res))
 
-const account = (ethUrl: string, w3: any) => {
-  const acc = accountsPool.pop()
+const account = (ethUrl: string, w3: any, acc: any) => {
   if (acc) {
-    return Promise.resolve({
-      privateKey: acc.secretKey,
-      address: acc.address.toString('hex')
-    })
+    return Promise.resolve(acc)
   }
   const wl = wallet.generate()
   const pk = `0x${wl.getPrivateKey().toString('hex')}`
@@ -71,6 +58,16 @@ const account = (ethUrl: string, w3: any) => {
 }
 
 export const serve = (cfg: Config) => {
+  // there is no persistence right now, so on new start new clients need to re-initialize
+  const runId = `run_${Date.now()}`
+
+  const startAccounts = accounts.slice(2)
+    .map(acc => ({
+      privateKey: acc.secretKey,
+      address: acc.address.toString('hex')
+    }))
+  const accountsPool = startAccounts.slice(0)
+
   const urls = {
     coordinator: `http://${cfg.hostname}:${cfg.coordinatorPort}`,
     eth: `http://${cfg.hostname}:${cfg.ethPort}`,
@@ -103,64 +100,67 @@ export const serve = (cfg: Config) => {
   })
 
   const server = http.createServer((req, res) => {
+    const response = (body?: string, status = 200, headers: http.OutgoingHttpHeaders = headersFn()) => {
+      res.writeHead(status, headers)
+      res.end(body, () => req.connection.destroy())
+    }
+
     if (req.method === 'OPTIONS') {
-      response(res)
+      response()
       return
     }
 
     const url = (req.url || '').substring(1).split('?')
     const [command, params] = [url[0], qs.parse(url[1])]
 
-    console.log('REQ', command, params)
+    if (command !== 'run_id') {
+      console.log('REQ', command, params)
+    }
 
     switch (command) {
       case 'favicon.ico':
-        return response(res)
+        return response()
       case 'config':
-        return response(res, JSON.stringify(config))
-      case 'default_account':
+        return response(JSON.stringify(config))
+      case 'contracts_account':
         return defaultContracts
-          .then(cs => response(res, JSON.stringify({
+          .then(cs => response(JSON.stringify({
             privateKey: contractsAccount.privateKey.toString('hex'),
             contracts: cs
           })))
+      case 'start_accounts':
+        return response(JSON.stringify(startAccounts))
       case 'account':
-        return account(urls.eth, w3)
-          .then(acc => response(res, JSON.stringify(acc)))
-          .catch(e => response(res, e, 400))
-      case 'account_with_contracts':
-        return account(urls.eth, w3)
-          .then(account => {
-            exec(`node ${__dirname}/scripts/deploy-contracts.js ${urls.eth} ${account.address.substring(2)}`)
-              .then(r => JSON.parse(r.stdout))
-              .then(contracts => response(res, JSON.stringify({
-                contracts,
-                ...account
-              })))
-          }
-          )
-          .catch(e => {
-            console.log('ERROR', e)
-            response(res, e.stack, 400)
-          })
+        return account(urls.eth, w3, accountsPool.pop())
+          .then(acc => response(JSON.stringify(acc)))
+          .catch(e => response(e, 400))
       case 'run_id':
-        return response(res, JSON.stringify(runId))
-      case 'terminate':
+        return response(JSON.stringify(runId))
+      case 'restart':
         setTimeout(() => {
-          console.log('...terminating...')
-          process.kill(process.pid, 'SIGINT')
-        }, 200)
-        return response(res, '', 202)
+          console.log('...restarting...')
+          process.kill(process.pid, 'SIGUSR2')
+        }, 10)
+        return response('1')
 
       default:
-        response(res, '', 400)
+        response('', 400)
     }
   })
 
   server.listen(cfg.coordinatorPort, cfg.hostname,
-    () => console.log(`Coordinator listening on: ${urls.coordinator}`))
+    (err: any) => {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+      console.log(`Coordinator listening on: ${urls.coordinator}, runId: ${runId}`)
+    })
 
-  return () => server.close()
+  return () => {
+    // console.warn('<<<CLOSING>>>')
+    server.close(() => console.log('<<<CLOSED>>>', runId))
+  }
 }
 
 execIfScript(serve, !module.parent)

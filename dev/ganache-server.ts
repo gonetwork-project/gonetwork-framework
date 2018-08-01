@@ -16,14 +16,14 @@ export const serve = (c: Config) => {
     locked: false,
     // mnemonic: 'dignity upset visa worry warrior donate record enforce time pledge ladder drop',
     accounts,
-    gasPrice: 200,
-    logger: console
+    gasPrice: 200
+    // logger: console
   }
   const srv = new server(options)
   srv.listen(options.port, options.hostname, (err: any) => {
     if (err) {
       console.error(err)
-      return
+      process.exit(1)
     }
 
     console.log(`Ganache listening on http://${options.hostname}:${options.port}`)

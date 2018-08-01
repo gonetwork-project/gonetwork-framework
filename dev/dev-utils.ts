@@ -13,6 +13,11 @@ export const localIP = (startWith = customStartWith, ifaces = os.networkInterfac
     .map(a => (a as os.NetworkInterfaceInfoIPv4).address)[0] as string | undefined
 
 // running
+const removeExitListeners = () => {
+  process.removeAllListeners('SIGINT')
+  process.removeAllListeners('uncaughtException')
+}
+
 export const autoDispose = (dispose: () => void) => {
   process.on('SIGINT', () => {
     dispose()
@@ -23,7 +28,21 @@ export const autoDispose = (dispose: () => void) => {
     console.log(e.stack)
     process.exit(1)
   })
+
+  return () => {
+    removeExitListeners()
+    dispose()
+  }
 }
 
-export const execIfScript = (serve: (c: Config) => () => void, isScript: boolean) =>
-  isScript && autoDispose(serve(configFromArgv()))
+export const execIfScript = (serve: (c: Config) => () => void, isScript: boolean) => {
+  if (isScript) {
+    let dispose = autoDispose(serve(configFromArgv()))
+
+    process.on('SIGUSR2', () => {
+      dispose()
+      dispose = autoDispose(serve(configFromArgv()))
+    })
+
+  }
+}
