@@ -10,5 +10,6 @@ if (!hostname) {
 
 export const config = {
   hostname,
-  autoSetup: true
+  autoSetup: true,
+  blockTime: 500
 } as Partial<Config>
