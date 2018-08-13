@@ -26,8 +26,9 @@ export type StartBlock = Exclude<E.DefaultBlock, 'pending'>
 
 export interface MonitoringConfig {
   logsInterval: Millisecond
-  channelManagerAddress: E.Address
-  tokenAddresses: E.Address[]
+  owner: E.Address
+  channelManager: E.Address
+  token: E.Address[]
   storage: Storage
   rpc: RPC
   startBlock?: StartBlock
@@ -63,14 +64,14 @@ export class Monitoring {
 
   constructor (readonly cfg: MonitoringConfig) {
     this._state = Observable.zip(
-      cfg.storage.getItem(KEY_PREFIX + cfg.channelManagerAddress),
+      cfg.storage.getItem(KEY_PREFIX + cfg.channelManager),
       startToBlockNumber(cfg.startBlock || 'latest', this.blockNumbers())
     )
       .toPromise()
       .then(([s, b]) => s ? JSON.parse(s) : ({
         addresses: [
-          [cfg.channelManagerAddress, b],
-          ...cfg.tokenAddresses.map(t => [t, b])
+          [cfg.channelManager, b],
+          ...cfg.token.map(t => [t, b])
         ],
         transactions: []
       }))
@@ -88,6 +89,9 @@ export class Monitoring {
 
   blockNumbers = () => this._blockNumberSub.filter(Boolean) as Observable<E.BlockNumber>
   gasPrice = () => this.cfg.rpc.gasPrice() // todo: improve monitor of gas price it in very long intervals
+  balance = () => this.blockNumbers()
+    .switchMap(() => this.cfg.rpc.getBalance({ address: this.cfg.owner }))
+    .shareReplay(1)
 
   subscribeAddress = (a: E.Address, s?: StartBlock) =>
     Observable.zip(
@@ -103,7 +107,7 @@ export class Monitoring {
       })
 
   unsubscribeAddress = (a: E.Address) => {
-    if (a === this.cfg.channelManagerAddress) return Promise.resolve(false)
+    if (a === this.cfg.channelManager) return Promise.resolve(false)
     return this._state.then(s => {
       s.addresses = s.addresses.filter(_a => !_a[0].equals(a))
       return this._saveState(s)
@@ -219,7 +223,7 @@ export class Monitoring {
   }
 
   private _saveState = (s: State) =>
-    this.cfg.storage.setItem(KEY_PREFIX + this.cfg.channelManagerAddress, JSON.stringify(s))
+    this.cfg.storage.setItem(KEY_PREFIX + this.cfg.channelManager, JSON.stringify(s))
 }
 
 export const waitForValueRaw = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<WaitForConfig>) =>

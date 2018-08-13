@@ -44,8 +44,9 @@ export const serviceCreate: BlockchainServiceCreate = config => {
   const rpc = rpcCreate(config.providerUrl)
   const monitoring = new Monitoring(Object.assign({
     rpc,
-    channelManagerAddress: config.manager,
-    tokenAddresses: [config.gotToken, config.testToken],
+    owner: config.owner,
+    channelManager: config.manager,
+    token: [config.gotToken, config.testToken],
     storage: fakeStorage(),
     logsInterval: 5000,
     startBlock: 'latest'

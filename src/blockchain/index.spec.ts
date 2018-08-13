@@ -23,6 +23,13 @@ if (isInEnv('infura')) {
       .then(x => expect(x.gte(0)).toBe(true))
   )
 
+  test('service - monitoring - balance', () =>
+    srv.monitoring.balance()
+      .take(1)
+      .do(x => expect(x.gte(0)).toBe(true))
+      .toPromise()
+  )
+
   test('service - monitoring - blockNumbers', () =>
     srv.monitoring.blockNumbers()
       .take(1)
