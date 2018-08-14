@@ -76,7 +76,7 @@ export const serve = (c: Config) => {
   })
 
   return () => {
-    Object.keys(subs).forEach(s => subs[s].close())
+    Object.keys(subs).forEach(s => subs[s].disconnect())
     subs = {}
     server.close()
   }
