@@ -34,7 +34,8 @@ export const serve = (c: Config) => {
       console.log('MSG', packet.topic, packet.payload.toString())
       const sub = subs[packet.topic]
       if (sub) {
-        sub.write(packet)
+        sub.forEach((s: any) => s.write(packet))
+        // sub.write(packet)
         if (packet.qos > 0) {
           conn.puback({ messageId: packet.messageId })
         }
@@ -49,7 +50,8 @@ export const serve = (c: Config) => {
 
     // client subscribed
     conn.on('subscribe', function (packet: any) {
-      packet.subscriptions.forEach((s: any) => subs[s.topic] = conn)
+      packet.subscriptions.forEach((s: any) =>
+        subs[s.topic] = (subs[s.topic] || []).concat([conn]))
 
       if (packet.qos > 0) {
         conn.suback({ granted: [packet.qos], messageId: packet.messageId })
@@ -60,7 +62,10 @@ export const serve = (c: Config) => {
     conn.on('close', function () {
       conn.destroy()
       Object.keys(subs).forEach(s => {
-        if (subs[s] === conn) delete (subs[s])
+        if (subs[s] && subs[s].indexOf(conn) >= 0) {
+          subs[s] = subs[s].filter((c: any) => c !== conn)
+          if (subs[s].length === 0) delete (subs[s])
+        }
       })
     })
     conn.on('error', function (e: any) { console.error('\n\nMQTT-ERROR\n\n', e); conn.destroy() })
@@ -76,7 +81,8 @@ export const serve = (c: Config) => {
   })
 
   return () => {
-    Object.keys(subs).forEach(s => subs[s].disconnect())
+    Object.keys(subs).forEach(s => subs[s]
+      .forEach((c: any) => c.disconnect()))
     subs = {}
     server.close()
   }
