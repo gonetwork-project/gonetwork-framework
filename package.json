@@ -1,6 +1,10 @@
 {
   "name": "go-network-framework",
-  "version": "0.2.9",
+  "version": "0.2.10",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gonetwork-project/gonetwork-framework.git"
+  },
   "description": "blockchain-service & state-channel engine for react-native environments",
   "main": "lib/index.js",
   "scripts": {
@@ -37,11 +41,11 @@
     "tape": "^4.9.0",
     "truffle-contract": "^3.0.5",
     "truffle-wallet-provider": "0.0.5",
-    "ts-jest": "^22.4.6",
+    "ts-jest": "^23.1.4",
     "ts-loader": "^4.2.0",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "^2.9.2",
+    "typescript": "3.0.1",
     "web3": "^1.0.0-beta.34",
     "websocket-stream": "^5.1.2",
     "ws": "^5.2.2"
