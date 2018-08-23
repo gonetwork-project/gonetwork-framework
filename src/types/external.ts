@@ -3,7 +3,7 @@
 // based on: https://github.com/machinomy/types-bn/blob/master/index.d.ts
 
 declare module 'bn.js' {
-  import { Buffer } from 'buffer'
+  // import { Buffer } from 'buffer'
 
   type Endianness = 'le' | 'be'
 
@@ -60,7 +60,7 @@ declare module 'bn.js' {
 }
 declare module 'ethereumjs-util' {
   import { BN } from 'bn.js'
-  import { Buffer } from 'buffer'
+  // import { Buffer } from 'buffer'
 
   import { Signature, PrivateKey } from 'eth-types'
 
