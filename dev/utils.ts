@@ -1,5 +1,5 @@
 import * as os from 'os'
-import { Config, configFromArgv } from './config'
+import { Config, config } from './config'
 
 // very simple mechanism to get address of ip in local network
 // based on: https://stackoverflow.com/questions/3653065/get-local-ip-address-in-node-js
@@ -35,14 +35,13 @@ export const autoDispose = (dispose: () => void) => {
   }
 }
 
-export const execIfScript = (serve: (c: Config) => () => void, isScript: boolean) => {
+export const execIfScript = <T = Readonly<Config>>(serve: (c: T) => () => void, isScript: boolean) => {
   if (isScript) {
-    let dispose = autoDispose(serve(configFromArgv()))
+    let dispose = autoDispose(serve(config as any))
 
     process.on('SIGUSR2', () => {
       dispose()
-      dispose = autoDispose(serve(configFromArgv()))
+      dispose = autoDispose(serve(config as any))
     })
-
   }
 }

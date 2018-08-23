@@ -35,3 +35,5 @@ declare module 'ethereumjs-wallet' {
     getAddress: () => Buffer
   }
 }
+
+declare module 'memdown'

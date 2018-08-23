@@ -1,7 +1,7 @@
 import { server } from 'ganache-core'
 import memdown from 'memdown'
 
-import { execIfScript } from './dev-utils'
+import { execIfScript } from './utils'
 import { Config, accounts } from './config'
 
 export const serve = (c: Config) => {

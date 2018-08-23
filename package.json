@@ -1,6 +1,6 @@
 {
   "name": "go-network-framework",
-  "version": "0.2.11",
+  "version": "0.2.13",
   "repository": {
     "type": "git",
     "url": "https://github.com/gonetwork-project/gonetwork-framework.git"
@@ -17,7 +17,7 @@
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
     "compile": "rm -rf lib/ && node_modules/typescript/bin/tsc --declaration",
     "ganache": "yarn compile && node lib/tests/ganache-server.js",
-    "compile-dev": "rm -rf build-dev && node_modules/.bin/tsc -p dev/tsconfig.json",
+    "compile-dev": "rm -rf build-dev && node_modules/.bin/tsc -p dev/tsconfig.json --declaration",
     "run-dev": "node build-dev",
     "dev": "yarn compile-dev && yarn run-dev",
     "abi-to-ts": "yarn compile-dev && node build-dev/scripts/abi-to-ts.js"

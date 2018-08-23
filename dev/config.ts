@@ -3,29 +3,16 @@ export type Config = {
   hostname: string
   mqttPort: number
   ethPort: number
-  coordinatorPort: number
   blockTime: number // in Milliseconds, ganache-core allows undefined as well, but we do not use it
-
-  autoSetup: boolean // will deploy contracts and create some accounts
 }
 
 // it is used for tests running on local machine
-const defaultConfig: Readonly<Config> = {
+export const config: Readonly<Config> = {
   hostname: 'localhost',
   mqttPort: 1884,
   ethPort: 8546,
-  coordinatorPort: 5215,
-  blockTime: 50,
-  autoSetup: false
+  blockTime: 50
 }
-
-const withDefault: (c?: Partial<Config>) => Config = c =>
-  Object.assign({}, defaultConfig, c)
-
-export const config = (name?: string) =>
-  withDefault(name && require(`./${name}`).config)
-
-export const configFromArgv = () => config(process.argv[2])
 
 const maxBalance = '0xFFF FFF FFF FFF FFF FFF FFF FFF FFF FFF'.replace(/ /g, '')
 const defaultBalance = '0x21E19E0C9BAB2400000' // 10k

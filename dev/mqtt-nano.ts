@@ -3,7 +3,7 @@ import * as websocket from 'websocket-stream'
 import * as ws from 'ws'
 import * as Connection from 'mqtt-connection'
 
-import { execIfScript } from './dev-utils'
+import { execIfScript } from './utils'
 import { Config } from './config'
 
 export const serve = (c: Config) => {
