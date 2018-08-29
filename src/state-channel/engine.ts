@@ -11,10 +11,6 @@ import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
 
-// helper method for debugging - will be removed once stabilized
-const addToStr = <A extends Address | Address[]> (add: A): (A extends Address ? string : string[]) =>
-  !Buffer.isBuffer(add) ? (add as Address[]).map((a) => a.toString('hex')) : (add as Address).toString('hex') as any
-
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
 // as we do not access private key - any way we should be consistent here
@@ -56,6 +52,7 @@ export class Engine extends events.EventEmitter {
   // dictionary of messages[msgID] = statemachine.*
   readonly messageState = {}
 
+  // todo: make sure that defaulting to 0 is safe and correct
   currentBlock = new BN(0) as BlockNumber
   msgID = new BN(0)
 
@@ -364,7 +361,7 @@ export class Engine extends events.EventEmitter {
   handleEvent (event: string, state: any) { // todo: improve and unify events across rest of the project
     try {
       if (event.startsWith('GOT.')) {
-        let channel
+        let channel: channelLib.Channel
         // console.log(event)
         switch (event) {
           case 'GOT.sendMediatedTransfer':
@@ -372,6 +369,7 @@ export class Engine extends events.EventEmitter {
             if (!channel.isOpen()) {
               throw new Error('Channel is not open')
             }
+
             // console.log(event, state)
             // msgID,hashLock,amount,expiration,target,initiator,currentBlock
             let mediatedTransfer = channel.createMediatedTransfer(state.msgID,
@@ -383,7 +381,7 @@ export class Engine extends events.EventEmitter {
               state.currentBlock)
             this.signature(mediatedTransfer)
             this.send(mediatedTransfer)
-            channel.handleTransfer(mediatedTransfer)
+            channel.handleTransfer(mediatedTransfer, this.blockchain.monitoring.blockNumber()!) // fixme: make sure '!' is not needed
             break
           case 'GOT.sendRequestSecret':
             channel = this.channelByPeer[state.to.toString('hex')]
@@ -408,6 +406,7 @@ export class Engine extends events.EventEmitter {
             break
           case 'GOT.sendSecretToProof':
             channel = this.channelByPeer[state.to.toString('hex')]
+            // fixme: make sure '!' is not needed
             // OPTIMIZE:technically we can still send sec2proof,
             // it would beneficial to our partner saving $$ for lock withdrawal
             // but for now we act in no interest of the  peer endpoint :( meanie
@@ -417,7 +416,7 @@ export class Engine extends events.EventEmitter {
 
             let secretToProof = channel.createSecretToProof(state.msgID, state.secret)
             this.signature(secretToProof)
-            channel.handleTransfer(secretToProof)
+            channel.handleTransfer(secretToProof, this.blockchain.monitoring.blockNumber()!) // fixme: make sure '!' is not needed
             this.send(secretToProof)
             // TODO: in the future, wait to apply secret to proof locally. We basically locked the state up now
             // It makes sense, in a sense.  With this implementation, when a lock secret is revealed and echoed back

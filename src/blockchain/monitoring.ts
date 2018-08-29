@@ -144,7 +144,7 @@ export class Monitoring {
     this._em.removeAllListeners()
   }
 
-  private _blockNumber = () => this._blockNumberSub.value
+  blockNumber = () => this._blockNumberSub.value
 
   private _monitorBlockNumber = () =>
     Observable.timer(0, this.cfg.logsInterval)
@@ -152,7 +152,7 @@ export class Monitoring {
         Observable.defer(() => this.cfg.rpc.blockNumber())
           .retryWhen(errs => errs.delay(1000))
       )
-      .do(x => !x.eq(this._blockNumber() || 0) && this._blockNumberSub.next(x))
+      .do(x => !x.eq(this.blockNumber() || 0) && this._blockNumberSub.next(x))
 
   private _monitorAddresses = () =>
     (Observable.combineLatest(

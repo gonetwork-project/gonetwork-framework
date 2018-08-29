@@ -83,7 +83,8 @@ export const nextRun = (u = ethUrl) => {
   try {
     c = fromDisk()
   } catch (e) { c = undefined }
-  if (!c || c.run >= 10) {
+  if (!c || c.run >= 9) {
+    console.log('deploying')
     const raw = execSync(`node ${resolve(__dirname, '../../build-dev/scripts/deploy-contracts.js')} ${u} ${accounts[0].addressStr}`)
     c = deserialize('', { run: 0, contracts: JSON.parse(raw.toString()) })
   }

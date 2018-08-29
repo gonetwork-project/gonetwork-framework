@@ -31,7 +31,7 @@ export const serve = (c: Config) => {
 
     // client published
     conn.on('publish', function (packet: any) {
-      console.log('MSG', packet.topic, packet.payload.toString())
+      console.log('mqtt-to:', packet.topic)
       const sub = subs[packet.topic]
       if (sub) {
         sub.forEach((s: any) => s.write(packet))

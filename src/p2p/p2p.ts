@@ -185,6 +185,7 @@ export class P2P implements T.P2P {
               try {
                 this._emit('message-received', m.payload)
               } catch (err) {
+                console.warn('P2P-error', err)
                 ch.isBroken = true
                 ch.brokenInfo = {
                   reason: 'Callback error',

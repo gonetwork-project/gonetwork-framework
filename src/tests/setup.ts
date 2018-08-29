@@ -40,7 +40,14 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
   const engine = new Engine({
     address: account.address,
     sign: (msg) => msg.sign(account.privateKey),
-    send: (to, msg) => p2p.send(to.toString('hex'), serialize(msg) as Payload),
+    send: (to, msg) => {
+      console.log('SENDING', msg.classType)
+      return p2p.send(to.toString('hex'), serialize(msg) as Payload)
+        .then(v => {
+          console.log('SENT', v)
+          return v
+        })
+    },
     blockchain: blockchain,
     settleTimeout: cfg.settleTimeout,
     revealTimeout: cfg.revealTimeout
