@@ -23,7 +23,7 @@ export const transferredEqual = (c1: Client, fromC1: Wei, c2: Client, fromC2: We
   }
 export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
   const received = Observable.fromEvent(to.p2p, 'message-received')
-  .do(x => console.log('RECEIVED', x))
+  .do(x => console.log('DIRECT-RECEIVED', x))
   .take(1) // DirectTransfer
   .delay(25) // allow processing by engine
   .toPromise()
@@ -55,6 +55,7 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
     })
     .delayWhen(() =>
       Observable.fromEvent(to.p2p, 'message-received')
+        .do(x => console.log('MEDIATED-RECEIVED', x)) // MediatedTransfer
         .skip(2) // MediatedTransfer, RevealSecret
         .take(1) // SecretToProof
         .delay(0) // allow processing by engine

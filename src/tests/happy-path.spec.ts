@@ -25,8 +25,8 @@ beforeEach(() => {
   sub = Observable.from([c1, c2])
     .mergeMap((c, idx) =>
       Observable.merge(
-        // c.blockchain.monitoring.blockNumbers()
-        //   .do(bn => c.engine.onBlock(bn)),
+        c.blockchain.monitoring.blockNumbers()
+          .do(bn => c.engine.onBlock(bn)),
         c.blockchain.monitoring.protocolErrors()
           .do(errs => console.warn(`Client-${idx} PROTOCOL-ERRORS ${errs.length}`))
           .do(errs => console.warn(...errs.map(e => e.stack!.split('\n')).map(e => e[0] + '\n' + e[1])))
@@ -66,7 +66,7 @@ describe('integration::happy-path -- base', () => {
 })
 
 describe('integration::happy-path -- direct transfer', () => {
-  test.only('only owner', () =>
+  test('only owner', () =>
     flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
       .then(flowsOff.sendDirect(c1, c2, as.Wei(20)))
@@ -101,7 +101,7 @@ describe('integration::happy-path -- direct transfer', () => {
 })
 
 describe('integration::happy-path -- mediated transfer', () => {
-  test('only owner', () =>
+  test.only('only owner', () =>
     flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
       .then(flowsOff.sendMediated(c1, c2, as.Wei(20)))

@@ -2,17 +2,30 @@ import * as util from 'ethereumjs-util'
 import * as machina from 'machina'
 
 import * as channel from './channel'
+import { BlockNumber, Address } from 'eth-types'
+import { BN } from 'bn.js'
+
+export interface Lock {
+  hashLock: Buffer
+  amount: BN
+  expiration: BlockNumber
+}
+
+export interface MediatedTransferState {
+  msgID: BN
+  lock: Lock
+  target: Address
+  initiator: Address
+  to: Address
+  secret?: Buffer
+  currentBlock?: BlockNumber
+}
 
 /** @namespace stateMachine */
 
 /** @class encapsulate state machine transitions */
 export class MessageState {
-  state: any
-  stateMachine: any
-  constructor (state, stateMachine) {
-    this.state = state// message.*
-    this.stateMachine = stateMachine // statemachine.*
-  }
+  constructor (public state: MediatedTransferState, public stateMachine) {}
 
   applyMessage (stateChange, message) {
     this.stateMachine.handle(this.state, stateChange, message)

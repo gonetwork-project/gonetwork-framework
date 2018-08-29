@@ -299,7 +299,8 @@ export class Engine extends events.EventEmitter {
     }
 
     let msgID = this.incrementedMsgID()
-    let mediatedTransferState = ({
+    // todo: extract type information and propagate
+    let mediatedTransferState: stateMachineLib.MediatedTransferState = ({
       msgID: msgID,
       'lock': {
         hashLock: hashLock,
@@ -381,7 +382,7 @@ export class Engine extends events.EventEmitter {
               state.currentBlock)
             this.signature(mediatedTransfer)
             this.send(mediatedTransfer)
-            channel.handleTransfer(mediatedTransfer, this.blockchain.monitoring.blockNumber()!) // fixme: make sure '!' is not needed
+            channel.handleTransfer(mediatedTransfer, this.currentBlock)
             break
           case 'GOT.sendRequestSecret':
             channel = this.channelByPeer[state.to.toString('hex')]
@@ -416,7 +417,7 @@ export class Engine extends events.EventEmitter {
 
             let secretToProof = channel.createSecretToProof(state.msgID, state.secret)
             this.signature(secretToProof)
-            channel.handleTransfer(secretToProof, this.blockchain.monitoring.blockNumber()!) // fixme: make sure '!' is not needed
+            channel.handleTransfer(secretToProof, this.currentBlock)
             this.send(secretToProof)
             // TODO: in the future, wait to apply secret to proof locally. We basically locked the state up now
             // It makes sense, in a sense.  With this implementation, when a lock secret is revealed and echoed back
@@ -473,7 +474,7 @@ export class Engine extends events.EventEmitter {
       }
     })
     // handleBlock for each of the channels, perhaps SETTLE_TIMEOUT has passed
-    Object.values(this.channels).map(function (channel: any) {
+    Object.values(this.channels).map((channel) => {
       // console.debug('CALL HANDLE BLOCK ON CHANNEL')
       let events = channel.onBlock(self.currentBlock)
       for (let i = 0; i < events.length; i++) {
