@@ -13,5 +13,5 @@ export const monitoringConfig: Partial<MonitoringConfig> = {
   startBlock: 'latest'
 }
 
-export const settleTimeout = as.BlockNumber(6)
-export const revealTimeout = as.BlockNumber(3)
+export const settleTimeout = as.BlockNumber(10)
+export const revealTimeout = as.BlockNumber(5)

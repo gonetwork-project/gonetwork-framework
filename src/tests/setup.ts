@@ -41,7 +41,7 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
     address: account.address,
     sign: (msg) => msg.sign(account.privateKey),
     send: (to, msg) => {
-      // console.log('SENDING', account.addressStr, msg.classType, (new Error()).stack!.split('\n')[3])
+      console.log('SENDING', account.addressStr, msg.classType, (new Error()).stack!.split('\n')[3])
       // console.log('SENDING', account.addressStr, to.toString('hex'), msg.classType, (new Error()).stack!.split('\n').filter(r => r.includes('/frame/src')).join('\n'))
       return p2p.send(to.toString('hex'), serialize(msg) as Payload)
         .then(v => {

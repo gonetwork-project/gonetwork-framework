@@ -131,10 +131,12 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
           // and let the lock expire by itself
           // we cant reject a lockedtransfer, it will put our locksroot out of sync
           // instead we require silent fails
-
+          console.log(state.lock.expiration.toString(10), currentBlock.toString(10))
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
+            console.warn('EXPIRED');
             (this as any).transition(state, 'expiredTransfer')
           } else {
+            console.warn('REQUEST');
             // console.log('Safe to process lock, lets request it:' + state.initiator.toString('hex'));
             (this as any).emit('GOT.sendRequestSecret', state);
             // this.eventEmitter.emit('sendSecretRequest',state,currentBlock,revealTimeout);
@@ -183,6 +185,7 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
         },
         handleBlock: function (state, currentBlock) {
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
+            console.warn('CLOSING');
             (this as any).emit('GOT.closeChannel', state);
             (this as any).transition(state, 'completedTransfer')
           }

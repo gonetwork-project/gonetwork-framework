@@ -43,7 +43,6 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
   const secretHashPair = GenerateRandomSecretHashPair()
   return from.blockchain.monitoring.blockNumbers()
     .take(1)
-    .delay(1000)
     .do((currentBlock) => {
       from.engine.sendMediatedTransfer(
         to.owner.address,
