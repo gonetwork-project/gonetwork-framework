@@ -43,6 +43,7 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
   const secretHashPair = GenerateRandomSecretHashPair()
   return from.blockchain.monitoring.blockNumbers()
     .take(1)
+    .delay(1000)
     .do((currentBlock) => {
       from.engine.sendMediatedTransfer(
         to.owner.address,
@@ -55,7 +56,7 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
     })
     .delayWhen(() =>
       Observable.fromEvent(to.p2p, 'message-received')
-        .do(x => console.log('MEDIATED-RECEIVED', x)) // MediatedTransfer
+        // .do(x => console.log('MEDIATED-RECEIVED', x)) // MediatedTransfer
         .skip(2) // MediatedTransfer, RevealSecret
         .take(1) // SecretToProof
         .delay(0) // allow processing by engine

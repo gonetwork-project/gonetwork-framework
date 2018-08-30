@@ -112,7 +112,7 @@ export const InitiatorFactory = function () {
  * @returns {machina.BehavioralFsm}
  * @see Engine.handleEvent
  */
-export const TargetFactory = function () {
+export const TargetFactory = function (revealTimeout: BlockNumber) {
   return new machina.BehavioralFsm({
 
     initialize: function () {
@@ -132,7 +132,7 @@ export const TargetFactory = function () {
           // we cant reject a lockedtransfer, it will put our locksroot out of sync
           // instead we require silent fails
 
-          if (state.lock.expiration.lte(currentBlock.add(channel.REVEAL_TIMEOUT))) {
+          if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
             (this as any).transition(state, 'expiredTransfer')
           } else {
             // console.log('Safe to process lock, lets request it:' + state.initiator.toString('hex'));
@@ -163,7 +163,7 @@ export const TargetFactory = function () {
           }
         },
         handleBlock: function (state, currentBlock) {
-          if (state.lock.expiration.lte(currentBlock.add(channel.REVEAL_TIMEOUT))) {
+          if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
             (this as any).transition(state, 'expiredTransfer')
           } else {
             // not expired
@@ -182,7 +182,7 @@ export const TargetFactory = function () {
           }
         },
         handleBlock: function (state, currentBlock) {
-          if (state.lock.expiration.lte(currentBlock.add(channel.REVEAL_TIMEOUT))) {
+          if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
             (this as any).emit('GOT.closeChannel', state);
             (this as any).transition(state, 'completedTransfer')
           }

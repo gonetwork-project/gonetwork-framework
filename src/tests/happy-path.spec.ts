@@ -25,23 +25,24 @@ beforeEach(() => {
   sub = Observable.from([c1, c2])
     .mergeMap((c, idx) =>
       Observable.merge(
-        c.blockchain.monitoring.blockNumbers()
-          .do(bn => c.engine.onBlock(bn)),
+        // c.blockchain.monitoring.blockNumbers()
+        //   .do(bn => c.engine.onBlock(bn)),
         c.blockchain.monitoring.protocolErrors()
           .do(errs => console.warn(`Client-${idx} PROTOCOL-ERRORS ${errs.length}`))
           .do(errs => console.warn(...errs.map(e => e.stack!.split('\n')).map(e => e[0] + '\n' + e[1])))
       )
     ).subscribe()
 
-  c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
-  c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
   // c1.blockchain.monitoring.on('*', msg => console.log('C1 <--   ', msg))
   // c2.blockchain.monitoring.on('*', msg => console.log('   --> C2', msg))
+  // c1.p2p.on('message-received', msg => console.log('C1 <--   ', (deserializeAndDecode(msg) as any).classType))
+  // c2.p2p.on('message-received', msg => console.log('   -->  C2', (deserializeAndDecode(msg) as any).classType))
+
+  c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
+  c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
 
   c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
   c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
-  // c1.p2p.on('message-received', msg => console.log('C1 <--   ', (deserializeAndDecode(msg) as any).classType))
-  // c2.p2p.on('message-received', msg => console.log('   -->  C2', (deserializeAndDecode(msg) as any).classType))
 })
 
 afterEach(() => {
@@ -107,10 +108,10 @@ describe('integration::happy-path -- mediated transfer', () => {
       .then(flowsOff.sendMediated(c1, c2, as.Wei(20)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(20), c2, as.Wei(0))).toBe(true))
       // .then(() => expect(flowsOff.sendMediated(c1, c2, as.Wei(51))).toThrow()) error but via callback
-      .then(flowsOff.sendMediated(c1, c2, as.Wei(30)))
-      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
+      // .then(flowsOff.sendMediated(c1, c2, as.Wei(30)))
+      // .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
       .then(() => flowsOn.closeChannel(c1, c2, 1))
-      .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
+      // .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(0.2))
 
   test('back and forth', () =>

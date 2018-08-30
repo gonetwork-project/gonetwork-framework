@@ -56,9 +56,9 @@ export class Engine extends events.EventEmitter {
   currentBlock = new BN(0) as BlockNumber
   msgID = new BN(0)
 
-  publicKey = undefined // fixme
-  initiatorStateMachine = stateMachineLib.InitiatorFactory()
-  targetStateMachine = stateMachineLib.TargetFactory()
+  // publicKey = undefined // fixme
+  initiatorStateMachine: any
+  targetStateMachine: any
 
   readonly address: Address
   readonly signature: SignFn
@@ -87,6 +87,9 @@ export class Engine extends events.EventEmitter {
     this.settleTimeout = cfg.settleTimeout || channelLib.SETTLE_TIMEOUT
     this.revealTimeout = cfg.revealTimeout || channelLib.REVEAL_TIMEOUT
 
+    this.initiatorStateMachine = stateMachineLib.InitiatorFactory()
+    this.targetStateMachine = stateMachineLib.TargetFactory(this.revealTimeout)
+
     if (!this.settleTimeout.gt(this.revealTimeout)) {
       throw new Error('settleTimeout must be strictly and much larger then revealTimeout')
     }
@@ -108,7 +111,7 @@ export class Engine extends events.EventEmitter {
   }
 
   onBlockchainEvent = (e: BlockchainEvent) => {
-    // console.warn(e._type)
+    // e._type === 'ChannelNew' && console.warn(e)
     switch (e._type) {
       // netting-channel
       case 'ChannelClosed': return this.onChannelClose(e._contract, e.closing_address)
@@ -312,6 +315,9 @@ export class Engine extends events.EventEmitter {
       currentBlock: this.currentBlock,
       secret: secret,
       to: channel.peerState.address
+
+      // revealTimeout: this.revealTimeout,
+      // settleTimeout: this.settleTimeout
     })
 
     const msgKey = msgID.toString()
