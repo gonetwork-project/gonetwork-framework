@@ -12,8 +12,6 @@ import * as flowsOff from './flows-offchain'
 let c1: NonNullable<Client>
 let c2: NonNullable<Client>
 
-let sub: Subscription
-
 // minimize number of deployments to every other 9-th run
 // todo: better would be to use snapshots
 beforeEach(() => {
@@ -21,39 +19,11 @@ beforeEach(() => {
   console.log(`CLIENT-INDEX: ${run}\n`)
   c1 = setupClient(0)
   c2 = setupClient(run)
-
-  sub = Observable.from([c1, c2])
-    .mergeMap((c, idx) =>
-      Observable.merge(
-        c.blockchain.monitoring.blockNumbers()
-          .do(bn => c.engine.onBlock(bn)),
-        c.blockchain.monitoring.protocolErrors()
-          .do(errs => console.warn(`Client-${idx} PROTOCOL-ERRORS ${errs.length}`))
-          .do(errs => console.warn(...errs.map(e => e.stack!.split('\n')).map(e => e[0] + '\n' + e[1])))
-      )
-    ).subscribe()
-
-  // c1.blockchain.monitoring.on('*', msg => console.log('C1 <--   ', msg))
-  // c2.blockchain.monitoring.on('*', msg => console.log('   --> C2', msg))
-  // c1.p2p.on('message-received', msg => console.log('C1 <--   ', (deserializeAndDecode(msg) as any).classType))
-  // c2.p2p.on('message-received', msg => console.log('   -->  C2', (deserializeAndDecode(msg) as any).classType))
-
-  c1.blockchain.monitoring.on('*', c1.engine.onBlockchainEvent)
-  c2.blockchain.monitoring.on('*', c2.engine.onBlockchainEvent)
-
-  c1.p2p.on('message-received', msg => c1.engine.onMessage(deserializeAndDecode(msg) as any))
-  c2.p2p.on('message-received', msg => c2.engine.onMessage(deserializeAndDecode(msg) as any))
 })
 
 afterEach(() => {
-  if (sub) {
-    sub.unsubscribe()
-    c1.blockchain.monitoring.dispose()
-    c1.p2p.dispose()
-
-    c2.blockchain.monitoring.dispose()
-    c2.p2p.dispose()
-  }
+  c1.dispose()
+  c2.dispose()
 })
 
 describe('integration::happy-path -- base', () => {
@@ -102,7 +72,7 @@ describe('integration::happy-path -- direct transfer', () => {
 })
 
 describe('integration::happy-path -- mediated transfer', () => {
-  test.only('only owner', () =>
+  test('only owner', () =>
     flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
       .then(flowsOff.sendMediated(c1, c2, as.Wei(20)))
@@ -176,5 +146,5 @@ describe('integration::happy-path -- mediated and direct transfer', () => {
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(500), c2, as.Wei(300))).toBe(true))
       .then(() => flowsOn.closeChannel(c1, c2, 2))
       .then(flowsOn.checkBalances(as.Wei(200), as.Wei(500)))
-    , minutes(0.2))
+    , minutes(0.4))
 })

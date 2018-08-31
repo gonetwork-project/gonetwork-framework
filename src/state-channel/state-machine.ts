@@ -25,7 +25,7 @@ export interface MediatedTransferState {
 
 /** @class encapsulate state machine transitions */
 export class MessageState {
-  constructor (public state: MediatedTransferState, public stateMachine) {}
+  constructor (public state: MediatedTransferState, public stateMachine) { }
 
   applyMessage (stateChange, message) {
     this.stateMachine.handle(this.state, stateChange, message)
@@ -113,6 +113,8 @@ export const InitiatorFactory = function () {
  * @see Engine.handleEvent
  */
 export const TargetFactory = function (revealTimeout: BlockNumber) {
+   // todo: discuss how expiration is related to revealTimeout
+  revealTimeout = new BN(0) as BlockNumber
   return new machina.BehavioralFsm({
 
     initialize: function () {
@@ -126,17 +128,15 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
     states: {
 
       init: {
-        '*': function (state, transition, currentBlock) {
+        '*': function (state, transition, currentBlock: BlockNumber) {
           // see if its safe to wait or dont request the secret
           // and let the lock expire by itself
           // we cant reject a lockedtransfer, it will put our locksroot out of sync
           // instead we require silent fails
-          console.log(state.lock.expiration.toString(10), currentBlock.toString(10))
+          // console.log('MEDIATED-TRANSFER expire in:', state.lock.expiration.sub(currentBlock).toString(10))
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
-            console.warn('EXPIRED');
             (this as any).transition(state, 'expiredTransfer')
           } else {
-            console.warn('REQUEST');
             // console.log('Safe to process lock, lets request it:' + state.initiator.toString('hex'));
             (this as any).emit('GOT.sendRequestSecret', state);
             // this.eventEmitter.emit('sendSecretRequest',state,currentBlock,revealTimeout);
@@ -185,6 +185,7 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
         },
         handleBlock: function (state, currentBlock) {
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
+          // if (state.lock.expiration.lte(currentBlock)) {
             console.warn('CLOSING');
             (this as any).emit('GOT.closeChannel', state);
             (this as any).transition(state, 'completedTransfer')

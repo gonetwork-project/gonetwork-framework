@@ -239,6 +239,7 @@ export const waitForValueRaw = <P, T> (action: ((params: P) => Promise<T> | void
       })
       .filter(Boolean)
       .take(1)
+      // .do(() => console.warn('TIMEOUT', cfg && cfg.timeout || waitForDefault.timeout))
       .timeout(cfg && cfg.timeout || waitForDefault.timeout) as Observable<T>
 
 export const waitForValue = <P, T> (action: ((params: P) => Promise<T> | void), cfg?: Partial<WaitForConfig>) =>

@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs'
+
 import { Client } from './setup'
 
 import { Wei, Address } from 'eth-types'
@@ -24,9 +26,12 @@ export const deposit = (from: Client, token: Address, channel: Address, amount: 
 
 export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =>
   Promise.all([
-    from.blockchain.monitoring.asStream('ChannelNewBalance')
+    Observable.zip(
+    from.blockchain.monitoring.asStream('ChannelNewBalance'),
+    to.blockchain.monitoring.asStream('ChannelNewBalance'))
       .take(1)
       .delay(0)
+      // .do((x) => console.warn('ChannelNewBalance', x))
       .toPromise(),
     createChannel(from, to.owner.address, amount)
       .then(ch => deposit(from, from.contracts.testToken, ch, amount)
@@ -34,7 +39,7 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
       )
   ])
     .then(([_, x]) => x)
-    .then(x => log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${x.channel.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`))
+    .then(x => log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${x.channel.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`)(x))
 
 export type Balances = { channel: Wei, opener: Wei, other: Wei }
 export const checkBalances = (openerToOtherNet: Wei, openerDeposit: Wei) =>

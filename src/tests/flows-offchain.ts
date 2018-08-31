@@ -23,7 +23,7 @@ export const transferredEqual = (c1: Client, fromC1: Wei, c2: Client, fromC2: We
   }
 export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
   const received = Observable.fromEvent(to.p2p, 'message-received')
-  .do(x => console.log('DIRECT-RECEIVED', x))
+  // .do(x => console.log('DIRECT-RECEIVED', x))
   .take(1) // DirectTransfer
   .delay(25) // allow processing by engine
   .toPromise()
