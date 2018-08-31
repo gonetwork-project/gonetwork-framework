@@ -23,10 +23,10 @@ export const transferredEqual = (c1: Client, fromC1: Wei, c2: Client, fromC2: We
   }
 export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
   const received = Observable.fromEvent(to.p2p, 'message-received')
-  // .do(x => console.log('DIRECT-RECEIVED', x))
-  .take(1) // DirectTransfer
-  .delay(25) // allow processing by engine
-  .toPromise()
+    // .do(x => console.log('DIRECT-RECEIVED', x))
+    .take(1) // DirectTransfer
+    .delay(25) // allow processing by engine
+    .toPromise()
 
   try {
     from.engine.sendDirectTransfer(to.owner.address, amount)
@@ -39,7 +39,6 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
 }
 
 export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
-  // console.warn('MEDIATED', from.owner.addressStr, to.owner.addressStr, amount.toString())
   const secretHashPair = GenerateRandomSecretHashPair()
   return from.blockchain.monitoring.blockNumbers()
     .take(1)
@@ -48,11 +47,17 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
         to.owner.address,
         to.owner.address,
         amount,
-        currentBlock.add(from.engine.revealTimeout).add(new BN(1)) as BlockNumber,
+        currentBlock.add(from.engine.revealTimeout).add(from.config.collateralTimeout) as BlockNumber,
         secretHashPair.secret as any, // FIXME
         secretHashPair.hash
       )
     })
+    .toPromise()
+}
+
+export const sendMediatedHappyPath = (from: Client, to: Client, amount: Wei) => () => {
+  // console.warn('MEDIATED', from.owner.addressStr, to.owner.addressStr, amount.toString())
+  return Observable.defer(sendMediated(from, to, amount))
     .delayWhen(() =>
       Observable.fromEvent(to.p2p, 'message-received')
         // .do(x => console.log('MEDIATED-RECEIVED', x)) // MediatedTransfer

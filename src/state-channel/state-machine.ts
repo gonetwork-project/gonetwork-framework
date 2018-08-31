@@ -1,9 +1,14 @@
 import * as util from 'ethereumjs-util'
 import * as machina from 'machina'
 
-import * as channel from './channel'
 import { BlockNumber, Address } from 'eth-types'
 import { BN } from 'bn.js'
+
+export type InitiatorStatus = 'init' | 'awaitRequestSecret' | 'awaitRevealSecret' | 'completedTransfer' | 'expiredTransfer' | 'failedTransfer'
+
+export type TargetStatus = 'init' | 'awaitRevealSecret' | 'awaitSecretToProof' | 'completedTransfer' | 'expiredTransfer'
+
+export type MediatedTransferStatus = InitiatorStatus | TargetStatus
 
 export interface Lock {
   hashLock: Buffer
@@ -19,16 +24,23 @@ export interface MediatedTransferState {
   to: Address
   secret?: Buffer
   currentBlock?: BlockNumber
+
+  from?: Address
+  revealTo?: Address
 }
 
 /** @namespace stateMachine */
 
 /** @class encapsulate state machine transitions */
 export class MessageState {
-  constructor (public state: MediatedTransferState, public stateMachine) { }
+  constructor (public mediatedTransfer: MediatedTransferState, public stateMachine) { }
 
-  applyMessage (stateChange, message) {
-    this.stateMachine.handle(this.state, stateChange, message)
+  get state () {
+    return (this.mediatedTransfer as any).__machina__['mediated-transfer'].state as MediatedTransferStatus
+  }
+
+  applyMessage (stateChange, message?) {
+    this.stateMachine.handle(this.mediatedTransfer, stateChange, message)
   }
 }
 
@@ -55,7 +67,7 @@ export const InitiatorFactory = function () {
         _onEnter: function (state) { return null },
         // we have already "sent" and handled the transfer locally, now we await if
         // our channel partner responds
-        '*': function (state) {
+        '*': function (state: MediatedTransferState) {
           (this as any).emit('GOT.sendMediatedTransfer', state);
           (this as any).transition(state, 'awaitRequestSecret')
         },
@@ -113,8 +125,6 @@ export const InitiatorFactory = function () {
  * @see Engine.handleEvent
  */
 export const TargetFactory = function (revealTimeout: BlockNumber) {
-   // todo: discuss how expiration is related to revealTimeout
-  revealTimeout = new BN(0) as BlockNumber
   return new machina.BehavioralFsm({
 
     initialize: function () {
@@ -142,11 +152,7 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
             // this.eventEmitter.emit('sendSecretRequest',state,currentBlock,revealTimeout);
             (this as any).transition(state, 'awaitRevealSecret')
           }
-        },
-        _onExit: function (state) {
-          return null
         }
-
       },
       awaitRevealSecret: {
         _onEnter: function (state) {
@@ -164,8 +170,10 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
             (this as any).transition(state, 'awaitSecretToProof')
           }
         },
-        handleBlock: function (state, currentBlock) {
+        handleBlock: function (state: MediatedTransferState, currentBlock) {
+          // console.log('CURRENT-BLOCK', currentBlock.toString(10))
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
+            // console.warn('EXPIRED');
             (this as any).transition(state, 'expiredTransfer')
           } else {
             // not expired
@@ -185,7 +193,7 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
         },
         handleBlock: function (state, currentBlock) {
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
-          // if (state.lock.expiration.lte(currentBlock)) {
+            // if (state.lock.expiration.lte(currentBlock)) {
             console.warn('CLOSING');
             (this as any).emit('GOT.closeChannel', state);
             (this as any).transition(state, 'completedTransfer')

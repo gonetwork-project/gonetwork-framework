@@ -15,3 +15,4 @@ export const monitoringConfig: Partial<MonitoringConfig> = {
 
 export const settleTimeout = as.BlockNumber(10)
 export const revealTimeout = as.BlockNumber(5)
+export const collateralTimeout = as.BlockNumber(5)

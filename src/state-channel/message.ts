@@ -6,6 +6,9 @@ import { Address, Nonce, BlockNumber, Signature } from 'eth-types'
 
 import { as, castNum, serializeSignature } from '../utils'
 
+export type MessageType = 'SignedMessage' | 'Proof' | 'ProofMessage' | 'Lock' | 'OpenLock' | 'DirectTransfer'
+  | 'LockedTransfer' | 'MediatedTransfer' | 'RequestSecret' | 'RevealSecret' | 'SecretToProof' | 'Ack'
+
 /**
  * @namespace message
  */
@@ -98,7 +101,7 @@ function deserialize (data: string) {
 export function deserializeAndDecode (data: string) {
   const jsonObj = deserialize(data)
   if (jsonObj.hasOwnProperty('classType')) {
-    switch (jsonObj.classType) {
+    switch (jsonObj.classType as MessageType) {
       case 'SignedMessage':
         return new SignedMessage(jsonObj)
       case 'Proof':
@@ -152,14 +155,14 @@ export const proofToTxData = (proof: Proof | null) => proof ? ({
  * @memberof message
  */
 export class SignedMessage {
-  classType: string
+  classType: MessageType
   signature: Signature
   /** @constructor
    * @param {object} options
    * @param {Signature} [options.signature] - sets the signature of the message, useful during deserilaization of SignedMessage
    */
   constructor (options) {
-    this.classType = this.constructor.name
+    this.classType = this.constructor.name as MessageType
     this.signature = options.signature || null
   }
   /** getHash - child classes must override implementation

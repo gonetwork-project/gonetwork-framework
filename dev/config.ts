@@ -11,7 +11,7 @@ export const config: Readonly<Config> = {
   hostname: 'localhost',
   mqttPort: 1884,
   ethPort: 8546,
-  blockTime: 50
+  blockTime: 100
 }
 
 const maxBalance = '0xFFF FFF FFF FFF FFF FFF FFF FFF FFF FFF'.replace(/ /g, '')

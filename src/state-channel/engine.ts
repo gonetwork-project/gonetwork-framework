@@ -50,13 +50,12 @@ export class Engine extends events.EventEmitter {
   // dictionary of channels[peerState.address.toString('hex')];
   readonly channelByPeer: { [k: string]: channelLib.Channel } = {}
   // dictionary of messages[msgID] = statemachine.*
-  readonly messageState = {}
+  readonly messageState: { [K: string]: stateMachineLib.MessageState } = {}
 
   // todo: make sure that defaulting to 0 is safe and correct
   currentBlock = new BN(0) as BlockNumber
   msgID = new BN(0)
 
-  // publicKey = undefined // fixme
   initiatorStateMachine: any
   targetStateMachine: any
 
@@ -365,7 +364,7 @@ export class Engine extends events.EventEmitter {
    * @param {string} event - the GOT.* namespaced event triggered asynchronously by external engine components i.e. stateMachine, on-chain event handlers,etc.
    * @param {object} state - the accompanying object state
    */
-  handleEvent (event: string, state: any) { // todo: improve and unify events across rest of the project
+  handleEvent (event: string, state: stateMachineLib.MediatedTransferState) { // todo: improve and unify events across rest of the project
     try {
       if (event.startsWith('GOT.')) {
         let channel: channelLib.Channel
@@ -385,7 +384,7 @@ export class Engine extends events.EventEmitter {
               state.lock.expiration,
               state.target,
               state.initiator,
-              state.currentBlock)
+              state.currentBlock!)
             this.signature(mediatedTransfer)
             this.send(mediatedTransfer)
             channel.handleTransfer(mediatedTransfer, this.currentBlock)
@@ -421,7 +420,7 @@ export class Engine extends events.EventEmitter {
               throw new Error('Channel is not open')
             }
 
-            let secretToProof = channel.createSecretToProof(state.msgID, state.secret)
+            let secretToProof = channel.createSecretToProof(state.msgID, state.secret!)
             this.signature(secretToProof)
             channel.handleTransfer(secretToProof, this.currentBlock)
             this.send(secretToProof)
@@ -432,7 +431,7 @@ export class Engine extends events.EventEmitter {
 
             break
           case 'GOT.closeChannel':
-            channel = this.channelByPeer[state.from.toString('hex')]
+            channel = this.channelByPeer[state.from!.toString('hex')]
             // TODO emit closing
             return this.closeChannel(channel.channelAddress)
           // channel.handleClose(this.currentBlock);
@@ -471,13 +470,14 @@ export class Engine extends events.EventEmitter {
     // handleBlock by all the in-flight messages
     // timeout or take action as needed
     let self = this
-    Object.values(this.messageState).map(function (messageState: any) {
+    Object.values(this.messageState).map(function (messageState) {
       try {
         // console.debug('CALL HANDLE BLOCK ON MESSAGE')
         messageState.applyMessage('handleBlock', self.currentBlock)
       } catch (err) {
         console.log(err)
       }
+      // console.log('MSG-STATE', messageState.state)
     })
     // handleBlock for each of the channels, perhaps SETTLE_TIMEOUT has passed
     Object.values(this.channels).map((channel) => {

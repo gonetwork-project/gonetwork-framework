@@ -3,13 +3,14 @@ import { Observable } from 'rxjs'
 import { Engine } from '../state-channel'
 import { serviceCreate, setWaitForDefault } from '../blockchain'
 import { P2P } from '../p2p/p2p'
-import { serialize, deserializeAndDecode } from '../state-channel/message'
+import { serialize, deserializeAndDecode, MessageType, SignedMessage } from '../state-channel/message'
 import { fakeStorage, CHAIN_ID } from '../utils'
 import { Payload } from '../p2p/p2p-types'
 import { fromDisk as c, accounts } from './addresses'
 
 import * as cfgBase from './config'
 import { Millisecond, Second } from '../types'
+import { Address } from 'eth-types'
 
 export const wait = (ms: Millisecond) => new Promise(resolve => setTimeout(resolve, ms))
 export const minutes = n => n * 60 * 1000
@@ -17,7 +18,17 @@ export const minutes = n => n * 60 * 1000
 // TODO: not ideal mechanism - for test we increase block mining frequency
 setWaitForDefault({ timeout: 3000, interval: 25 })
 
-export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBase>) => {
+export const createSendFn = (ignore: (MessageType[] | '*') = []) => (p2p: P2P) => (to: Address, msg: SignedMessage) => {
+  if (ignore === '*' || ignore.indexOf(msg.classType) > -1) return Promise.resolve(true)
+  // console.log('SENDING', account.addressStr, msg.classType, (new Error()).stack!.split('\n')[3])
+  // console.log('SENDING', account.addressStr, to.toString('hex'), msg.classType, (new Error()).stack!.split('\n').filter(r => r.includes('/frame/src')).join('\n'))
+  return p2p.send(to.toString('hex'), serialize(msg) as Payload)
+    .then(v => {
+      return v
+    })
+}
+
+export const setupClient = (accountIndex: number, send = createSendFn([]), config?: Partial<typeof cfgBase>) => {
   const cfg = Object.assign({}, cfgBase, config)
   const account = accounts[accountIndex]
   if (!account) throw new Error('NO ACCOUNT FOUND')
@@ -42,20 +53,13 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
   const engine = new Engine({
     address: account.address,
     sign: (msg) => msg.sign(account.privateKey),
-    send: (to, msg) => {
-      // console.log('SENDING', account.addressStr, msg.classType, (new Error()).stack!.split('\n')[3])
-      // console.log('SENDING', account.addressStr, to.toString('hex'), msg.classType, (new Error()).stack!.split('\n').filter(r => r.includes('/frame/src')).join('\n'))
-      return p2p.send(to.toString('hex'), serialize(msg) as Payload)
-        .then(v => {
-          return v
-        })
-    },
+    send: send(p2p),
     blockchain: blockchain,
     settleTimeout: cfg.settleTimeout,
     revealTimeout: cfg.revealTimeout
   })
 
-  const client = { run, contracts, p2p, engine, blockchain, owner: account, txs: blockchain.txs, dispose: () => undefined }
+  const client = { config: cfg, run, contracts, p2p, engine, blockchain, owner: account, txs: blockchain.txs, dispose: () => undefined }
   const sub = Observable.merge(
     client.blockchain.monitoring.blockNumbers()
       .do(bn => client.engine.onBlock(bn)),
@@ -81,5 +85,3 @@ export const setupClient = (accountIndex: number, config?: Partial<typeof cfgBas
 }
 
 export type Client = ReturnType<typeof setupClient>
-
-export const evmIncreaseTime = (n: Second) => null

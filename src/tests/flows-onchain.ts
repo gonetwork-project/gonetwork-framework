@@ -39,7 +39,7 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
       )
   ])
     .then(([_, x]) => x)
-    .then(x => log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${x.channel.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`)(x))
+    // .then(x => log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${x.channel.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`)(x))
 
 export type Balances = { channel: Wei, opener: Wei, other: Wei }
 export const checkBalances = (openerToOtherNet: Wei, openerDeposit: Wei) =>
