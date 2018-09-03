@@ -10,6 +10,7 @@ import * as stateMachineLib from './state-machine'
 import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
+import { abi } from '../utils'
 
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
@@ -580,17 +581,24 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Withdraw: Cannot issue withdraw on open channel')
     }
     let openLockProofs = channel.issueWithdrawPeerOpenLocks(this.currentBlock)
+    // debugger
     let withdraws: any[] = []
+
     for (let i = 0; i < openLockProofs.length; i++) {
       let p = openLockProofs[i]!
       // nonce,gasPrice,nettingChannelAddress, encodedOpenLock, merkleProof,secret)
       let _secret = p.openLock.secret
       let _channelAddress = channelAddress
+      const merkleProof = util.toBuffer('0x' + p.merkleProof.reduce((sum, proof) => sum + proof.toString('hex'), ''))
       let self = this
 
       let promise = this.blockchain.withdraw(
         { to: channelAddress },
-        { locked_encoded: p.encodeLock(), merkle_proof: p.merkleProof, secret: _secret })
+        {
+          locked_encoded: p.encodeLock(),
+          merkle_proof: merkleProof,
+          secret: _secret
+        })
         .then(function (vals) {
           // var secret = vals[0];
           // var receiverAddress = vals[1];
@@ -601,6 +609,7 @@ export class Engine extends events.EventEmitter {
           return self.onChannelSecretRevealedError(_channelAddress, _secret, err)
         })
       withdraws.push(promise)
+      // debugger
     }
     return Promise.all(withdraws)
   }
@@ -810,6 +819,7 @@ export class Engine extends events.EventEmitter {
     let channel = this.channels[channelAddress.toString('hex')]
     channel.onChannelClose(closingAddress, this.currentBlock)
     if (closingAddress.compare(this.address) !== 0) {
+      // TODO / FIXME: it may throw - seems the logic is somehow broken
       return this.transferUpdate(channelAddress)
     }
     return Promise.resolve([])

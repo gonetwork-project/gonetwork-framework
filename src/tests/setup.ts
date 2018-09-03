@@ -20,7 +20,7 @@ setWaitForDefault({ timeout: 3000, interval: 25 })
 
 export const createSendFn = (ignore: (MessageType[] | '*') = []) => (p2p: P2P, from: Address) => (to: Address, msg: SignedMessage) => {
   if (ignore === '*' || ignore.indexOf(msg.classType) > -1) {
-    console.log('MSG-IGNORED', to.toString('hex'), msg.classType)
+    console.log('MSG-IGNORED', from.toString('hex'), '-->', to.toString('hex'), msg.classType)
     return Promise.resolve(true)
   }
   // console.log('SENDING', account.addressStr, msg.classType, (new Error()).stack!.split('\n')[3])

@@ -38,6 +38,8 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
       Buffer.isBuffer(data[o]) && types[i] !== 'bytes' ?
         `0x${data[o].toString('hex')}` : data[o])
 
+    // console.log('METHOD-ID', name, abi.methodID(name, types).toString('hex'))
+
     return util.toBuffer([
       '0x',
       abi.methodID(name, types).toString('hex'),

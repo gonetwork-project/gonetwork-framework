@@ -7,8 +7,6 @@ import { nextRun } from './addresses'
 import * as flowsOn from './flows-onchain'
 import * as flowsOff from './flows-offchain'
 import { MediatedTransferStatus, MessageState } from '../state-channel/state-machine'
-import { Address } from 'eth-types'
-import { channelAddress } from '../state-channel/__test__/engine-setup';
 
 let c1: NonNullable<Client>
 let c2: NonNullable<Client>
@@ -59,25 +57,29 @@ describe('broken-mediated', () => {
   }, minutes(0.2))
 
   test.only('when no direct transfer (SecretToProof) - target should be able to withdrawLocks', () => {
-    c1 = setupClient(0, createSendFn(['SecretToProof']))
-    c2 = setupClient(run)
+    c1 = setupClient(0)
+    c2 = setupClient(run, createSendFn(['SecretToProof']))
     return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
       .then((ch) => {
-        flowsOff.sendMediated(c1, c2, as.Wei(20))()
-        flowsOff.sendMediated(c1, c2, as.Wei(30))
-        return c1.blockchain.monitoring.asStream('ChannelClosed')
-          .take(1)
-          .map(e => ({ ch: ch, ev: e }))
-          .toPromise()
+        return flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(20))()
+          .then(() => {
+            flowsOff.sendMediated(c2, c1, as.Wei(20))()
+            return c1.blockchain.monitoring.asStream('ChannelClosed')
+              .take(1)
+              .delay(50)
+              .map(e => ({ ch: ch, ev: e }))
+              .toPromise()
+          })
       })
       .then(({ ch, ev }) => {
-        expect(ev.closing_address.compare(c2.owner.address)).toBe(0)
-        console.log(c2.engine.messageState)
-        return c2.engine.withdrawPeerOpenLocks(ch.channel)
+        // console.log('Withdrawing...')
+        expect(ev.closing_address.compare(c1.owner.address)).toBe(0)
+        // console.log(c2.engine.messageState)
+        return Promise.all([
+          // imporant to keep this order
+          c1.blockchain.monitoring.asStream('ChannelSecretRevealed').take(1).toPromise(),
+          c1.engine.withdrawPeerOpenLocks(ch.channel)
+        ])
       })
-      .then(() => c1.blockchain.monitoring.asStream('*')
-        .do(e => console.warn('EV', e))
-        .toPromise()
-      )
-  }, minutes(2))
+  }, minutes(0.2))
 })

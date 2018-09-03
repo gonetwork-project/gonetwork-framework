@@ -194,7 +194,7 @@ export const TargetFactory = function (revealTimeout: BlockNumber) {
         handleBlock: function (state, currentBlock) {
           if (state.lock.expiration.lte(currentBlock.add(revealTimeout))) {
             // if (state.lock.expiration.lte(currentBlock)) {
-            console.warn('CLOSING');
+            // console.warn('CLOSING');
             (this as any).emit('GOT.closeChannel', state);
             (this as any).transition(state, 'completedTransfer')
           }
