@@ -46,9 +46,9 @@ export type ManagerEvents = ExtractEvents<ManagerEventsToArgs, ManagerEventTypes
 export type ChannelEvents = ExtractEvents<ChannelEventsToArgs, ChannelEventTypes>
 
 export type EventTypeToEvent<Ev extends BlockchainEventType> =
-  Ev extends ChannelEventTypes ? ChannelEventsToArgs[Ev] :
-  Ev extends ManagerEventTypes ? ManagerEventsToArgs[Ev] :
-  Ev extends TokenEventTypes ? TokenEventsToArgs[Ev]
+  Ev extends ChannelEventTypes ? ChannelEventsToArgs[Ev] & { _contract: Address } :
+  Ev extends ManagerEventTypes ? ManagerEventsToArgs[Ev] & { _contract: Address } :
+  Ev extends TokenEventTypes ? TokenEventsToArgs[Ev] & { _contract: Address }
   : never
 
 export type BlockchainEventType = ChannelEventTypes | ManagerEventTypes | TokenEventTypes

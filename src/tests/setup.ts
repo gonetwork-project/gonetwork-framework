@@ -18,8 +18,11 @@ export const minutes = n => n * 60 * 1000
 // TODO: not ideal mechanism - for test we increase block mining frequency
 setWaitForDefault({ timeout: 3000, interval: 25 })
 
-export const createSendFn = (ignore: (MessageType[] | '*') = []) => (p2p: P2P) => (to: Address, msg: SignedMessage) => {
-  if (ignore === '*' || ignore.indexOf(msg.classType) > -1) return Promise.resolve(true)
+export const createSendFn = (ignore: (MessageType[] | '*') = []) => (p2p: P2P, from: Address) => (to: Address, msg: SignedMessage) => {
+  if (ignore === '*' || ignore.indexOf(msg.classType) > -1) {
+    console.log('MSG-IGNORED', to.toString('hex'), msg.classType)
+    return Promise.resolve(true)
+  }
   // console.log('SENDING', account.addressStr, msg.classType, (new Error()).stack!.split('\n')[3])
   // console.log('SENDING', account.addressStr, to.toString('hex'), msg.classType, (new Error()).stack!.split('\n').filter(r => r.includes('/frame/src')).join('\n'))
   return p2p.send(to.toString('hex'), serialize(msg) as Payload)
@@ -53,7 +56,7 @@ export const setupClient = (accountIndex: number, send = createSendFn([]), confi
   const engine = new Engine({
     address: account.address,
     sign: (msg) => msg.sign(account.privateKey),
-    send: send(p2p),
+    send: send(p2p, account.address),
     blockchain: blockchain,
     settleTimeout: cfg.settleTimeout,
     revealTimeout: cfg.revealTimeout

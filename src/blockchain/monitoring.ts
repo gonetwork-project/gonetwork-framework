@@ -115,9 +115,10 @@ export class Monitoring {
     })
   }
 
-  asStream = (ev: BlockchainEventType | BlockchainEventType[] | AnyEventMark) =>
+  asStream = <T extends BlockchainEventType | BlockchainEventType[] | AnyEventMark>(ev: T) =>
     Observable.from(Array.isArray(ev) ? ev : [ev])
-      .mergeMap(e => Observable.fromEvent(this, e)) as Observable<any>
+      .mergeMap(e => Observable.fromEvent(this, e as any)) as Observable<T extends BlockchainEventType ?
+        EventTypeToEvent<T> : BlockchainEvent> // ideally for [] we would only pass subset of types
 
   waitForTransactionRaw = (tx: E.TxHash, cfg?: Partial<WaitForConfig>) =>
     Observable.timer(0, cfg && cfg.interval || waitForDefault.interval)
