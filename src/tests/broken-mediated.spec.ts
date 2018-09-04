@@ -56,7 +56,7 @@ describe('broken-mediated', () => {
       .then((e) => expect(e.closing_address.compare(c2.owner.address)).toBe(0))
   }, minutes(0.2))
 
-  test.only('when no direct transfer (SecretToProof) target should be able to withdrawLocks', () => {
+  test('when no direct transfer (SecretToProof) target should be able to withdrawLocks', () => {
     c1 = setupClient(0, createSendFn(['SecretToProof']))
     c2 = setupClient(run)
     return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))

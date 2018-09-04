@@ -126,7 +126,11 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
           .then(txHash => waitForValue((t: E.TxHash) =>
             cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(r => r.status === '0x1' ? Promise.resolve(r) : Promise.reject(r))
-          // .catch(r => { console.warn('FAILED', k, r); return Promise.reject(r) })
+          .then(r => {
+            k === 'updateTransfer' && console.warn('UPDATE_TRANSFER', k, '\n', params, '\n', data)
+            return r
+          })
+          .catch(r => { console.warn('FAILED', k, '\n', params, '\n', data); return Promise.reject(r) })
           .then(txReceipt => decodeLogs(txReceipt.logs))
       return acc
     }, {} as {} as TxFull<IO, any>)
