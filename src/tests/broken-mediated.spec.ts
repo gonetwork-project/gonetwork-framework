@@ -32,16 +32,18 @@ const waitForState = (s: MediatedTransferStatus) => (c: Client, messageState?: (
 }
 
 const brokenMediatedMultiple = (n: number) => () => {
-  // c1 = setupClient(0, createSendFn([]), {
-  //   settleTimeout: as.BlockNumber(n * 5 + 6),
-  //   revealTimeout: as.BlockNumber(5),
-  //   collateralTimeout: as.BlockNumber(5)
-  // })
-  c1 = setupClient(0)
-  c2 = setupClient(run, createSendFn(['SecretToProof']))
-  return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(100))
+  const coll = as.BlockNumber(Math.max(10, n))
+  const timeouts = {
+    settleTimeout: as.BlockNumber(n * 5).add(coll).add(as.BlockNumber(1)) as any,
+    revealTimeout: as.BlockNumber(n * 5),
+    collateralTimeout: coll
+  }
+  c1 = setupClient(0, createSendFn([]), timeouts)
+  // c1 = setupClient(0)
+  c2 = setupClient(run, createSendFn(['SecretToProof']), timeouts)
+  return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(n * 10 + 50))
     .then((ch) => {
-      return flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(100))()
+      return flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(n * 10))()
         .then(() => {
           for (let i = 0; i < n; i++) {
             flowsOff.sendMediated(c2, c1, as.Wei(10))()
@@ -118,5 +120,5 @@ describe('broken-mediated', () => {
     brokenMediatedMultiple(1), minutes(0.2))
 
   test.only('when no direct transfer (SecretToProof) target should be able to withdrawLocks'
-    + ' - starts with successful transfer, multiple broken', brokenMediatedMultiple(2), minutes(1))
+    + ' - starts with successful transfer, multiple broken', brokenMediatedMultiple(12), minutes(1))
 })

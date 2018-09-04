@@ -301,6 +301,7 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid Channel State:state channel is not open')
     }
 
+    // console.warn('MEDIATED-EXP', expiration.toString(10))
     let msgID = this.incrementedMsgID()
     // todo: extract type information and propagate
     let mediatedTransferState: stateMachineLib.MediatedTransferState = ({
@@ -469,6 +470,7 @@ export class Engine extends events.EventEmitter {
    * @param {BN} block - the latest mined block
    */
   onBlock (block: BlockNumber) {
+    // console.log('BLOCK:', block.toString(10))
     if (block.lt(this.currentBlock)) {
       throw new Error('Block Error: block count must be monotonically increasing')
     }
@@ -587,8 +589,7 @@ export class Engine extends events.EventEmitter {
     // debugger
     // let withdraws: any[] = []
 
-    // for (let i = 0; i < openLockProofs.length; i++) {
-    for (let i = openLockProofs.length - 1; i >= 0; i--) {
+    for (let i = 0; i < openLockProofs.length; i++) {
       let p = openLockProofs[i]!
       // nonce,gasPrice,nettingChannelAddress, encodedOpenLock, merkleProof,secret)
       let _secret = p.openLock.secret
@@ -605,7 +606,7 @@ export class Engine extends events.EventEmitter {
             secret: _secret
           })
           .then(function (vals) {
-            console.log('widthrawn -- ' + i, vals)
+            console.log(`widthrawn: ${i + 1} / ${openLockProofs.length}`)
             // var secret = vals[0];
             // var receiverAddress = vals[1];
             //  //channelAddress, secret, receiverAddress,block

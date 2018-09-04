@@ -40,6 +40,7 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
 
 export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
   const secretHashPair = GenerateRandomSecretHashPair()
+  // console.warn('SENDING', from.engine.revealTimeout.add(from.config.collateralTimeout).toString(10))
   return from.blockchain.monitoring.blockNumbers()
     .take(1)
     .do((currentBlock) => {
