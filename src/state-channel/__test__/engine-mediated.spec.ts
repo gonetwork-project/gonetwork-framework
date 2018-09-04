@@ -122,10 +122,6 @@ describe('test engine - mediated transfer', () => {
         })
     })
 
-  function assertState (state, expectedState) {
-    assert.equal(state.__machina__['mediated-transfer'].state, expectedState)
-  }
-
   test('lock expires on engine handleBlock', (done) => {
     let { engine, engine2, currentBlock } = setup()
 
@@ -183,9 +179,9 @@ describe('test engine - mediated transfer', () => {
         // we dont want to send this message, but instead we want to
         // cause the lock to timeout
 
-        assertState(engine.messageState['1'].state, 'awaitRevealSecret')
+        assert.equal(engine.messageState['1'].state, 'awaitRevealSecret')
         engine.onBlock(currentBlock.add(new BN(1)) as BlockNumber)
-        assertState(engine.messageState['1'].state, 'expiredTransfer')
+        assert.equal(engine.messageState['1'].state, 'expiredTransfer')
         done()
       })
       secretHashPair = message.GenerateRandomSecretHashPair()
@@ -262,19 +258,19 @@ describe('test engine - mediated transfer', () => {
         // ACTUAL TEST:  no blockchain messages are triggered because of these expired blocks as they were not OPEN
         assert.equal(blockchainQueue.length, 0)
 
-        assertState(engine.messageState['1'].state, 'awaitRevealSecret')
-        assertState(engine.messageState['2'].state, 'awaitRevealSecret')
+        assert.equal(engine.messageState['1'].state, 'awaitRevealSecret')
+        assert.equal(engine.messageState['2'].state, 'awaitRevealSecret')
         engine.onBlock(currentBlock.add(new BN(1)) as BlockNumber)
         assert.equal(blockchainQueue.length, 0)
 
-        assertState(engine.messageState['1'].state, 'expiredTransfer')
-        assertState(engine.messageState['2'].state, 'awaitRevealSecret')
+        assert.equal(engine.messageState['1'].state, 'expiredTransfer')
+        assert.equal(engine.messageState['2'].state, 'awaitRevealSecret')
 
         assert.equal(blockchainQueue.length, 0)
 
         engine.onBlock(currentBlock.add(new BN(5)) as BlockNumber)
-        assertState(engine.messageState['1'].state, 'expiredTransfer')
-        assertState(engine.messageState['2'].state, 'expiredTransfer')
+        assert.equal(engine.messageState['1'].state, 'expiredTransfer')
+        assert.equal(engine.messageState['2'].state, 'expiredTransfer')
         assert.equal(blockchainQueue.length, 0, 'No Blockchain Messages generated as none of the locks are open')
         done()
       })
@@ -372,11 +368,11 @@ describe('test engine - mediated transfer', () => {
         // cause the lock to timeout
 
         assert.equal(blockchainQueue.length, 0)
-        assertState(engine.messageState['1'].state, 'awaitSecretToProof')
+        assert.equal(engine.messageState['1'].state, 'awaitSecretToProof')
 
         engine.onBlock(currentBlock.add(new BN(1)) as BlockNumber)
         assert.equal(blockchainQueue.length, 1)
-        assertState(engine.messageState['1'].state, 'completedTransfer')
+        assert.equal(engine.messageState['1'].state, 'completedTransfer')
 
         assert.equal(mockBlockChain.cmdQueue[0], 'closeChannel', 'first command should be close channel')
 
