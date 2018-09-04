@@ -368,6 +368,7 @@ export class Engine extends events.EventEmitter {
   handleEvent (event: string, state: stateMachineLib.MediatedTransferState) { // todo: improve and unify events across rest of the project
     try {
       if (event.startsWith('GOT.')) {
+        // console.log(event, this.cfg.address.toString('hex'), (state as any).classType)
         let channel: channelLib.Channel
         // console.log(event)
         switch (event) {
@@ -434,7 +435,12 @@ export class Engine extends events.EventEmitter {
           case 'GOT.closeChannel':
             channel = this.channelByPeer[state.from!.toString('hex')]
             // TODO emit closing
-            return this.closeChannel(channel.channelAddress)
+            // TODO / FIXME seems GOT.closeChannel maybe emitted multiple times from the state-machine
+            if (channel.isOpen()) {
+              return this.closeChannel(channel.channelAddress)
+            } else {
+              return
+            }
           // channel.handleClose(this.currentBlock);
           // break
           case 'GOT.issueSettle':
@@ -485,6 +491,7 @@ export class Engine extends events.EventEmitter {
       // console.debug('CALL HANDLE BLOCK ON CHANNEL')
       let events = channel.onBlock(self.currentBlock)
       for (let i = 0; i < events.length; i++) {
+        console.log('EVENTS', events[i])
         self.handleEvent.apply(events[i])
       }
     })
@@ -572,7 +579,7 @@ export class Engine extends events.EventEmitter {
    * @returns {Promise} - the promise is settled when the channel close request is mined.  If there is an error during any point of execution in the mining
    * the onChannelSecretRevealedError(channelAddress) is called for each lock that was not successfully withdrawn on-chain and must be reissued
    */
-  withdrawPeerOpenLocks (channelAddress: Address) {
+  async withdrawPeerOpenLocks (channelAddress: Address) {
     if (!this.channels.hasOwnProperty(channelAddress.toString('hex'))) {
       throw new Error('Invalid Withdraw: unknown channel')
     }
@@ -582,9 +589,10 @@ export class Engine extends events.EventEmitter {
     }
     let openLockProofs = channel.issueWithdrawPeerOpenLocks(this.currentBlock)
     // debugger
-    let withdraws: any[] = []
+    // let withdraws: any[] = []
 
-    for (let i = 0; i < openLockProofs.length; i++) {
+    // for (let i = 0; i < openLockProofs.length; i++) {
+    for (let i = openLockProofs.length - 1; i >= 0; i--) {
       let p = openLockProofs[i]!
       // nonce,gasPrice,nettingChannelAddress, encodedOpenLock, merkleProof,secret)
       let _secret = p.openLock.secret
@@ -592,26 +600,27 @@ export class Engine extends events.EventEmitter {
       const merkleProof = util.toBuffer('0x' + p.merkleProof.reduce((sum, proof) => sum + proof.toString('hex'), ''))
       let self = this
 
-      let promise = this.blockchain.withdraw(
-        { to: channelAddress },
-        {
-          locked_encoded: p.encodeLock(),
-          merkle_proof: merkleProof,
-          secret: _secret
-        })
-        .then(function (vals) {
-          // var secret = vals[0];
-          // var receiverAddress = vals[1];
-          //  //channelAddress, secret, receiverAddress,block
-          //  return self.onChannelSecretRevealed(_channelAddress,secret,receiverAddress)
-        })
-        .catch(function (err) {
-          return self.onChannelSecretRevealedError(_channelAddress, _secret, err)
-        })
-      withdraws.push(promise)
-      // debugger
+      try {
+        await this.blockchain.withdraw(
+          { to: channelAddress },
+          {
+            locked_encoded: p.encodeLock(),
+            merkle_proof: merkleProof,
+            secret: _secret
+          })
+          .then(function (vals) {
+            console.log('widthrawn -- ' + i, vals)
+            // var secret = vals[0];
+            // var receiverAddress = vals[1];
+            //  //channelAddress, secret, receiverAddress,block
+            //  return self.onChannelSecretRevealed(_channelAddress,secret,receiverAddress)
+          })
+      } catch (err) {
+        self.onChannelSecretRevealedError(_channelAddress, _secret, err)
+        return Promise.reject(err)
+      }
     }
-    return Promise.all(withdraws)
+    return Promise.resolve(true)
   }
 
   /** Settle the channel on-chain after settle_timeout time has passed since closing, unlocking the on-chain collateral and distributing the funds
