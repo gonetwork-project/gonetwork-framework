@@ -562,7 +562,11 @@ export class Engine extends events.EventEmitter {
       throw new Error('Invalid TransferUpdate: Cannot issue update on open channel')
     }
 
-    let proof = channel.issueTransferUpdate(this.currentBlock) as messageLib.ProofMessage
+    let proof = channel.issueTransferUpdate(this.currentBlock)
+
+    if (!proof) {
+      return Promise.resolve(true)
+    }
 
     return this.blockchain.updateTransfer({ to: channelAddress, from: this.address },
       messageLib.proofToTxData(proof)).catch((err) => {
@@ -606,10 +610,7 @@ export class Engine extends events.EventEmitter {
             secret: _secret
           })
           .then(function (vals) {
-            console.log(`widthrawn: ${i + 1} / ${openLockProofs.length}`)
-            // var secret = vals[0];
-            // var receiverAddress = vals[1];
-            //  //channelAddress, secret, receiverAddress,block
+            // console.log(`widthrawn: ${i + 1} / ${openLockProofs.length}`)
             //  return self.onChannelSecretRevealed(_channelAddress,secret,receiverAddress)
           })
       } catch (err) {

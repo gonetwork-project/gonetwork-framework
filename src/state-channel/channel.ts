@@ -466,7 +466,7 @@ export class Channel {
   issueTransferUpdate (currentBlock: E.BlockNumber) {
     if (!this.issuedCloseBlock) {
       this.issuedTransferUpdateBlock = currentBlock
-      return this.peerState.proof.signature ? this.peerState.proof : null
+      return this.peerState.proof.signature ? this.peerState.proof as message.ProofMessage : null
     }
   }
 

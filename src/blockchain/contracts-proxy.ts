@@ -120,19 +120,22 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
   (est: TxEstimation<IO>, raw: TxSendRaw<IO>, order: GenOrder, cfg: ContractTxConfig): TxFull<IO, any> => {
   return Object.keys(order)
     .reduce((acc, k) => {
-      (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData, waitCfg?: WaitForConfig) =>
-        Promise.all([est[k](params, data), params.nonce ? Promise.resolve(params.nonce) : cfg.rpc.getTransactionCount({ address: cfg.owner })])
+      (acc[k] as any) = (params: E.TxParamsRequired & E.TxParamsWithGas, data: E.TxData, waitCfg?: WaitForConfig) => {
+        return Promise.all([est[k](params, data), params.nonce ? Promise.resolve(params.nonce) : cfg.rpc.getTransactionCount({ address: cfg.owner })])
           .then(([x, nonce]) => (raw[k] as any)(Object.assign({ nonce }, x.txParams), data) as Promise<E.TxHash>)
           .then(txHash => waitForValue((t: E.TxHash) =>
             cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(r => r.status === '0x1' ? Promise.resolve(r) : Promise.reject(r))
           .then(r => {
-            // k === 'updateTransfer' && console.warn('UPDATE_TRANSFER', k, '\n', params, '\n', data)
             // console.log('CONTRACT-CALL', k, cfg.owner.toString('hex'))
             return r
           })
-          .catch(r => { console.warn('FAILED', k, '\n', params, '\n', data); return Promise.reject(r) })
+          .catch(r => {
+            console.warn('FAILED', k, cfg.owner.toString('hex'), '\n', params, '\n', data)
+            return Promise.reject(r)
+          })
           .then(txReceipt => decodeLogs(txReceipt.logs))
+      }
       return acc
     }, {} as {} as TxFull<IO, any>)
 }

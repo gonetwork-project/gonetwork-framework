@@ -32,14 +32,13 @@ const waitForState = (s: MediatedTransferStatus) => (c: Client, messageState?: (
 }
 
 const brokenMediatedMultiple = (n: number) => () => {
-  const coll = as.BlockNumber(Math.max(10, n))
+  const coll = as.BlockNumber(10)
   const timeouts = {
     settleTimeout: as.BlockNumber(n * 5).add(coll).add(as.BlockNumber(1)) as any,
     revealTimeout: as.BlockNumber(n * 5),
     collateralTimeout: coll
   }
   c1 = setupClient(0, createSendFn([]), timeouts)
-  // c1 = setupClient(0)
   c2 = setupClient(run, createSendFn(['SecretToProof']), timeouts)
   return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(n * 10 + 50))
     .then((ch) => {
@@ -56,9 +55,7 @@ const brokenMediatedMultiple = (n: number) => () => {
         })
     })
     .then(({ ch, ev }) => {
-      // console.log('Withdrawing...')
       expect(ev.closing_address.compare(c1.owner.address)).toBe(0)
-      // console.log(c2.engine.messageState)
       return Promise.all([
         // imporant to keep this order
         c1.blockchain.monitoring.asStream('ChannelSecretRevealed').take(n).toPromise(),
@@ -114,11 +111,12 @@ describe('broken-mediated', () => {
           c2.engine.withdrawPeerOpenLocks(ch.channel)
         ])
       })
+      .catch(err => console.log(err))
   }, minutes(0.2))
 
   test('when no direct transfer (SecretToProof) target should be able to withdrawLocks - starts with successful transfer',
     brokenMediatedMultiple(1), minutes(0.2))
 
-  test.only('when no direct transfer (SecretToProof) target should be able to withdrawLocks'
-    + ' - starts with successful transfer, multiple broken', brokenMediatedMultiple(12), minutes(1))
+  test('when no direct transfer (SecretToProof) target should be able to withdrawLocks'
+    + ' - starts with successful transfer, multiple broken', brokenMediatedMultiple(12), minutes(0.5))
 })
