@@ -479,19 +479,15 @@ export class Engine extends events.EventEmitter {
     let self = this
     Object.values(this.messageState).map(function (messageState) {
       try {
-        // console.debug('CALL HANDLE BLOCK ON MESSAGE')
         messageState.applyMessage('handleBlock', self.currentBlock)
       } catch (err) {
         console.log(err)
       }
-      // console.log('MSG-STATE', messageState.state)
     })
     // handleBlock for each of the channels, perhaps SETTLE_TIMEOUT has passed
     Object.values(this.channels).map((channel) => {
-      // console.debug('CALL HANDLE BLOCK ON CHANNEL')
       let events = channel.onBlock(self.currentBlock)
       for (let i = 0; i < events.length; i++) {
-        console.log('EVENTS', events[i])
         self.handleEvent.apply(events[i])
       }
     })

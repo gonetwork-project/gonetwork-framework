@@ -127,7 +127,8 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
             cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(r => r.status === '0x1' ? Promise.resolve(r) : Promise.reject(r))
           .then(r => {
-            k === 'updateTransfer' && console.warn('UPDATE_TRANSFER', k, '\n', params, '\n', data)
+            // k === 'updateTransfer' && console.warn('UPDATE_TRANSFER', k, '\n', params, '\n', data)
+            console.log('CONTRACT-CALL', k, cfg.owner.toString('hex'))
             return r
           })
           .catch(r => { console.warn('FAILED', k, '\n', params, '\n', data); return Promise.reject(r) })

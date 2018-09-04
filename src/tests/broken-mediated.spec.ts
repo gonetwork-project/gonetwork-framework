@@ -31,6 +31,40 @@ const waitForState = (s: MediatedTransferStatus) => (c: Client, messageState?: (
     .toPromise()
 }
 
+const brokenMediatedMultiple = (n: number) => () => {
+  // c1 = setupClient(0, createSendFn([]), {
+  //   settleTimeout: as.BlockNumber(n * 5 + 6),
+  //   revealTimeout: as.BlockNumber(5),
+  //   collateralTimeout: as.BlockNumber(5)
+  // })
+  c1 = setupClient(0)
+  c2 = setupClient(run, createSendFn(['SecretToProof']))
+  return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(100))
+    .then((ch) => {
+      return flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(100))()
+        .then(() => {
+          for (let i = 0; i < n; i++) {
+            flowsOff.sendMediated(c2, c1, as.Wei(10))()
+          }
+          return c1.blockchain.monitoring.asStream('ChannelClosed')
+            .take(1)
+            .delay(50)
+            .map(e => ({ ch: ch, ev: e }))
+            .toPromise()
+        })
+    })
+    .then(({ ch, ev }) => {
+      // console.log('Withdrawing...')
+      expect(ev.closing_address.compare(c1.owner.address)).toBe(0)
+      // console.log(c2.engine.messageState)
+      return Promise.all([
+        // imporant to keep this order
+        c1.blockchain.monitoring.asStream('ChannelSecretRevealed').take(n).toPromise(),
+        c1.engine.withdrawPeerOpenLocks(ch.channel)
+      ])
+    })
+}
+
 describe('broken-mediated', () => {
   test('when peer not responding transfer should expire', () => {
     c1 = setupClient(0)
@@ -80,58 +114,9 @@ describe('broken-mediated', () => {
       })
   }, minutes(0.2))
 
-  test('when no direct transfer (SecretToProof) target should be able to withdrawLocks - starts with successful transfer', () => {
-    c1 = setupClient(0)
-    c2 = setupClient(run, createSendFn(['SecretToProof']))
-    return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
-      .then((ch) => {
-        return flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(20))()
-          .then(() => {
-            flowsOff.sendMediated(c2, c1, as.Wei(20))()
-            return c1.blockchain.monitoring.asStream('ChannelClosed')
-              .take(1)
-              .delay(50)
-              .map(e => ({ ch: ch, ev: e }))
-              .toPromise()
-          })
-      })
-      .then(({ ch, ev }) => {
-        // console.log('Withdrawing...')
-        expect(ev.closing_address.compare(c1.owner.address)).toBe(0)
-        // console.log(c2.engine.messageState)
-        return Promise.all([
-          // imporant to keep this order
-          c1.blockchain.monitoring.asStream('ChannelSecretRevealed').take(1).toPromise(),
-          c1.engine.withdrawPeerOpenLocks(ch.channel)
-        ])
-      })
-  }, minutes(0.2))
+  test('when no direct transfer (SecretToProof) target should be able to withdrawLocks - starts with successful transfer',
+    brokenMediatedMultiple(1), minutes(0.2))
 
-  test.only('when no direct transfer (SecretToProof) target should be able to withdrawLocks - starts with successful transfer, multiple broken', () => {
-    c1 = setupClient(0)
-    c2 = setupClient(run, createSendFn(['SecretToProof']))
-    return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
-      .then((ch) => {
-        return flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(50))()
-          .then(() => {
-            flowsOff.sendMediated(c2, c1, as.Wei(10))()
-            flowsOff.sendMediated(c2, c1, as.Wei(10))()
-            return c1.blockchain.monitoring.asStream('ChannelClosed')
-              .take(1)
-              .delay(50)
-              .map(e => ({ ch: ch, ev: e }))
-              .toPromise()
-          })
-      })
-      .then(({ ch, ev }) => {
-        // console.log('Withdrawing...')
-        expect(ev.closing_address.compare(c1.owner.address)).toBe(0)
-        // console.log(c2.engine.messageState)
-        return Promise.all([
-          // imporant to keep this order
-          c1.blockchain.monitoring.asStream('ChannelSecretRevealed').take(1).toPromise(),
-          c1.engine.withdrawPeerOpenLocks(ch.channel)
-        ])
-      })
-  }, minutes(0.2))
+  test.only('when no direct transfer (SecretToProof) target should be able to withdrawLocks'
+    + ' - starts with successful transfer, multiple broken', brokenMediatedMultiple(2), minutes(1))
 })
