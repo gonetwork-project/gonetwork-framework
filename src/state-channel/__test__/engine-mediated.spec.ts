@@ -9,7 +9,7 @@ import { add1, as, BN } from '../../utils'
 
 describe('test engine - mediated transfer', () => {
   test('component test: #1) e2e engine mediated transfer #2)engine 1 responds with transferUpdate when it receives a channelClose event as it did not issue close',
-    (done) => {
+    (done: () => void) => {
       let { engine, engine2, currentBlock, sendQueue, mockBlockChain, blockchainQueue } = setup()
 
       currentBlock = add1(currentBlock)

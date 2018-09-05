@@ -565,7 +565,7 @@ export class Engine extends events.EventEmitter {
     let proof = channel.issueTransferUpdate(this.currentBlock)
 
     if (!proof) {
-      return Promise.resolve(true)
+      return Promise.resolve([])
     }
 
     return this.blockchain.updateTransfer({ to: channelAddress, from: this.address },
