@@ -11,7 +11,7 @@
     "test-clear": "rm temp/contract-addresses.json || true",
     "test-unit": "yarn test-clear && GONET_TEST_ENV=local,infura jest src/blockchain src/state-channel --coverage",
     "test-unit-dev": "yarn test-clear && GONET_TEST_ENV=local jest --watch",
-    "test-inte": "yarn test-clear && jest src/tests",
+    "test-inte": "yarn test-clear && jest --runInBand src/tests",
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts'",
     "lint-js": "node node_modules/standard/bin/cmd 'src/state-channel/**/*.js' 'test/**/*.js' 'demo/**/*.js'",
     "watch": "rm -rf lib/ && node_modules/typescript/bin/tsc --watch",
