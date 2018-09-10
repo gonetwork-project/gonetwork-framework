@@ -453,7 +453,6 @@ export class Engine extends events.EventEmitter {
         return
       }
     } catch (err) {
-      debugger
       this.handleError(err)
     }
   }
@@ -570,7 +569,7 @@ export class Engine extends events.EventEmitter {
     }
 
     return this.blockchain.updateTransfer({ to: channelAddress, from: this.address },
-      messageLib.proofToTxData(proof)).catch((err) => {
+      messageLib.proofToTxData(proof!)).catch((err) => {
         this.onTransferUpdatedError(channelAddress, err)
         return Promise.reject(err)
       })

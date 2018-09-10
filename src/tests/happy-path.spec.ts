@@ -32,7 +32,8 @@ describe('integration::happy-path -- base', () => {
     .then(ch => flowsOn.closeChannel(c1, c2, ch.channel, forceSettle))
     .then(flowsOn.checkBalances(as.Wei(0), as.Wei(50)))
 
-  test.only('create and close - force settle', () => createAndClose(true), minutes(0.2))
+  test('create and close - force settle', () => createAndClose(true), minutes(0.2))
+  // TODO: discuss seems auto settle should not be supported
   // test.only('create and close - auto settle', () => createAndClose(false), minutes(0.2))
 })
 
