@@ -27,8 +27,8 @@ export const deposit = (from: Client, token: Address, channel: Address, amount: 
 export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =>
   Promise.all([
     Observable.zip(
-    from.blockchain.monitoring.asStream('ChannelNewBalance'),
-    to.blockchain.monitoring.asStream('ChannelNewBalance'))
+      from.blockchain.monitoring.asStream('ChannelNewBalance'),
+      to.blockchain.monitoring.asStream('ChannelNewBalance'))
       .take(1)
       .delay(0)
       // .do((x) => console.warn('ChannelNewBalance', x))
@@ -39,7 +39,7 @@ export const createChannelAndDeposit = (from: Client, to: Client, amount: Wei) =
       )
   ])
     .then(([_, x]) => x)
-    // .then(x => log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${x.channel.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`)(x))
+// .then(x => log(`CREATED AND DEPOSITED ${amount.toString()}$ chan: 0x${x.channel.toString('hex')} from: 0x${from.owner.addressStr} to: 0x${to.owner.addressStr}`)(x))
 
 export type Balances = { channel: Wei, opener: Wei, other: Wei }
 export const checkBalances = (openerToOtherNet: Wei, openerDeposit: Wei) =>
@@ -61,9 +61,35 @@ export const getBalances = (opener: Client, other: Client, channelAddress: Addre
       channel, opener, other
     }))
 
-export const closeChannel = (opener: Client, other: Client, expectedTransfers: 0 | 1 | 2,
-  channelAddress = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) => {
-  const balances = getBalances(opener, other, channelAddress)
+export const closeChannel = (c1: Client, c2: Client, channelAddress: Address, forceSettle = true) => {
+  const balances = getBalances(c1, c2, channelAddress)
+  const channel = c1.engine.channels[channelAddress.toString('hex')]
+  return balances()
+    .then(before =>
+      Promise.all([
+        c1.blockchain.monitoring.asStream('ChannelSettled')
+          .take(1)
+          .mergeMap(balances)
+          .toPromise(),
+        c1.engine.closeChannel(channelAddress),
+        !forceSettle ? Promise.resolve(true as any) :
+          c1.blockchain.monitoring.asStream('ChannelClosed')
+            .switchMapTo(c2.blockchain.monitoring.blockNumbers())
+            .filter(bn => bn.gte(channel.closedBlock!.add(c1.engine.settleTimeout)))
+            .take(1)
+            .toPromise()
+            .then(() => console.log('SETTLING...'))
+            .then(() => c2.engine.settleChannel(channelAddress))
+      ])
+        .then(([after]) => ({
+          before, after
+        }) as { before: Balances, after: Balances })
+    )
+}
+
+export const closeChannelWithTransferUpdate = (opener: Client, other: Client, expectedTransfers: 0 | 1 | 2,
+  channel = opener.engine.channelByPeer[other.owner.addressStr].channelAddress) => {
+  const balances = getBalances(opener, other, channel)
   return balances()
     .then(before =>
       Promise.all([
@@ -75,7 +101,7 @@ export const closeChannel = (opener: Client, other: Client, expectedTransfers: 0
           .take(expectedTransfers === 0 ? 0 : expectedTransfers + 1) // 1 for Got Token
           .toArray()
           .toPromise(),
-        opener.engine.closeChannel(channelAddress),
+        opener.engine.closeChannel(channel),
         other.blockchain.monitoring.asStream('TransferUpdated')
           .mergeMapTo(other.blockchain.monitoring.blockNumbers())
           .skip(1)
@@ -86,7 +112,7 @@ export const closeChannel = (opener: Client, other: Client, expectedTransfers: 0
           )
           .take(1)
           .toPromise()
-          .then(() => other.engine.settleChannel(channelAddress))
+          .then(() => other.engine.settleChannel(channel))
       ])
         .then(([after]) => ({
           before, after

@@ -24,14 +24,16 @@ afterEach(() => {
 })
 
 describe('integration::happy-path -- base', () => {
-  // todo: investigate it throws
-  test.skip('create and close', () =>
-    flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
-      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
-      .then(() => flowsOn.closeChannel(c1, c2, 0))
-      .catch(err => console.warn(err))
-    , minutes(0.2)
-  )
+  const createAndClose = (forceSettle: boolean) => flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
+    .then((x) => {
+      expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true)
+      return x
+    })
+    .then(ch => flowsOn.closeChannel(c1, c2, ch.channel, forceSettle))
+    .then(flowsOn.checkBalances(as.Wei(0), as.Wei(50)))
+
+  test.only('create and close - force settle', () => createAndClose(true), minutes(0.2))
+  // test.only('create and close - auto settle', () => createAndClose(false), minutes(0.2))
 })
 
 describe('integration::happy-path -- direct transfer', () => {
@@ -45,7 +47,7 @@ describe('integration::happy-path -- direct transfer', () => {
       .then(() =>
         expect(flowsOff.transferredEqual(c1, as.Wei(40), c2, as.Wei(0))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 2))
+      .then(() => flowsOn.closeChannelWithTransferUpdate(c1, c2, 2))
       .then(flowsOn.checkBalances(as.Wei(40), as.Wei(50)))
     , minutes(0.2))
 
@@ -64,7 +66,7 @@ describe('integration::happy-path -- direct transfer', () => {
       .then(() =>
         expect(flowsOff.transferredEqual(c1, as.Wei(80), c2, as.Wei(30))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 1))
+      .then(() => flowsOn.closeChannelWithTransferUpdate(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(0.2))
 })
@@ -78,7 +80,7 @@ describe('integration::happy-path -- mediated transfer', () => {
       // .then(() => expect(flowsOff.sendMediated(c1, c2, as.Wei(51))).toThrow()) error but via callback
       .then(flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(30)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
-      .then(() => flowsOn.closeChannel(c1, c2, 1))
+      .then(() => flowsOn.closeChannelWithTransferUpdate(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(0.2))
 
@@ -98,7 +100,7 @@ describe('integration::happy-path -- mediated transfer', () => {
       .then(() =>
         expect(flowsOff.transferredEqual(c1, as.Wei(100), c2, as.Wei(50))).toBe(true)
       )
-      .then(() => flowsOn.closeChannel(c1, c2, 1))
+      .then(() => flowsOn.closeChannelWithTransferUpdate(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(50), as.Wei(50)))
     , minutes(0.2))
 })
@@ -111,7 +113,7 @@ describe('integration::happy-path -- mediated and direct transfer', () => {
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(200), c2, as.Wei(0))).toBe(true))
       .then(flowsOff.sendDirect(c1, c2, as.Wei(400)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(400), c2, as.Wei(0))).toBe(true))
-      .then(() => flowsOn.closeChannel(c1, c2, 1))
+      .then(() => flowsOn.closeChannelWithTransferUpdate(c1, c2, 1))
       .then(flowsOn.checkBalances(as.Wei(400), as.Wei(500)))
     , minutes(0.2))
 
@@ -142,7 +144,7 @@ describe('integration::happy-path -- mediated and direct transfer', () => {
         flowsOff.sendMediatedHappyPath(c2, c1, as.Wei(50))()
       ]))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(500), c2, as.Wei(300))).toBe(true))
-      .then(() => flowsOn.closeChannel(c1, c2, 2))
+      .then(() => flowsOn.closeChannelWithTransferUpdate(c1, c2, 2))
       .then(flowsOn.checkBalances(as.Wei(200), as.Wei(500)))
     , minutes(0.4))
 })
