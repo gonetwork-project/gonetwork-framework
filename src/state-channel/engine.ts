@@ -453,6 +453,7 @@ export class Engine extends events.EventEmitter {
         return
       }
     } catch (err) {
+      debugger
       this.handleError(err)
     }
   }
@@ -490,7 +491,7 @@ export class Engine extends events.EventEmitter {
     Object.values(this.channels).map((channel) => {
       let events = channel.onBlock(self.currentBlock)
       for (let i = 0; i < events.length; i++) {
-        self.handleEvent.apply(events[i])
+        self.handleEvent.apply(self, events[i])
       }
     })
   }
