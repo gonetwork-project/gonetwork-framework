@@ -777,7 +777,7 @@ export class Engine extends events.EventEmitter {
 
     // constructor(peerState,myState,channelAddress,settleTimeout,revealTimeout,currentBlock){
     let channel = new channelLib.Channel(stateTwo, stateOne, channelAddress,
-      this.currentBlock, this.revealTimeout)
+      this.currentBlock, this.revealTimeout, this.settleTimeout)
     this.channels[util.toBuffer(channel.channelAddress).toString('hex')] = channel
     this.channelByPeer[channel.peerState.address.toString('hex')] = channel
 

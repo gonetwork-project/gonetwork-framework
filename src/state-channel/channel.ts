@@ -78,7 +78,7 @@ export class Channel {
    * @param {BlockNumber} currentBlock - The current block number on ethereum.
    * @param {BlockNumber} revealTimeout - Reveal timeout for calculating safe block.
    */
-  constructor (peerState, myState, channelAddress: E.Address, currentBlock: E.BlockNumber, readonly revealTimeout = REVEAL_TIMEOUT) {
+  constructor (peerState, myState, channelAddress: E.Address, currentBlock: E.BlockNumber, readonly revealTimeout = REVEAL_TIMEOUT, readonly settleTimeout = SETTLE_TIMEOUT) {
     this.peerState = peerState // channelState.ChannelStateSync
     this.myState = myState// channelState.ChannelStateSync
     this.channelAddress = channelAddress || as.Address(message.EMPTY_20BYTE_BUFFER)
@@ -109,9 +109,9 @@ export class Channel {
    */
   getChannelExpirationBlock (currentBlock: E.BlockNumber) {
     if (this.closedBlock) {
-      return this.closedBlock.add(SETTLE_TIMEOUT)
+      return this.closedBlock.add(this.settleTimeout)
     } else {
-      return currentBlock.add(SETTLE_TIMEOUT)
+      return currentBlock.add(this.settleTimeout)
     }
   }
 
@@ -443,8 +443,8 @@ export class Channel {
    * @returns {bool}
    */
   canIssueSettle (currentBlock: E.BlockNumber) {
-    return !!(this.closedBlock &&
-      currentBlock.gt(this.closedBlock.add(SETTLE_TIMEOUT)))
+    return !!(this.closedBlock && this.state === 'closed' &&
+      currentBlock.gt(this.closedBlock.add(this.settleTimeout)))
   }
 
   issueSettle (currentBlock: E.BlockNumber) {
