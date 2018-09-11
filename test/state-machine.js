@@ -117,7 +117,7 @@ test('test stateMachine transfers', function (t) {
       }))
 
     Initiator = stateMachine.InitiatorFactory()
-    Target = stateMachine.TargetFactory()
+    Target = stateMachine.TargetFactory(channel.REVEAL_TIMEOUT)
 
     Initiator.on('*', function (event, state) {
       if (event.startsWith('GOT.')) {
