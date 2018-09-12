@@ -9,7 +9,8 @@ import * as stateMachineLib from './state-machine'
 import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
-import EventEmitter from '../utils/event-emitter'
+import { EventEmitter } from '../utils'
+import { EngineEventsSpec } from './engine-events'
 
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
@@ -43,7 +44,7 @@ export type Config = {
  * @property {function} signatureService
  * @property {object} blockchain
  */
-export class Engine extends EventEmitter<{}> {
+export class Engine extends EventEmitter<EngineEventsSpec> {
   // dictionary of channels[peerAddress] that are pending mining
   readonly pendingChannels = {}
   readonly channels: { [k: string]: channelLib.Channel } = {}
