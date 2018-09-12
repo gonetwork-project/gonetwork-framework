@@ -1,5 +1,4 @@
 import * as util from 'ethereumjs-util'
-import * as events from 'events'
 import { BN } from 'bn.js'
 
 import * as messageLib from './message'
@@ -10,7 +9,7 @@ import * as stateMachineLib from './state-machine'
 import { IBlockchainService } from '..'
 import { BlockNumber, Address, PrivateKey } from 'eth-types'
 import { BlockchainEvent } from '../types'
-import { abi } from '../utils'
+import EventEmitter from '../utils/event-emitter'
 
 // todo: unify with BlockchainService -
 // this actually is better than blockchain approach
@@ -44,7 +43,7 @@ export type Config = {
  * @property {function} signatureService
  * @property {object} blockchain
  */
-export class Engine extends events.EventEmitter {
+export class Engine extends EventEmitter<{}> {
   // dictionary of channels[peerAddress] that are pending mining
   readonly pendingChannels = {}
   readonly channels: { [k: string]: channelLib.Channel } = {}
@@ -78,7 +77,6 @@ export class Engine extends events.EventEmitter {
     super()
 
     const { address, sign, send, blockchain } = cfg
-
     this.address = address
     this.signature = sign
     this.blockchain = blockchain
