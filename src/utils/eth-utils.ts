@@ -7,6 +7,11 @@ import * as Tx from 'ethereumjs-tx'
 import * as T from '../types'
 import GenericLogDecoder from './generic-log-decoder'
 
+import { abi as ChannelAbi } from '../__GEN__/NettingChannelContract'
+import { abi as ChannelLibAbi } from '../__GEN__/NettingChannelLibrary'
+import { abi as TokenAbi } from '../__GEN__/HumanStandardToken'
+import { abi as ManagerAbi } from '../__GEN__/ChannelManagerContract'
+
 export {
   BN, util, abi, Tx
 }
@@ -125,12 +130,12 @@ export const serializeRpcParams = (ps: object) =>
     }, {} as { [K: string]: string | string[] })
 
 // todo: remove it and use generated stuff
-const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
-const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
-const NettingChannelLibrary = require('../../smart-contracts/build/contracts/NettingChannelLibrary.json')
-const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
+// const ChannelManagerContract = require('../../smart-contracts/build/contracts/ChannelManagerContract.json')
+// const NettingChannelContract = require('../../smart-contracts/build/contracts/NettingChannelContract.json')
+// const NettingChannelLibrary = require('../../smart-contracts/build/contracts/NettingChannelLibrary.json')
+// const HumanStandardTokenContract = require('../../smart-contracts/build/contracts/HumanStandardToken.json')
 
-const decoder = new GenericLogDecoder([ChannelManagerContract, NettingChannelContract, NettingChannelLibrary, HumanStandardTokenContract])
+const decoder = new GenericLogDecoder([ManagerAbi, ChannelAbi, ChannelLibAbi, TokenAbi])
 export const decodeLogs = (logs: any[]) => logs.map(decoder.decode.bind(decoder)) as T.BlockchainEvent[]
 
 let id = 0

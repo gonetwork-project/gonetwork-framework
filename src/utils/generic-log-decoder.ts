@@ -1,20 +1,22 @@
 import * as abi from 'ethereumjs-abi'
 import * as util from 'ethereumjs-util'
 
+import { Abi } from 'eth-types'
+
 export default class GenericLogDecoder {
   private eventMap: any
 
-  constructor (contracts: any[]) {
-    this.eventMap = GenericLogDecoder.generateEventMap(contracts)
+  constructor (abis: Abi[]) {
+    this.eventMap = GenericLogDecoder.generateEventMap(abis)
   }
 
   static generateTopic (def: any) {
     return util.addHexPrefix(abi.eventID(def.name, def.inputs.map(y => y.type)).toString('hex'))
   }
 
-  static generateEventMap (contracts: any[]) {
-    let definitions = ([].concat(...contracts.map(y => y.abi)))
-      .filter((y: any) => y.type === 'event')
+  static generateEventMap (abis: Abi[]) {
+    let definitions = (([] as Abi).concat(...abis))
+      .filter((y) => y.type === 'event')
       .reduce((r, x) => {
         let topic = GenericLogDecoder.generateTopic(x)
         r[topic] = x

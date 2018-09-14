@@ -1,6 +1,6 @@
 {
   "name": "go-network-framework",
-  "version": "0.2.23",
+  "version": "0.2.25",
   "repository": {
     "type": "git",
     "url": "https://github.com/gonetwork-project/gonetwork-framework.git"
@@ -64,9 +64,7 @@
   },
   "typings": "./lib/index.d.ts",
   "files": [
-    "lib",
-    "build-dev",
-    "smart-contracts"
+    "lib"
   ],
   "jest": {
     "transform": {

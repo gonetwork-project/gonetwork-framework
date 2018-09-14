@@ -157,4 +157,45 @@ declare module 'eth-types' {
 
   // TODO - consider
   export type SignatureCb = (cb: (pk: PrivateKey) => void) => void
+
+  // #region Abi
+  // not guarantee these are 100% correct, but compatibile with output of abi-to-ts script
+  // so if contracts changed this might need some tweaking
+
+  export type Abi = Array<AbiEvent | AbiFunction | AbiConstructor | AbiFallback>
+
+  interface AbiIO {
+    name: string
+    type: string
+  }
+
+  interface AbiEvent {
+    type: 'event'
+    name: string
+    inputs: (AbiIO & { indexed?: boolean })[]
+    anonymous: boolean
+  }
+
+  interface AbiBase {
+    inputs?: AbiIO[]
+    outputs?: AbiIO[]
+    payable: boolean
+    stateMutability?: 'view' | 'nonpayable' | 'payable' | 'pure'
+  }
+
+  interface AbiConstructor extends AbiBase {
+    type: 'constructor'
+  }
+
+  interface AbiFallback extends AbiBase {
+    type: 'fallback'
+  }
+
+  interface AbiFunction extends AbiBase {
+    type: 'function'
+    name: string
+    constant: boolean
+    inputs: AbiIO[]
+  }
+  // #endregion
 }

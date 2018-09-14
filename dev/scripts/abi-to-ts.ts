@@ -11,7 +11,7 @@ type AbiIO = {
 type AbiEvent = {
   type: 'event'
   name: string
-  inputs: (AbiIO & { indexed: boolean })[]
+  inputs: (AbiIO & { indexed?: boolean })[]
   anonymous: boolean
 }
 
@@ -24,26 +24,29 @@ type AbiFunction = {
   payable: boolean
 }
 
+type ContractFullName = keyof typeof SHORT_NAMES
+
 const $ = Observable
 
 const DEFAULT_ROOT = path.join(__dirname, '..', '..')
 const contractsDir = path.join(DEFAULT_ROOT, 'smart-contracts', 'build', 'contracts')
 const outDir = path.join(DEFAULT_ROOT, 'src', '__GEN__')
 
-const CONTRACT_NAMES = [
-  'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract'
+const CONTRACT_NAMES: Array<ContractFullName> = [
+  'HumanStandardToken', 'ChannelManagerContract', 'NettingChannelContract', 'NettingChannelLibrary'
 ]
 
-const SHORT_NAMES: { [k: string]: string } = {
+const SHORT_NAMES = {
   HumanStandardToken: 'Token',
   ChannelManagerContract: 'Manager',
-  NettingChannelContract: 'Channel'
+  NettingChannelContract: 'Channel',
+  NettingChannelLibrary: 'ChannelLib'
 }
 
 const ACHTUNG = '// \u26A0 !IMPORTANT! THIS FILE WAS AUTO-GENERATED - DO NOT MODIFY BY HAND \u26A0\n'
 const IMPORTS = [
   `import { BN } from 'bn.js'`,
-  `import { Address } from 'eth-types'`
+  `import { Address, Abi } from 'eth-types'`
 ].join('\n')
 
 const readContracts = (p: string) =>
@@ -127,15 +130,18 @@ const handlers: {
   fallback_: handleFallback
 }
 
-const handleContract = (outDir: string) => ([n, c]: [string, any]) =>
-  $.from(c.abi)
+const abi = (def: any) =>
+ `// tslint:disable\nexport const abi: Abi = ${JSON.stringify(def, null, 2)}`
+
+const handleContract = (outDir: string) => ([n, c]: [ContractFullName, any]) =>
+  $.from(n === 'NettingChannelLibrary' ? [] : c.abi) // we do not need types for library - just abi
     .groupBy((e: any) => e.type + '_') // constructor is a special js word
     .mergeMap(g =>
       g.toArray()
         .map(x => handlers[g.key](x, SHORT_NAMES[n]))
     )
     .toArray()
-    .map(gs => [IMPORTS].concat(gs).filter(Boolean))
+    .map(gs => [IMPORTS].concat(gs).concat([abi(c.abi)]).filter(Boolean))
     .map(gs => gs.join(`\n\n${ACHTUNG}\n`) + `\n\n${ACHTUNG}`)
     .do(gen => fs.writeFileSync(`${outDir}/${n}.ts`, gen, 'utf8'))
 

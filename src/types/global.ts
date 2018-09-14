@@ -1,8 +1,3 @@
-declare module '*.json' {
-  const value: any
-  export default value
-}
-
 // TODO: license
 // Type definitions for fetch API
 // Spec: https://fetch.spec.whatwg.org/
