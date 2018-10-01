@@ -395,7 +395,7 @@ export class Engine extends EventEmitter<EngineEventsSpec> {
             channel = this.channelByPeer[state.to.toString('hex')]
             let requestSecret = new messageLib.RequestSecret({
               msgID: state.msgID,
-              to: state.from,
+              to: state.initiator,
               hashLock: state.lock.hashLock,
               amount: state.lock.amount
             })
