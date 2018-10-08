@@ -4,6 +4,7 @@ import { Client } from './setup'
 import { Wei, BlockNumber } from 'eth-types'
 import { GenerateRandomSecretHashPair } from '../state-channel/message'
 import { BN } from '../utils'
+import { Millisecond } from '../types'
 
 export const transferredAmounts = (from: Client, to: Client) => [
   from.engine.channelByPeer[to.owner.addressStr].myState.transferredAmount,
@@ -38,10 +39,27 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
   return received
 }
 
+const waitForUncaughtException = (t: Millisecond = 100) =>
+  new Promise((res, rej) => {
+    const s = setTimeout(() => {
+      res(true)
+      dispose()
+    }, t)
+    const e = err => {
+      rej(err)
+      dispose()
+    }
+    const dispose = () => {
+      process.removeListener('uncaughtException', e)
+      clearTimeout(s)
+    }
+    process.on('uncaughtException', e)
+  })
+
 export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
   const secretHashPair = GenerateRandomSecretHashPair()
   // console.warn('SENDING', from.engine.revealTimeout.add(from.config.collateralTimeout).toString(10))
-  return from.blockchain.monitoring.blockNumbers()
+  return Promise.all([waitForUncaughtException(), from.blockchain.monitoring.blockNumbers()
     .take(1)
     .do((currentBlock) => {
       from.engine.sendMediatedTransfer(
@@ -53,7 +71,9 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
         secretHashPair.hash
       )
     })
-    .toPromise()
+    .toPromise()]
+  )
+    .then(([, p]) => p)
 }
 
 export const sendMediatedHappyPath = (from: Client, to: Client, amount: Wei) => () => {

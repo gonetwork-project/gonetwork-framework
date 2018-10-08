@@ -1,7 +1,6 @@
-import { Observable } from 'rxjs'
 import { as } from '../utils'
 
-import { setupClient, Client, wait, minutes, createSendFn } from './setup'
+import { setupClient, Client, minutes, createSendFn } from './setup'
 import { nextRun } from './addresses'
 
 import * as flowsOn from './flows-onchain'
@@ -57,7 +56,7 @@ const brokenMediatedMultiple = (n: number) => () => {
     .then(({ ch, ev }) => {
       expect(ev.closing_address.compare(c1.owner.address)).toBe(0)
       return Promise.all([
-        // imporant to keep this order
+        // important to keep this order
         c1.blockchain.monitoring.asStream('ChannelSecretRevealed').take(n).toPromise(),
         c1.engine.withdrawPeerOpenLocks(ch.channel)
       ])
@@ -65,6 +64,32 @@ const brokenMediatedMultiple = (n: number) => () => {
 }
 
 describe('broken-mediated', () => {
+  test.only('incorrect mediated should throw', () => {
+    const { run } = nextRun()
+    console.log(`CLIENT-INDEX: ${run}\n`)
+    c1 = setupClient(0)
+    c2 = setupClient(run)
+    return flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      // too much
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(51)))
+      .catch((err: Error) => expect(err.message.startsWith('Insufficient funds:')))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      .then(flowsOff.sendMediated(c2, c1, as.Wei(1)))
+      .catch((err: Error) => expect(err.message.startsWith('Insufficient funds:')))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      // zero
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(0)))
+      .catch((err: Error) => expect(err.message.startsWith('Amount must be greater than zero.')))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      .then(flowsOff.sendMediated(c2, c1, as.Wei(0)))
+      .catch((err: Error) => expect(err.message.startsWith('Amount must be greater than zero.')))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
+      // ok
+      .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
+      .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
+  })
+
   test('when peer not responding transfer should expire', () => {
     c1 = setupClient(0)
     c2 = setupClient(run, createSendFn('*'))

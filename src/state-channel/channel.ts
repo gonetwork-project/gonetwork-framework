@@ -103,6 +103,16 @@ export class Channel {
       .add(to.transferredAmount.add(to.unlockedAmount()))
   }
 
+  /**
+   * The amount of funds that can be sent from this peer to the other at a particular block.
+   * The block is important as locks expire those funds are made available again
+   * @param {BN} currentBlock - The current block number
+   * @returns {BN}
+   */
+  transferrable (currentBlock?: E.BlockNumber) {
+    return this.transferrableFromTo(this.myState, this.peerState, currentBlock)
+  }
+
   /** determine which absolute block number the settlement period ends
    * @param {BN} currentBlock
    * @returns {BN}

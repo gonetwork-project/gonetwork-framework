@@ -295,9 +295,16 @@ export class Engine extends EventEmitter<EngineEventsSpec> {
     if (!this.channelByPeer.hasOwnProperty(to.toString('hex'))) {
       throw new Error('Invalid MediatedTransfer: channel does not exist')
     }
+    if (amount.lte(new BN(0))) {
+      throw new Error('Amount must be greater than zero.')
+    }
     let channel = this.channelByPeer[to.toString('hex')]
     if (!channel.isOpen()) {
       throw new Error('Invalid Channel State:state channel is not open')
+    }
+    const transferrable = channel.transferrable(this.currentBlock)
+    if (transferrable.lt(amount)) {
+      throw new Error('Insufficient funds: lock amount must be less than or equal to transferrable amount')
     }
 
     // console.warn('MEDIATED-EXP', expiration.toString(10))
@@ -315,9 +322,6 @@ export class Engine extends EventEmitter<EngineEventsSpec> {
       currentBlock: this.currentBlock,
       secret: secret,
       to: channel.peerState.address
-
-      // revealTimeout: this.revealTimeout,
-      // settleTimeout: this.settleTimeout
     })
 
     const msgKey = msgID.toString()
