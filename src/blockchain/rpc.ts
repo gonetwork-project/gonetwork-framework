@@ -88,14 +88,8 @@ const formRequestFn = (providerUrl: string, requestFn: typeof fetch, spec: Imple
       .then(res => res.status === 200 ?
         res.json().then((r: any) => {
           if (r.error) {
-            console.error('RPC-REQEUST-ERROR', spec[0], ps)
-            // return Promise.resolve(r.error)
             return Promise.reject(r)
           }
-          // if (spec[0] === 'eth_getLogs') {
-          //   console.log('---> ETH_LOGS', r.result, spec[2](r.result))
-          // }
-          // console.log(spec[0], r)
           return spec[2](r.result)
         }) : Promise.reject(res))
   }

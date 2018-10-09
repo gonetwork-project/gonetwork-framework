@@ -38,8 +38,6 @@ export const encodeTxData = (name: string, abiInSpec: GenOrder[0]) => {
       Buffer.isBuffer(data[o]) && types[i] !== 'bytes' ?
         `0x${data[o].toString('hex')}` : data[o])
 
-    // console.log('METHOD-ID', name, abi.methodID(name, types).toString('hex'))
-
     return util.toBuffer([
       '0x',
       abi.methodID(name, types).toString('hex'),
@@ -94,7 +92,6 @@ const paramsToRawTx = (order: GenOrders, cfg: ContractTxConfig) => {
           const enc = serializeRpcParams(txRaw)
           const tx = new Tx(enc as any)
           cfg.signatureCb(pk => tx.sign(pk))
-          // console.warn(tx.from.toString('hex'), '--->', k)
           return cfg.rpc.sendRawTransaction(`0x${tx.serialize().toString('hex')}`)
         })(encodeTxData(k, order[k][0]))
       return acc
@@ -126,14 +123,7 @@ const paramsToTxFull = <IO extends { [K: string]: [any, any] }>
           .then(txHash => waitForValue((t: E.TxHash) =>
             cfg.rpc.getTransactionReceipt(t) as Promise<E.TxReceipt>, waitCfg)(txHash))
           .then(r => r.status === '0x1' ? Promise.resolve(r) : Promise.reject(r))
-          .then(r => {
-            // console.log('CONTRACT-CALL', k, cfg.owner.toString('hex'))
-            return r
-          })
-          .catch(r => {
-            console.warn('FAILED', k, cfg.owner.toString('hex'), '\n', params, '\n', data)
-            return Promise.reject(r)
-          })
+          .catch(r => Promise.reject(r))
           .then(txReceipt => decodeLogs(txReceipt.logs))
       }
       return acc
@@ -153,7 +143,6 @@ export const createContractsProxy = (cfg: ContractTxConfig) => {
     channel: paramsToRawTx(ChannelOrdIO as any, cfg) as TxSendRaw<ChannelIO>
   }
 
-  // todo - handle logs properly
   const txFull = {
     token: paramsToTxFull(estimateRawTx.token, sendRawTx.token, TokenOrdIO as any, cfg) as TxFull<TokenIO, TokenEventsMap>,
     manager: paramsToTxFull(estimateRawTx.manager, sendRawTx.manager, ManagerOrdIO as any, cfg) as TxFull<ManagerIO, ManagerEventsMap>,
