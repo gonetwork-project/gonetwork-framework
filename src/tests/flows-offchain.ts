@@ -39,27 +39,10 @@ export const sendDirect = (from: Client, to: Client, amount: Wei) => () => {
   return received
 }
 
-const waitForUncaughtException = (t: Millisecond = 100) =>
-  new Promise((res, rej) => {
-    const s = setTimeout(() => {
-      res(true)
-      dispose()
-    }, t)
-    const e = err => {
-      rej(err)
-      dispose()
-    }
-    const dispose = () => {
-      process.removeListener('uncaughtException', e)
-      clearTimeout(s)
-    }
-    process.on('uncaughtException', e)
-  })
-
 export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
   const secretHashPair = GenerateRandomSecretHashPair()
   // console.warn('SENDING', from.engine.revealTimeout.add(from.config.collateralTimeout).toString(10))
-  return Promise.all([waitForUncaughtException(), from.blockchain.monitoring.blockNumbers()
+  return from.blockchain.monitoring.blockNumbers()
     .take(1)
     .do((currentBlock) => {
       from.engine.sendMediatedTransfer(
@@ -71,9 +54,7 @@ export const sendMediated = (from: Client, to: Client, amount: Wei) => () => {
         secretHashPair.hash
       )
     })
-    .toPromise()]
-  )
-    .then(([, p]) => p)
+    .toPromise()
 }
 
 export const sendMediatedHappyPath = (from: Client, to: Client, amount: Wei) => () => {
@@ -84,7 +65,7 @@ export const sendMediatedHappyPath = (from: Client, to: Client, amount: Wei) => 
         // .do(x => console.log('MEDIATED-RECEIVED', x)) // MediatedTransfer
         .skip(2) // MediatedTransfer, RevealSecret
         .take(1) // SecretToProof
-        .delay(0) // allow processing by engine
+        .delay(30) // allow processing by engine
     )
     .toPromise()
 }

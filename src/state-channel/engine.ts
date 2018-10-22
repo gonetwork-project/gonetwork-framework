@@ -753,9 +753,6 @@ export class Engine extends EventEmitter<EngineEventsSpec> {
   onChannelNew (channelAddress: Address, addressOne: Address, addressTwo: Address, settleTimeout: BN) {
     let peerAddress: Address
 
-    // const [a,b,c] = addToStr([channelAddress, addressOne, addressTwo])
-    // debugger
-
     if (addressOne.compare(this.address) === 0) {
       peerAddress = addressTwo
     } else if (addressTwo.compare(this.address) === 0) {
@@ -766,8 +763,14 @@ export class Engine extends EventEmitter<EngineEventsSpec> {
     }
 
     let existingChannel = this.channelByPeer[peerAddress.toString('hex')]
-    if (existingChannel && existingChannel.state !== channelLib.CHANNEL_STATE_SETTLED) {
-      throw new Error('Invalid Channel: cannot add new channel as it already exists')
+    if (existingChannel) {
+      if (existingChannel.state !== channelLib.CHANNEL_STATE_SETTLED) {
+        throw new Error('Invalid Channel: cannot add new channel as it already exists')
+      } else {
+        delete this.channelByPeer[peerAddress.toString('hex')]
+        delete this.channels[existingChannel.channelAddress.toString('hex')]
+        this.blockchain.monitoring.unsubscribeAddress(existingChannel.channelAddress)
+      }
     }
 
     let stateOne = new channelStateLib.ChannelState({

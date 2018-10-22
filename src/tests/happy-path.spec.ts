@@ -33,6 +33,21 @@ describe('integration::happy-path -- base', () => {
     .then(flowsOn.checkBalances(as.Wei(0), as.Wei(50)))
 
   test('create and close - force settle', () => createAndClose(true), minutes(0.2))
+  test('create, close, recreate', () => createAndClose(true)
+    .then(() => {
+      expect(Object.keys(c1.engine.channels)).toHaveLength(1)
+      expect(Object.keys(c1.engine.channelByPeer)).toHaveLength(1)
+      expect(Object.keys(c2.engine.channels)).toHaveLength(1)
+      expect(Object.keys(c2.engine.channelByPeer)).toHaveLength(1)
+    })
+    .then(() => flowsOn.createChannelAndDeposit(c1, c2, as.Wei(50)))
+    .then(() => {
+      expect(Object.keys(c1.engine.channels)).toHaveLength(1)
+      expect(Object.keys(c1.engine.channelByPeer)).toHaveLength(1)
+      expect(Object.keys(c2.engine.channels)).toHaveLength(1)
+      expect(Object.keys(c2.engine.channelByPeer)).toHaveLength(1)
+    })
+    , minutes(0.2))
   // TODO: discuss seems auto settle should not be supported
   // test.only('create and close - auto settle', () => createAndClose(false), minutes(0.2))
 })

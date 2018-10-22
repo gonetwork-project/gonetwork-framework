@@ -13,7 +13,7 @@ let c2: NonNullable<Client>
 let run: number
 beforeEach(() => {
   run = nextRun().run
-  console.log('ACCOUNT: ', run)
+ // console.log('ACCOUNT: ', run)
 })
 
 afterEach(() => {
@@ -64,7 +64,7 @@ const brokenMediatedMultiple = (n: number) => () => {
 }
 
 describe('broken-mediated', () => {
-  test.only('incorrect mediated should throw', () => {
+  test('incorrect mediated should throw', () => {
     const { run } = nextRun()
     console.log(`CLIENT-INDEX: ${run}\n`)
     c1 = setupClient(0)
@@ -83,10 +83,10 @@ describe('broken-mediated', () => {
       .catch((err: Error) => expect(err.message.startsWith('Amount must be greater than zero.')))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
       .then(flowsOff.sendMediated(c2, c1, as.Wei(0)))
-      .catch((err: Error) => expect(err.message.startsWith('Amount must be greater than zero.')))
+      .catch((err: Error) => expect(err.message.startsWith('Amount must be greater than zero.')).toBe(true))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(0), c2, as.Wei(0))).toBe(true))
       // ok
-      .then(flowsOff.sendMediated(c1, c2, as.Wei(50)))
+      .then(flowsOff.sendMediatedHappyPath(c1, c2, as.Wei(50)))
       .then(() => expect(flowsOff.transferredEqual(c1, as.Wei(50), c2, as.Wei(0))).toBe(true))
   })
 
