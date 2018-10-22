@@ -103,7 +103,7 @@ export class Monitoring {
         if (s.addresses.find(_a => _a[0].equals(a))) return Promise.resolve(false)
         s.addresses.push([a, b])
         return this._saveState(s)
-          .then(() => this._forceMonitoring.next(true) || true)
+          .then(() => this._forceMonitoring.next(true) as unknown || true)
       })
 
   unsubscribeAddress = (a: E.Address) => {
@@ -111,7 +111,7 @@ export class Monitoring {
     return this._state.then(s => {
       s.addresses = s.addresses.filter(_a => !_a[0].equals(a))
       return this._saveState(s)
-        .then(() => this._forceMonitoring.next(true) || true)
+        .then(() => this._forceMonitoring.next(true) as unknown || true)
     })
   }
 
