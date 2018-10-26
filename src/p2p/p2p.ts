@@ -185,16 +185,20 @@ export class P2P implements T.P2P {
               try {
                 this._emit('message-received', m.payload)
               } catch (err) {
-                console.warn('P2P-error', err)
-                ch.isBroken = true
-                ch.brokenInfo = {
-                  reason: 'Callback error',
-                  error: (err && err.toJSON && err.toJSON()) || {
-                    message: err && err.message,
-                    stack: err && err.stack
-                  }
-                }
-                this._saveChannel(m.peer, ch)
+                this._emit('callback-error', err)
+                /*
+                  FIXME - error in registered callback should be treated as a critical error
+                  but engine currently throws an application level error
+                */
+                // ch.isBroken = true
+                // ch.brokenInfo = {
+                //   reason: 'Callback error',
+                //   error: (err && err.toJSON && err.toJSON()) || {
+                //     message: err && err.message,
+                //     stack: err && err.stack
+                //   }
+                // }
+                // this._saveChannel(m.peer, ch)
               }
             })
         } else {

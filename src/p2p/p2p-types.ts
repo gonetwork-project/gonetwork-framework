@@ -7,7 +7,7 @@ export {
 export type Status = 'initializing' // loading persistent state
   | 'connecting' | 'connected' | 'broken' | 'disposed'
 
-export type CommEventType = 'status-changed' | 'message-received'
+export type CommEventType = 'status-changed' | 'message-received' | 'callback-error'
 
 export type MessageId = number & { __MSG_ID__: true }
 export type Payload = string // & { __PAYLOAD__: true }
