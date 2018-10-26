@@ -168,7 +168,15 @@ export class SignedMessage {
   /** getHash - child classes must override implementation
    */
   getHash () {
-    throw Error('unimplemented getHash()')
+    // tslint:disable-next-line
+    if (1 === 1) {
+      throw Error('unimplemented getHash()')
+    }
+    return null as unknown as Buffer
+  }
+
+  get hash () {
+    return this.getHash()
   }
 
   /** sign - signs the message with the private key and sets the signature property
