@@ -1,6 +1,6 @@
 {
   "name": "go-network-framework",
-  "version": "0.2.30",
+  "version": "0.2.33",
   "repository": {
     "type": "git",
     "url": "https://github.com/gonetwork-project/gonetwork-framework.git"
@@ -8,6 +8,7 @@
   "description": "blockchain-service & state-channel engine for react-native environments",
   "main": "lib/index.js",
   "scripts": {
+    "prepublish": "yarn compile && yarn compile-dev",
     "test-clear": "rm temp/contract-addresses.json || true",
     "test-unit": "yarn test-clear && GONET_TEST_ENV=local,infura jest src/blockchain src/state-channel --coverage",
     "test-unit-dev": "yarn test-clear && GONET_TEST_ENV=local jest --watch",
@@ -63,7 +64,9 @@
   },
   "typings": "./lib/index.d.ts",
   "files": [
-    "lib"
+    "lib",
+    "smart-contracts",
+    "build-dev"
   ],
   "jest": {
     "transform": {
