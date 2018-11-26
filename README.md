@@ -2,7 +2,7 @@
 
 # Gonetwork Framework 
 
-![High Level Architecture](https://github.com/gonetwork-project/gonetwork-framework/issues/25?raw=true "Architecture")
+![High Level Architecture](https://user-images.githubusercontent.com/747838/49035036-a10f2680-f181-11e8-98d9-e84f35ae54eb.png?raw=true "Architecture")
 
 Consolidated framework with state channel engine, blockchain service, and transport layer implementation.
 
