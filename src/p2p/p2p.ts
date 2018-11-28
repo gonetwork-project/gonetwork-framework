@@ -216,11 +216,15 @@ export class P2P implements T.P2P {
         if (!msg && id !== NO_MESSAGES_ID) {
           this._brokenChannel(peer, ch, 'ID_NOT_FOUND', m)
         } else {
-          // todo add some checks if correct message
-          if (msg) msg[2] = true as T.Ack
+          // todo: add some checks if correct message
+          if (msg) {
+            msg[2] = true as T.Ack
+            this._emit('message-sent', msg[1])
+          }
           this._saveChannel(peer, ch)
-            .then(() => this._sendingQueues[peer]
-              .next(ch))
+            .then(() => {
+              this._sendingQueues[peer].next(ch)
+            })
         }
       })
   }

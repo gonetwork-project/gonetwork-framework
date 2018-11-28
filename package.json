@@ -1,6 +1,6 @@
 {
   "name": "go-network-framework",
-  "version": "0.2.33",
+  "version": "0.2.34",
   "repository": {
     "type": "git",
     "url": "https://github.com/gonetwork-project/gonetwork-framework.git"
